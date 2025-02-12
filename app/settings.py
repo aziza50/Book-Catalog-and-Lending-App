@@ -24,7 +24,7 @@ SECRET_KEY = "django-insecure-j)=r+!0l8_#dst3!p6%l@b54(4=hj*=f(un$*ltdc^lho$7_yi
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost','127.0.0.1','project-b-14-app-ebaaf643b243.herokuapp.com']
 
 # Application definition
 
@@ -110,7 +110,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
+# SHERRIFF: Added the static_root variable here to fix an erorr with static files not being found
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
