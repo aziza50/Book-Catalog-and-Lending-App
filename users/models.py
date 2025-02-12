@@ -14,3 +14,4 @@ class User(AbstractUser):
 
     def is_patron(self):
         return self.role == 'patron'
+
