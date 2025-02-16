@@ -7,4 +7,10 @@ def dashboard(request):
     if request.user.is_librarian():
         return render(request, "users/librarian_dashboard.html")
     else:
-        return render(request, "users/patron_dashboard.html")
+        return render(request, "users/patron.html")
+
+def librarian(request):
+    return render(request, "users/librarian_dashboard.html")
+
+def patron(request):
+    return render(request, "users/patron_dashboard.html")

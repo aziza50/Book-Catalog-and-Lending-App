@@ -9,6 +9,17 @@ class User(AbstractUser):
     ]
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='patron')
 
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='changed_user_set',
+        blank=True
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='changed_user_permissions',
+        blank=True
+    )
+
     def is_librarian(self):
         return self.role == 'librarian'
 
