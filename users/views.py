@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
 
 
 @login_required
@@ -14,3 +15,10 @@ def librarian(request):
 
 def patron(request):
     return render(request, "users/patron_dashboard.html")
+
+def home(request):
+    return render(request, "users/home.html")
+
+def logout_view(request):
+    logout(request)
+    return redirect("/")

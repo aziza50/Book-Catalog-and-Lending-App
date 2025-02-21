@@ -7,5 +7,7 @@ app_name = "users"
 urlpatterns = [
     path("dashboard/", dashboard, name="dashboard"),
     path("patron/", views.patron,name = "patron"),
-    path("librarian/", views.librarian, name = "librarian")
+    path("librarian/", views.librarian, name = "librarian"),
+    path("", views.home),
+    path("logout/", views.logout)
 ]
