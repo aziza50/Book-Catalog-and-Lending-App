@@ -1,31 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User
+from .models import UserProfile
 
 
-class CustomUserAdmin(UserAdmin):
-    """Custom User Admin Panel to Manage Patrons & Librarians"""
-    model = User
-    list_display = ("username", "email", "role", "is_active", "is_staff")
-    list_filter = ("role", "is_staff", "is_superuser", "is_active")
 
-    fieldsets = (
-        (None, {"fields": ("username", "email", "password")}),
-        ("Personal Info", {"fields": ("first_name", "last_name")}),
-        ("Roles & Permissions", {"fields": ("role", "is_staff", "is_superuser", "is_active")}),
-        ("Important Dates", {"fields": ("last_login", "date_joined")}),
-    )
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'role', 'is_librarian', 'is_patron')
+    list_filter = ('role',)
+    search_fields = ('user__username',)
 
-    add_fieldsets = (
-        (None, {
-            "classes": ("wide",),
-            "fields": ("username", "email", "password1", "password2", "role", "is_staff"),
-        }),
-    )
+admin.site.register(UserProfile, UserProfileAdmin)
 
-    search_fields = ("username", "email")
-    ordering = ("username",)
-
-
-# Register the custom user model
-admin.site.register(User, CustomUserAdmin)

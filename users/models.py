@@ -1,8 +1,9 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import User
 from django.db import models
 
 
-class User(AbstractUser):
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user")
     ROLE_CHOICES = [
         ('patron', 'Patron'),
         ('librarian', 'Librarian'),
@@ -25,4 +26,5 @@ class User(AbstractUser):
 
     def is_patron(self):
         return self.role == 'patron'
+    
 

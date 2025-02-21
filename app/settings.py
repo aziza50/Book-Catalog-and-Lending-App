@@ -28,9 +28,7 @@ ALLOWED_HOSTS = ['localhost','127.0.0.1','project-b-14-app-ebaaf643b243.herokuap
 
 # Application definition
 
-SITE_ID = 2
-
-
+SITE_ID = 3
 
 INSTALLED_APPS = [
     "django.contrib.admin",
