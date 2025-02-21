@@ -3,7 +3,7 @@ from django.db import models
 
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="userprofile")
     ROLE_CHOICES = [
         ('patron', 'Patron'),
         ('librarian', 'Librarian'),

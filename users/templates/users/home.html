@@ -12,6 +12,11 @@
 
     {% if user.is_authenticated %}
     <p>You are signed in as {{user.email}}</p>
+    {% if user.userprofile %}
+        <p>Your role: {{ user.userprofile.role }}</p>  <!-- Display the role from UserProfile -->
+    {% else %}
+        <p>No profile found for this user.</p>
+    {% endif %}
     <a href="logout">Logout</a>
     {% endif %}
         
