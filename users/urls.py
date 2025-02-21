@@ -9,5 +9,5 @@ urlpatterns = [
     path("patron/", views.patron,name = "patron"),
     path("librarian/", views.librarian, name = "librarian"),
     path("", views.home),
-    path("logout/", views.logout)
+    path("logout/", views.logout_view)
 ]
