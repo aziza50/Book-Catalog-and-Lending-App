@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 import dj_database_url
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,18 +46,30 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
 ]
-
-SOCIALACCOUNT_PROVIDERS = {
-    "google": {
-        "SCOPE": [
-            "profile",
-            "email"
-        ],
-        "AUTH_PARAMS": {
-            "access_type": "online"
+if os.getenv('CLIENT_ID') is None or os.getenv('CLIENT_SECRET')is None:
+    SOCIALACCOUNT_PROVIDERS = {
+        "google": {
+            "SCOPE": [
+                "profile",
+                "email"
+            ],
+            "AUTH_PARAMS": {
+                "access_type": "online"
+            }
         }
     }
-}
+else:
+    SOCIALACCOUNT_PROVIDERS = {
+        'google': {
+            'SCOPE': ['profile', 'email'],
+            'AUTH_PARAMS': {'access_type': 'online'},
+            'APP': {
+                'client_id': os.getenv('CLIENT_ID'),
+                'secret': os.getenv('CLIENT_SECRET'),
+                'key': ''
+            },
+        }
+    }
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
