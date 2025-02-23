@@ -22,5 +22,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),  # Django admin
     path("", include("users.urls")),  # include user-related URLs
     path("accounts/", include("allauth.urls")),
+    path('catalog/', include('catalog.urls')),  
 ]
 

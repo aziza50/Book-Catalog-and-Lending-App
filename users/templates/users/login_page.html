@@ -68,8 +68,9 @@
             <p>Borrow or Lend Books Today!</p>
             <form action="{% provider_login_url 'google' %}" method="post">
                 {% csrf_token %}
-                <button class="btn btn-primary" type="Submit">Sign Up or Log In with Google</button>
+                <button class="btn btn-primary" type="submit">Sign Up or Log In with Google</button>
             </form>
+            <a href="{% url 'catalog:book_list' %}" class="btn btn-secondary">Browse as Guest</a>
         </div>
     </div>
 </div>
