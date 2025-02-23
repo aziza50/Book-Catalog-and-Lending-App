@@ -17,6 +17,10 @@ def librarian(request):
 def patron(request):
     return render(request, "users/patron.html")
 
+def collections(request):
+    return render(request, "users/collections.html")
+
+
 def home(request):
     if request.user.is_authenticated:
         try:

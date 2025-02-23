@@ -27,7 +27,7 @@ function myMap() {
     ];
 
     var mapProp= {
-        center:new google.maps.LatLng(38.0341423,-78.5082731),
+        center:new google.maps.LatLng(38.0341423,-78.5100518),
         zoom:15,
         disableDefaultUI: true,
         styles:
