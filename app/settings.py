@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
+import dj_database_url
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,7 +30,7 @@ ALLOWED_HOSTS = ['localhost','127.0.0.1','project-b-14-app-ebaaf643b243.herokuap
 
 # Application definition
 
-SITE_ID = 3
+SITE_ID = 4
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -44,18 +46,30 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
 ]
-
-SOCIALACCOUNT_PROVIDERS = {
-    "google": {
-        "SCOPE": [
-            "profile",
-            "email"
-        ],
-        "AUTH_PARAMS": {
-            "access_type": "online"
+if os.getenv('CLIENT_ID') is None or os.getenv('CLIENT_SECRET')is None:
+    SOCIALACCOUNT_PROVIDERS = {
+        "google": {
+            "SCOPE": [
+                "profile",
+                "email"
+            ],
+            "AUTH_PARAMS": {
+                "access_type": "online"
+            }
         }
     }
-}
+else:
+    SOCIALACCOUNT_PROVIDERS = {
+        'google': {
+            'SCOPE': ['profile', 'email'],
+            'AUTH_PARAMS': {'access_type': 'online'},
+            'APP': {
+                'client_id': os.getenv('CLIENT_ID'),
+                'secret': os.getenv('CLIENT_SECRET'),
+                'key': ''
+            },
+        }
+    }
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -93,12 +107,19 @@ WSGI_APPLICATION = "app.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+if os.getenv('DATABASE_URL') is None:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'), conn_max_age=600, ssl_require=True
+        )
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
