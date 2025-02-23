@@ -24,7 +24,7 @@ def librarian(request):
 
 def patron(request):   
     if request.user.is_authenticated:
-        if request.user.is_patron:
+        if request.user.userprofile.is_patron:
             return render(request, "users/patron.html")
         else:
             return redirect('users:home')
