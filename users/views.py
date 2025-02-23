@@ -12,10 +12,26 @@ def dashboard(request):
         return render(request, "users/patron.html")
 
 def librarian(request):
-    return render(request, "users/librarian.html")
+    if request.user.is_authenticated:
+        if request.user.is_librarian():
+            return render(request, "users/librarian.html")
+        else:
+            return redirect('users:home')
+    else:
+        return redirect('users:home')
 
-def patron(request):
-    return render(request, "users/patron.html")
+
+
+def patron(request):   
+    if request.user.is_authenticated:
+        if request.user.is_patron():
+            return render(request, "users/patron.html")
+        else:
+            return redirect('users:home')
+    else:
+        return redirect('users:home')
+
+
 
 def home(request):
     if request.user.is_authenticated:
