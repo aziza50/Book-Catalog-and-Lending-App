@@ -6,6 +6,7 @@ cryptography==44.0.1
 dj-database-url==2.3.0
 Django==4.2.19
 django-allauth==65.4.1
+django-bootstrap5==24.3
 django-heroku==0.3.1
 gunicorn==23.0.0
 idna==3.10

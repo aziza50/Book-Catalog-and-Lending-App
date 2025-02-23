@@ -1,0 +1,78 @@
+{% load django_bootstrap5 %}
+
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+{% load socialaccount %}
+
+<!doctype html>
+<html>
+<style>
+    body {
+        background-color: #F2F5EA;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    h1 {
+        color: #467599;
+    }
+
+    .h-100.p-5.bg-body-tertiary.border.rounded-3 {
+        background-color: #467599;
+        color: black;
+    }
+
+    .btn-primary {
+        background-color: #A92327;
+        color: white;
+    }
+
+    .row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 40vh;
+    }
+
+    .col-md-6 {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%
+    }
+</style>
+
+<head>
+    <title>Sign In</title>
+
+</head>
+
+<body>
+<div class="row align-items-md-stretch">
+    <div class="col-md-6">
+        <div class="h-100 p-5 text-bg-dark rounded-3">
+            <h1><b>Book Lending</b></h1>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="h-100 p-5 bg-body-tertiary border rounded-3">
+            <h2>Log In or Create an Account</h2>
+            <p>Borrow or Lend Books Today!</p>
+            <form action="{% provider_login_url 'google' %}" method="post">
+                {% csrf_token %}
+                <button class="btn btn-primary" type="Submit">Sign Up or Log In with Google</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

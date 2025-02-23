@@ -27,6 +27,8 @@ def home(request):
                 return redirect('users:patron')
         except UserProfile.DoesNotExist:
             return render(request, "users/home.html")
+    else:
+        return render(request, "users/login_page.html")
     return render(request, "users/home.html")
 
 def logout_view(request):
