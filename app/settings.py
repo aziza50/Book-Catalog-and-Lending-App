@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
+    "django_bootstrap5",
 ]
 if os.getenv('CLIENT_ID') is None or os.getenv('CLIENT_SECRET')is None:
     SOCIALACCOUNT_PROVIDERS = {
