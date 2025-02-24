@@ -6,16 +6,32 @@ from .models import UserProfile
 
 @login_required
 def dashboard(request):
-    if request.user.is_librarian():
+    if request.user.userprofile.is_librarian:
         return render(request, "users/librarian.html")
     else:
         return render(request, "users/patron.html")
 
 def librarian(request):
-    return render(request, "users/librarian.html")
+    if request.user.is_authenticated:
+        if request.user.userprofile.is_librarian:
+            return render(request, "users/librarian.html")
+        else:
+            return redirect('users:home')
+    else:
+        return redirect('users:home')
 
-def patron(request):
-    return render(request, "users/patron.html")
+
+
+def patron(request):   
+    if request.user.is_authenticated:
+        if request.user.userprofile.is_patron:
+            return render(request, "users/patron.html")
+        else:
+            return redirect('users:home')
+    else:
+        return redirect('users:home')
+
+
 
 def collections(request):
     return render(request, "users/collections.html")
@@ -31,6 +47,8 @@ def home(request):
                 return redirect('users:patron')
         except UserProfile.DoesNotExist:
             return render(request, "users/home.html")
+    else:
+        return render(request, "users/login_page.html")
     return render(request, "users/home.html")
 
 def logout_view(request):

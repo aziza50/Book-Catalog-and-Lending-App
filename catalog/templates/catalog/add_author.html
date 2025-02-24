@@ -1,0 +1,9 @@
+{% block content %}
+  <h2>Add a New Author</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Add Author</button>
+  </form>
+  <a href="{% url 'catalog:add_book' %}" class="btn btn-secondary">Back to Add Book</a>
+{% endblock %}

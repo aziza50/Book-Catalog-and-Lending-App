@@ -1,0 +1,11 @@
+{% block content %}
+  <h2>Add a New Book</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}  <!-- This will automatically render the day, month, and year dropdowns -->
+    <button type="submit" class="btn btn-primary">Add Book</button>
+</form>
+
+
+  <a href="{% url 'catalog:book_list' %}">Back to Book List</a>
+{% endblock %}
