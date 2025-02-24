@@ -4,66 +4,30 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b0eabb78-f38c-4dbe-b8b2-28375f224d5a" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/users/static/users/images/HP.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/users/static/users/images/SK.webp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/users/static/users/images/lifeof.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/users/static/users/images/star.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/static/users/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/users/static/users/style.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/templates/users/collections.html" beforeDir="false" afterPath="$PROJECT_DIR$/users/templates/users/collections.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/templates/users/librarian.html" beforeDir="false" afterPath="$PROJECT_DIR$/users/templates/users/librarian.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/templates/users/patron.html" beforeDir="false" afterPath="$PROJECT_DIR$/users/templates/users/patron.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/users/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/users/views.py" afterDir="false" />
-    </list>
+    <list default="true" id="34699367-aa68-480d-a833-4439be2ae9e2" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="HTML File" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
-    <option name="RECENT_BRANCH_BY_REPOSITORY">
-      <map>
-        <entry key="$PROJECT_DIR$" value="GoogleLogin" />
-      </map>
-    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 4
+  &quot;associatedIndex&quot;: 1
 }</component>
-  <component name="ProjectId" id="2sm1QZwB3UBORS8LhtbJDcAZa52" />
+  <component name="ProjectId" id="2tSofQUHev7qZn8ZgrORC5zsU9l" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "DefaultHtmlFileTemplate": "HTML File",
-    "Python.settings.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "userInterface"
+    "git-widget-placeholder": "userInterface",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
-  <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/users/static/users/images" />
-      <recent name="$PROJECT_DIR$/users/static/users" />
-      <recent name="$PROJECT_DIR$/users/templates/users" />
-      <recent name="$PROJECT_DIR$/users/Static/users" />
-      <recent name="$PROJECT_DIR$/users/Static" />
-    </key>
-  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -74,11 +38,11 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="b0eabb78-f38c-4dbe-b8b2-28375f224d5a" name="Changes" comment="" />
-      <created>1739045921289</created>
+      <changelist id="34699367-aa68-480d-a833-4439be2ae9e2" name="Changes" comment="" />
+      <created>1740354939654</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1739045921289</updated>
+      <updated>1740354939654</updated>
     </task>
     <servers />
   </component>

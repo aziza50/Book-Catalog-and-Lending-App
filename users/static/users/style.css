@@ -146,18 +146,26 @@ h1 {
     color: #333;
 }
 
-.btn-primary {
-    color: #426B1F;
-    background-color: #426B1F !important;
-    border-color: #426B1F !important;
-    border:radius: 30px !important;
-}
+.h-100.p-5.bg-body-tertiary.border.rounded-3 {
+        background-color: #467599;
+        color: black;
+    }
 
-.btn-primary:hover {
-    background-color: #426B1F !important;
-    border-color: #426B1F !important;
-}
 
+.row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 40vh;
+    }
+
+    .col-md-6 {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%
+    }
 
 
 
