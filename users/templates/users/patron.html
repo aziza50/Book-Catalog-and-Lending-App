@@ -19,16 +19,16 @@
     <div class="collapse navbar-collapse" id="navbarScroll">
       <ul class="navbar-nav me-auto my-4 my-lg-3 navbar-nav-scroll d-flex justify-content-end w-100" style="--bs-scroll-height: 100px;">
           <li class="nav-item">
-          <a class="nav-link" href="#">Home</a>
+          <a class="nav-link" href="{% url 'users:patron' %}">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Resources</a>
+          <a class="nav-link" href="{% url 'users:resources' %}">Resources</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">My Profile</a>
+          <a class="nav-link" href="{% url 'users:profile' %}">My Profile</a>
         </li>
           <li class="nav-item">
-          <a class="nav-link" href="#">Lend an Item</a>
+          <a class="nav-link" href="{% url 'users:lend' %}">Lend an Item</a>
         </li>
         <li class="nav-item">
           <a class="nav-link mx-lg-2" href="{% url 'users:logout'%}">Logout</a>

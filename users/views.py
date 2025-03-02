@@ -36,6 +36,19 @@ def patron(request):
 def collections(request):
     return render(request, "users/collections.html")
 
+def item(request):
+    return render(request, "users/item.html")
+
+def resources(request):
+    return render(request, "users/resources.html")
+
+def profile(request):
+    return render(request, "users/profile.html")
+
+def lend(request):
+    return render(request, "users/lend_item.html")
+
+
 
 def home(request):
     if request.user.is_authenticated:

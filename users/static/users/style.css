@@ -23,8 +23,7 @@ h5 {
 
 .nav-link {
     font-size: 20px !important;
-    font-family: 'Newsreader';
-    color: #000;
+    font-family: 'Newsreader' !important;
 }
 
 .custom-navbar {
@@ -32,10 +31,10 @@ h5 {
 }
 
 .nav-item {
-    color: #6C88EAD;
-    position: relative;
-    font-size:15px;
-    margin-right: 30px;
+    color: #6C88EAD !important;
+    position: relative !important;
+    font-size:15px !important;
+    margin-right: 30px !important;
 }
 
 .nav-item:hover {
@@ -71,21 +70,21 @@ h5 {
 }
 
 .map-text h2 {
-    font-size: 20px;
+    font-size: 30px;
     transition: 0.3s color;
     font-family: 'Newsreader';
     line-height: 1.6;
     padding: 10px;
-    width: 70%;
+    width: 80%;
 }
 
 .map-text h3 {
-    font-size: 15px;
+    font-size: 18px;
     transition: 0.3s color;
     font-family: 'Newsreader';
     line-height: 1.6;
     padding: 10px;
-    width: 70%;
+    width: 80%;
 }
 
 /*
@@ -100,6 +99,8 @@ h5 {
     #googleMap,
     .map-text {
         width: 80%;
+        font-family: 'Newsreader';
+
     }
 }
 #googleMap {

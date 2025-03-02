@@ -10,5 +10,10 @@ urlpatterns = [
     path("librarian/", views.librarian, name = "librarian"),
     path("", views.home, name="home"),
     path("logout/", views.logout_view, name="logout"),
-    path("collections/", views.collections, name = "collections")
+    path("collections/", views.collections, name = "collections"),
+    path("profile/", views.profile, name="profile"),
+    path("lend_item/", views.lend, name="lend"),
+    path("resources/", views.resources, name="resources"),
+    path("item/", views.item, name="item")
+
 ]
