@@ -1,11 +1,28 @@
+/*=================== GENERAL THEME ==========================*/
+
 body {
     background-color: #FBF8F2 !important;
     font-family: 'Newsreader';
-
 }
 
+.btn-custom {
+  background-color: #426B1F !important;
+}
+
+h1 {
+    font-size: 60px !important;
+    font-family: 'Newsreader';
+}
+
+
+h5 {
+    font-size: 20px !important;
+    font-family: 'Newsreader';
+}
+/*=================== Header ==========================*/
+
 .nav-link {
-    font-size: 20px;
+    font-size: 20px !important;
     font-family: 'Newsreader';
     color: #000;
 }
@@ -13,7 +30,6 @@ body {
 .custom-navbar {
     background-color: #FBF8F2 !important;
 }
-
 
 .nav-item {
     color: #6C88EAD;
@@ -25,7 +41,7 @@ body {
 .nav-item:hover {
     color: #426B1F;
     text-decoration: underline #426B1F;
-    }
+ }
 
 .navbar-brand {
     color: #426B1F !important;
@@ -36,9 +52,8 @@ body {
     padding: 20px;
 }
 
-.btn-custom {
-  background-color: #426B1F !important;
-}
+
+/*=================== MAPS ==========================*/
 
 .mapContainer {
     display: flex;
@@ -96,6 +111,7 @@ body {
     display: block;
 }
 
+/*=================== BOOKS DISPLAY ==========================*/
 
 .card-body {
     border-radius: 20px;
@@ -112,20 +128,17 @@ body {
 .col {
     object-fit: cover;
     height: 300px;
-    width: 20px;
+    width: 300px !important;
     object-fit: contain;
     object-position: center;
 }
 
 .card {
     width: 250px;
+    border: none !important;
+    background-color: transparent !important;
 }
 
-h1 {
-    font-size: 60px !important;
-    font-family: 'Newsreader';
-    margin: 30px 30px;
-}
 
 .btn-primary.dropdown-toggle {
     background-color: #426B1F;
@@ -146,26 +159,13 @@ h1 {
     color: #333;
 }
 
-.h-100.p-5.bg-body-tertiary.border.rounded-3 {
-        background-color: #467599;
-        color: black;
-    }
+.img-fluid {
+    width: 80%;
+    max-height: 250px;
+    border-radius: 15px !important;
 
+}
 
-.row {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 40vh;
-    }
-
-    .col-md-6 {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%
-    }
 
 
 
