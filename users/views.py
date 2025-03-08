@@ -6,10 +6,7 @@ from .models import UserProfile
 
 @login_required
 def dashboard(request):
-    if request.user.userprofile.is_librarian:
-        return render(request, "users/librarian.html")
-    else:
-        return render(request, "users/patron.html")
+    return render(request, "users/patron.html")
 
 def librarian(request):
     if request.user.is_authenticated:
@@ -47,8 +44,6 @@ def profile(request):
 
 def lend(request):
     return render(request, "users/lend_item.html")
-
-
 
 def home(request):
     if request.user.is_authenticated:
