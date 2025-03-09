@@ -233,4 +233,39 @@ function myMap() {
 
 
 }
+const loginPopup = document.querySelector(".login-popup");
+const close = document.querySelector(".close");
 
+document.addEventListener("DOMContentLoaded", function () {
+    const loginPopup = document.querySelector(".login-popup");
+    const close = document.querySelector(".close");
+
+    if (!loginPopup || !close) {
+        return;
+    }
+
+    function showPopup() {
+        const timeLimit = 3;
+        let i = 0;
+        const timer = setInterval(function () {
+            i++;
+            if (i === timeLimit) {
+                clearInterval(timer);
+                loginPopup.classList.add("show");
+            }
+            console.log(i);
+        }, 1000);
+    }
+
+    window.addEventListener("load", showPopup);
+
+    close.addEventListener("click", function () {
+        loginPopup.classList.remove("show");
+    });
+
+    window.onclick = function (event) {
+        if (event.target === loginPopup) {
+            loginPopup.classList.remove("show");
+        }
+    };
+});

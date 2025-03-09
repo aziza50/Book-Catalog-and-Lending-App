@@ -28,23 +28,6 @@ class UserProfile(models.Model):
     def is_patron(self):
         return self.role == 'patron'
 
-class Status(models.TextChoices):
-    AVAILABLE = "Available", "Available"
-    CHECKED_OUT = "Checked out", "Checked out"
-
-class Location(models.TextChoices):
-    SHANNON = "Shannon Library", "Shannon Library"
-    STUDENT_HEALTH = "Student Health and Wellness", "Student Health and Wellness"
-    GIBBONS = "Gibbons", "Gibbons"
-    RICE = "Rice Hall", "Rice Hall"
-
-class Genre(models.TextChoices):
-    ROMANCE = "Romance", "Romance"
-    ADVENTURE = "Adventure", "Adventure"
-    MYSTERY = "Mystery", "Mystery"
-    NONFICTION = "Non-fiction", "Non-fiction"
-    FANTASY = "Fantasy", "Fantasy"
-
 
 class Author(models.Model):
     name = models.CharField(max_length=255)
@@ -53,15 +36,33 @@ class Author(models.Model):
         return self.name
 
 class Book(models.Model):
+    class Status(models.TextChoices):
+        AVAILABLE = "Available", "Available"
+        CHECKED_OUT = "Checked out", "Checked out"
+
+    class Location(models.TextChoices):
+        SHANNON = "Shannon Library", "Shannon Library"
+        STUDENT_HEALTH = "Student Health and Wellness", "Student Health and Wellness"
+        GIBBONS = "Gibbons", "Gibbons"
+        RICE = "Rice Hall", "Rice Hall"
+
+    class Genre(models.TextChoices):
+        ROMANCE = "Romance", "Romance"
+        ADVENTURE = "Adventure", "Adventure"
+        MYSTERY = "Mystery", "Mystery"
+        NONFICTION = "Non-fiction", "Non-fiction"
+        FANTASY = "Fantasy", "Fantasy"
+
     title = models.CharField(max_length=255)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    lender = models.ForeignKey(User, on_delete = models.SET_NULL, null = True)
     isbn = models.CharField(max_length=13, unique=True)
     status = models.CharField(max_length = 13, choices= Status.choices, default = Status.AVAILABLE)
     genre = models.CharField(max_length=100, choices = Genre.choices)
     rating = models.IntegerField(default = 0, validators = [MinValueValidator(1), MaxValueValidator(5)])
     location = models.CharField(max_length = 27, choices = Location.choices)
     comments = models.CharField(max_length = 200, blank = True, null =True)
-    summary = models.TextField()
+    description = models.TextField()
 
 
     def __str__(self):
