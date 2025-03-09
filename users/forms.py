@@ -5,7 +5,7 @@ class BooksForm(forms.ModelForm):
 
     class Meta:
         model = Book
-        fields = ['title', 'author', 'status', 'genre', 'location', 'description']
+        fields = ['title', 'author', 'status', 'condition', 'genre', 'location', 'description']
 
     def __init__(self, *args, **kwargs):
         super(BooksForm, self).__init__(*args, **kwargs)
@@ -13,6 +13,8 @@ class BooksForm(forms.ModelForm):
         self.fields['author'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter author'})
         self.fields['status'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select status'})
         self.fields['status'].choices = Book.Status.choices
+        self.fields['condition'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select condition'})
+        self.fields['condition'].choices = Book.Condition.choices
         self.fields['genre'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select genre'})
         self.fields['genre'].choices = Book.Genre.choices
         self.fields['location'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select location'})

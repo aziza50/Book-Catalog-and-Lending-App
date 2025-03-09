@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.contrib.auth.models import User,auth
-from .models import UserProfile, Book, Author
+from .models import UserProfile, Book
 from .forms import BooksForm
 
 def home(request):
@@ -44,23 +44,36 @@ def dashboard(request):
         "is_patron" : is_patron,
     })
 
-def lendItem(request, user_id):
-    user = User.objects.get(id = user_id)
+def lendItem(request):
+    user = request.user
     if request.method == 'POST':
         form = BooksForm(request.POST, request.FILES)
         if form.is_valid():
             book = form.save(commit = False)
             book.lender = user
-            return redirect('dashboard')
+            book.save()
+            return redirect('users:dashboard')
         else:
             print(form.errors)
     else:
         form = BooksForm()
-    return render(request, 'lend_item.html', {'form':form})
+    return render(request, 'users/lend_item.html', {'form':form})
 
 def browse(request):
     #get all the books from the model
-    return render(request, "users/collections.html")
+    books = Book.objects.all().order_by('-title')
+    print(books)
+    user = request.user
+    is_authenticated = user.is_authenticated
+    is_librarian = user.is_authenticated and user.userprofile.is_librarian()
+    is_patron = user.is_authenticated and user.userprofile.is_patron()
+    return render(request, "users/collections.html"
+    ,{
+        "is_authenticated": is_authenticated,
+        "is_librarian": is_librarian,
+        "is_patron": is_patron,
+        "books": books,
+    })
 
 def item(request):
     return render(request, "users/item.html")

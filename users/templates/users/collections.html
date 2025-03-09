@@ -20,20 +20,22 @@
     <div class="collapse navbar-collapse" id="navbarScroll">
       <ul class="navbar-nav me-auto my-4 my-lg-3 navbar-nav-scroll d-flex justify-content-end w-100" style="--bs-scroll-height: 100px;">
           <li class="nav-item">
-          <a class="nav-link" href="{% url 'users:patron' %}">Home</a>
+          <a class="nav-link" href="{% url 'users:dashboard' %}">Home</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'users:resources' %}">Resources</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'users:profile' %}">My Profile</a>
-        </li>
-          <li class="nav-item">
-          <a class="nav-link" href="{% url 'users:lend' %}">Lend an Item</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link mx-lg-2" href="{% url 'users:logout'%}">Logout</a>
-        </li>
+          {% if is_authenticated %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'users:profile' %}">My Profile</a>
+            </li>
+          {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'users:lend' %}">Lend an Item</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link mx-lg-2" href="{% url 'users:logout'%}">Logout</a>
+                </li>
       </ul>
 
     </div>
@@ -92,73 +94,35 @@
     </div>
 </div>
 
-<hr class = "mt-0" style="border: 1px solid gray; width: 100%;">
+<hr class="mt-0" style="border: 1px solid gray; width: 100%;">
 <div class="container mt-4">
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
-   <div class="col">
-  <div class="card h-100">
-    <div class="card-body text-center">
-      <img src="{% static 'users/images/HP.png' %}" alt="Fairy Tale" class="img-fluid rounded" >
-      <h5 class="card-title mt-3">Harry Potter</h5>
-      <div class="d-flex align-items-center justify-content-between mt-2">
-        <div class="d-flex align-items-center gap-2">
-          <img src="{% static 'users/images/star.png' %}" alt="Star" style="height: 30px;">
-          <p class="card-text mb-0"><small class="text-muted">4/5</small></p>
-        </div>
-        <div class="text-end">
-          <a href="{% url 'users:collections' %}" class="btn btn-custom active text-white" role="button">Borrow</a>
+    {% for book in books %}
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-body text-center">
+            <img src="{% static 'users/images/HP.png' %}" alt="Fairy Tale" class="img-fluid rounded" >
+            <h5 class="card-title mt-3">{{ book.title }}</h5>
+            <div class="d-flex align-items-center justify-content-between mt-2">
+              <div class="d-flex align-items-center gap-2">
+                <img src="{% static 'users/images/star.png' %}" alt="Star" style="height: 30px;">
+                <p class="card-text mb-0"><small class="text-muted">{{ book.rating }}/5</small></p>
+              </div>
+              <div class="text-end">
+                <a href="{% url 'users:collections' %}" class="btn btn-custom active text-white" role="button">Borrow</a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    {% endfor %}
   </div>
 </div>
 
-
- <div class="col">
-  <div class="card h-100">
-    <div class="card-body text-center">
-      <img src="{% static 'users/images/lifeof.jpg' %}" alt="Fairy Tale" class="img-fluid rounded" >
-      <h5 class="card-title mt-3">Life of Addie Larue</h5>
-      <div class="d-flex align-items-center justify-content-between mt-2">
-        <div class="d-flex align-items-center gap-2">
-          <img src="{% static 'users/images/star.png' %}" alt="Star" style="height: 30px;">
-          <p class="card-text mb-0"><small class="text-muted">4/5</small></p>
-        </div>
-        <div class="text-end">
-          <a href="{% url 'users:collections' %}" class="btn btn-custom active text-white" role="button">Borrow</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<div class="col">
-  <div class="card h-100">
-    <div class="card-body text-center">
-      <img src="{% static 'users/images/SK.webp' %}" alt="Fairy Tale" class="img-fluid rounded" >
-      <h5 class="card-title mt-3">Fairy Tale</h5>
-      <div class="d-flex align-items-center justify-content-between mt-2">
-        <div class="d-flex align-items-center gap-2">
-          <img src="{% static 'users/images/star.png' %}" alt="Star" style="height: 30px;">
-          <p class="card-text mb-0"><small class="text-muted">4/5</small></p>
-        </div>
-        <div class="text-end">
-          <a href="{% url 'users:collections' %}" class="btn btn-custom active text-white" role="button">Borrow</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
-
-</div>
 
 </body>
 
-<script src="{% static  'users/main.js' %}"></script>
+<script src="{% static  'users/script.js' %}"></script>
 
 
 </html>
