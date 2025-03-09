@@ -1,5 +1,5 @@
 from allauth.account.internal.flows.email_verification import is_verification_rate_limited
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.contrib.auth.models import User,auth
@@ -75,8 +75,9 @@ def browse(request):
         "books": books,
     })
 
-def item(request):
-    return render(request, "users/item.html")
+def item(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    return render(request, "users/item.html", {'book':book})
 
 def resources(request):
     return render(request, "users/resources.html")

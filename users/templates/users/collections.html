@@ -108,9 +108,11 @@
                 <img src="{% static 'users/images/star.png' %}" alt="Star" style="height: 30px;">
                 <p class="card-text mb-0"><small class="text-muted">{{ book.rating }}/5</small></p>
               </div>
+                {% if is_authenticated %}
               <div class="text-end">
-                <a href="{% url 'users:collections' %}" class="btn btn-custom active text-white" role="button">Borrow</a>
+                <a href="{% url 'users:item' book.id %}" class="btn btn-custom active text-white" role="button">Borrow</a>
               </div>
+                {% endif %}
             </div>
           </div>
         </div>

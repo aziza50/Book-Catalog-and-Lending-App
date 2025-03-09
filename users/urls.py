@@ -12,7 +12,7 @@ urlpatterns = [
     path("profile/", views.profile, name="profile"),
     path("lend_item/", views.lendItem, name="lend"),
     path("resources/", views.resources, name="resources"),
-    path("item/", views.item, name="item"),
+    path('item/<int:book_id>/', views.item, name='item'),
     path("browseGuest/", views.browseGuest, name = "browseGuest")
 
 ]

@@ -307,5 +307,50 @@ container {
     box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+.star{
+    height: 30px;
+    width: 30px;
+}
+
+.bookSeparate {
+    display: flex;
+    gap: 80px;
+    margin: 100px auto;
+    max-width: 80%;
+}
+
+.image-item {
+    width: 500px;
+    height: auto;
+    border-radius: 25px;
+}
+
+.text-content {
+    margin-top: 20px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.rounded-box {
+    padding: 25px 30px;
+    border-radius: 25px;
+    display: inline-block;
+    font-size: 16px;
+    font-family: 'Newsreader';
+    color: #4a4a4a;
+    border: 3px solid #E3D4B5;
+    background-color: #f9f5eb;
+    line-height: 1.6;
+    max-width: 80%;
+}
+
+.text-item{
+    margin: 10px 10px;
+}
+
+.contact-button {
+    margin-top: 40px;
+}
 
 
