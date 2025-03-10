@@ -4,19 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34699367-aa68-480d-a833-4439be2ae9e2" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/users/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/users/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/static/users/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/users/static/users/script.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/static/users/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/users/static/users/style.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/templates/users/lend_item.html" beforeDir="false" afterPath="$PROJECT_DIR$/users/templates/users/lend_item.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/templates/users/librarian.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/templates/users/login_page.html" beforeDir="false" afterPath="$PROJECT_DIR$/users/templates/users/login_page.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/templates/users/patron.html" beforeDir="false" afterPath="$PROJECT_DIR$/users/templates/users/dashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/users/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/users/views.py" afterDir="false" />
-    </list>
+    <list default="true" id="34699367-aa68-480d-a833-4439be2ae9e2" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -49,6 +37,11 @@
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/users/static/users/images" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>

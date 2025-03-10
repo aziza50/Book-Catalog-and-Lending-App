@@ -85,6 +85,24 @@ def resources(request):
 def profile(request):
     return render(request, "users/profile.html")
 
+def delete(request, book_id):
+    book_to_delete = Book.objects.get(id = book_id)
+    book_to_delete.delete()
+    return redirect('users:dashboard')
+
+def edit(request, book_id):
+    book_to_edit = Book.objects.get(id = book_id)
+    if request.method == 'POST':
+        form = BooksForm(request.POST, request.FILES, instance = book_to_edit)
+        if form.is_valid():
+            form.save()
+            return redirect('users:dashboard')
+        else:
+            print(form.errors)
+    else:
+        form = BooksForm(instance=book_to_edit)
+    return render(request, 'users/edit_item.html', {'form': form, 'book':book_to_edit})
+
 def logout_view(request):
     logout(request)
     return redirect("/")

@@ -13,6 +13,7 @@ urlpatterns = [
     path("lend_item/", views.lendItem, name="lend"),
     path("resources/", views.resources, name="resources"),
     path('item/<int:book_id>/', views.item, name='item'),
-    path("browseGuest/", views.browseGuest, name = "browseGuest")
+    path("browseGuest/", views.browseGuest, name = "browseGuest"),
+    path("edit_item/<int:book_id>/", views.edit, name = "edit_book")
 
 ]
