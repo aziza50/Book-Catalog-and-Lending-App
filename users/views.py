@@ -62,7 +62,6 @@ def lendItem(request):
 def browse(request):
     #get all the books from the model
     books = Book.objects.all().order_by('-title')
-    print(books)
     user = request.user
     is_authenticated = user.is_authenticated
     is_librarian = user.is_authenticated and user.userprofile.is_librarian()
@@ -103,6 +102,55 @@ def edit(request, book_id):
         form = BooksForm(instance=book_to_edit)
     return render(request, 'users/edit_item.html', {'form': form, 'book':book_to_edit})
 
+def filter_book(request, filterCategory):
+    CATEGORY_MAP = {
+        "genre":
+            ["Fantasy",
+            "Adventure",
+            "Mystery",
+            "Non-Fiction",
+            "Romance"]
+        ,
+        "status":
+            ["Available",
+            "Checked out"]
+        ,
+        "condition":
+            ["LikeNew",
+            "Good",
+            "Acceptable",
+             "Poor"]
+        ,
+    }
+    for categories, items in CATEGORY_MAP.items():
+        if filterCategory in items:
+            filter_books = Book.objects.filter(**{categories : filterCategory})
+    user = request.user
+    is_authenticated = user.is_authenticated
+    is_librarian = user.is_authenticated and user.userprofile.is_librarian()
+    is_patron = user.is_authenticated and user.userprofile.is_patron()
+    return render(request, "users/collections.html"
+                  , {
+                      "is_authenticated": is_authenticated,
+                      "is_librarian": is_librarian,
+                      "is_patron": is_patron,
+                      "books": filter_books,
+    })
+
+def search(request):
+    query = request.GET.get('query', '')
+    book_to_query = Book.objects.filter(title__icontains = query)
+    user = request.user
+    is_authenticated = user.is_authenticated
+    is_librarian = user.is_authenticated and user.userprofile.is_librarian()
+    is_patron = user.is_authenticated and user.userprofile.is_patron()
+    return render(request, "users/collections.html"
+                  , {
+                      "is_authenticated": is_authenticated,
+                      "is_librarian": is_librarian,
+                      "is_patron": is_patron,
+                      "books": book_to_query,
+                  })
 def logout_view(request):
     logout(request)
     return redirect("/")

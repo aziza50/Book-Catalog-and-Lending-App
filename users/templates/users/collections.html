@@ -61,34 +61,35 @@
                     Availability
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Available</a></li>
-                    <li><a class="dropdown-item" href="#">Unavailable</a></li>
+                    <li><a class="dropdown-item" href="{% url 'users:filter' 'Available' %}">Available</a></li>
+                    <li><a class="dropdown-item" href="{% url 'users:filter' 'Unavailable'%}">Unavailable</a></li>
                 </ul>
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Condition
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Excellent</a></li>
-                    <li><a class="dropdown-item" href="#">Good</a></li>
-                    <li><a class="dropdown-item" href="#">Poor</a></li>
+                    <li><a class="dropdown-item" href="{% url 'users:filter' 'LikeNew'%}">Like New</a></li>
+                    <li><a class="dropdown-item" href="{% url 'users:filter' 'Good' %}">Good</a></li>
+                    <li><a class="dropdown-item" href="{% url 'users:filter' 'Acceptable'%}">Acceptable</a></li>
+                    <li><a class="dropdown-item" href="{% url 'users:filter' 'Poor'%}">Poor</a></li>
                 </ul>
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Category
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Fantasy</a></li>
-                    <li><a class="dropdown-item" href="#">Young-Adult</a></li>
-                    <li><a class="dropdown-item" href="#">Non-Fiction</a></li>
-                  <li><a class="dropdown-item" href="#">Thriller</a></li>
-                  <li><a class="dropdown-item" href="#">Romance</a></li>
+                    <li><a class="dropdown-item" href="{% url 'users:filter' 'Fantasy' %}">Fantasy</a></li>
+                    <li><a class="dropdown-item" href="{% url 'users:filter' 'Adventure'%}">Adventure</a></li>
+                    <li><a class="dropdown-item" href="{% url 'users:filter' 'Mystery'%}">Mystery</a></li>
+                  <li><a class="dropdown-item" href="{% url 'users:filter' 'Non-Fiction'%}">Non-fiction</a></li>
+                  <li><a class="dropdown-item" href="{% url 'users:filter' 'Romance'%}">Romance</a></li>
 
 
                 </ul>
             </li>
         </ul>
-        <form class="d-flex mt-3" role="search">
-            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+        <form class="d-flex mt-3" role="search" action ="{% url 'users:search' %}" >
+            <input class="form-control me-2" type="search"  name = "query" placeholder="Search" aria-label="Search">
             <button class="btn btn-custom active text-white" type="submit">Search</button>
         </form>
     </div>
@@ -102,7 +103,7 @@
         <div class="card h-100">
           <div class="card-body text-center">
             <img src="{% static 'users/images/HP.png' %}" alt="Fairy Tale" class="img-fluid rounded" >
-            <h5 class="card-title mt-3">{{ book.title }}</h5>
+            <h5 class="card-title mt-3">{{ book|truncatechars:20 }}</h5>
             <div class="d-flex align-items-center justify-content-between mt-2">
               <div class="d-flex align-items-center gap-2">
                 <img src="{% static 'users/images/star.png' %}" alt="Star" style="height: 30px;">

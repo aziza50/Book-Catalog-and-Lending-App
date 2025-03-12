@@ -64,7 +64,7 @@ class Book(models.Model):
     title = models.CharField(max_length=255)
     author = models.CharField(max_length = 20)
     lender = models.ForeignKey(User, on_delete = models.SET_NULL, null = True)
-    isbn = models.CharField(max_length=13, unique=True)
+    #isbn = models.CharField(max_length=13, unique=True)
     status = models.CharField(max_length = 13, choices= Status.choices, default = Status.AVAILABLE)
     condition = models.CharField(max_length = 13, choices = Condition.choices, default=Condition.ACCEPTABLE)
     genre = models.CharField(max_length=100, choices = Genre.choices)
