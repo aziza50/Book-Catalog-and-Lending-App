@@ -11,6 +11,7 @@ def dashboard(request):
     else:
         return render(request, "users/patron.html")
 
+
 def librarian(request):
     if request.user.is_authenticated:
         if request.user.userprofile.is_librarian:
@@ -21,8 +22,7 @@ def librarian(request):
         return redirect('users:home')
 
 
-
-def patron(request):   
+def patron(request):
     if request.user.is_authenticated:
         if request.user.userprofile.is_patron:
             return render(request, "users/patron.html")
@@ -30,7 +30,6 @@ def patron(request):
             return redirect('users:home')
     else:
         return redirect('users:home')
-
 
 
 def home(request):
@@ -46,6 +45,7 @@ def home(request):
     else:
         return render(request, "users/login_page.html")
     return render(request, "users/home.html")
+
 
 def logout_view(request):
     logout(request)
