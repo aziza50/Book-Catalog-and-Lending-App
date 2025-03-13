@@ -35,8 +35,7 @@ def dashboard(request):
             return redirect('users/login_page.html')
     else:
         return render(request, "users/login_page.html")
-        is_librarian = False
-        is_patron = False
+
 
     return render(request, "users/dashboard.html", {
         "is_authenticated" : is_authenticated,
@@ -82,7 +81,24 @@ def resources(request):
     return render(request, "users/resources.html")
 
 def profile(request):
-    return render(request, "users/profile.html")
+    user = request.user
+    is_authenticated = user.is_authenticated
+
+    if is_authenticated:
+        try:
+            user_profile = user.userprofile
+            is_librarian = user.is_authenticated and user.userprofile.is_librarian()
+            is_patron = user.is_authenticated and user.userprofile.is_patron()
+        except UserProfile.DoesNotExist:
+            return redirect('users/login_page.html')
+    else:
+        return render(request, "users/login_page.html")
+
+    return render(request, "users/profile.html", {
+        "is_authenticated": is_authenticated,
+        "is_librarian": is_librarian,
+        "is_patron": is_patron,
+    })
 
 def delete(request, book_id):
     book_to_delete = Book.objects.get(id = book_id)
