@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
-from .models import Book, Author
-from .forms import BookForm, AuthorForm
+from .models import Book
+from .forms import BookForm
 
 
 def book_list(request):
@@ -9,7 +9,7 @@ def book_list(request):
 
 def add_book(request):
     if request.method == 'POST':
-        form = BookForm(request.POST)
+        form = BookForm(request.POST, request.FILES)  # Make sure to pass request.FILES
         if form.is_valid():
             form.save()
             return redirect('catalog:book_list')  # Redirect to the book list after saving
@@ -18,13 +18,4 @@ def add_book(request):
 
     return render(request, 'catalog/add_book.html', {'form': form})
 
-def add_author(request):
-    if request.method == 'POST':
-        form = AuthorForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('catalog:add_book')  # Redirect to the add book page
-    else:
-        form = AuthorForm()
 
-    return render(request, 'catalog/add_author.html', {'form': form})

@@ -2,5 +2,8 @@
 <ul>
     {% for book in books %}
         <li>{{ book.title }} by {{ book.author.name }} - ISBN: {{ book.isbn }}</li>
+        {% if book.cover_image %}
+            <img src="{{ book.cover_image.url }}" alt="{{ book.title }} Cover" width="150">
+        {% endif %}
     {% endfor %}
 </ul>

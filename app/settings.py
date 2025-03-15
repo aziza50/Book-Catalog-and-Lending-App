@@ -191,11 +191,11 @@ AWS_STORAGE_BUCKET_NAME = 'library-lending-app'
 AWS_S3_SIGNATURE_NAME = 's3v4'
 AWS_S3_REGION_NAME = 'us-east-2'
 
-AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
 
 STORAGES = {
     "default": {  # For media files
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "BACKEND": "app.storage_backend.MediaStorage",
         "OPTIONS": {
             "bucket_name": AWS_STORAGE_BUCKET_NAME,
             "location": "media",
@@ -206,7 +206,7 @@ STORAGES = {
         },
     },
     "staticfiles": {  # For static files
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "BACKEND": "app.storage_backend.StaticStorage",
         "OPTIONS": {
             "bucket_name": AWS_STORAGE_BUCKET_NAME,
             "location": "static",
@@ -217,5 +217,5 @@ STORAGES = {
     },
 }
 STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
-MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.us-east-2.amazonaws.com/media/"
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
 AWS_S3_FILE_OVERWRITE = False
