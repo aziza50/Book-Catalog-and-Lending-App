@@ -36,7 +36,6 @@ def dashboard(request):
     else:
         return render(request, "users/login_page.html")
 
-
     return render(request, "users/dashboard.html", {
         "is_authenticated" : is_authenticated,
         "is_librarian": is_librarian,

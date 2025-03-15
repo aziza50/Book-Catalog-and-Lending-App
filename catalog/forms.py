@@ -2,6 +2,7 @@ import datetime
 from django import forms
 from .models import Book
 
+
 class BookForm(forms.ModelForm):
     published_date = forms.DateField(
         widget=forms.SelectDateWidget(
@@ -18,6 +19,3 @@ class BookForm(forms.ModelForm):
     def clean_published_date(self):
         date = self.cleaned_data['published_date']
         return date
-
-
-
