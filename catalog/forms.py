@@ -1,6 +1,6 @@
-from django import forms
-from .models import Book, Author
 import datetime
+from django import forms
+from .models import Book
 
 
 class BookForm(forms.ModelForm):
@@ -9,17 +9,13 @@ class BookForm(forms.ModelForm):
             years=range(1900, datetime.datetime.now().year + 1)
         )
     )
+    
+    cover_image = forms.ImageField(required=False)  # Allow optional image upload
 
     class Meta:
         model = Book
-        fields = ['title', 'author', 'isbn', 'published_date', 'genre', 'summary']
+        fields = ['title', 'author', 'isbn', 'published_date', 'genre', 'summary', 'cover_image']
 
     def clean_published_date(self):
         date = self.cleaned_data['published_date']
         return date
-
-
-class AuthorForm(forms.ModelForm):
-    class Meta:
-        model = Author
-        fields = ['name']
