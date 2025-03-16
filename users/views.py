@@ -89,14 +89,22 @@ def profile(request):
             is_librarian = user.is_authenticated and user.userprofile.is_librarian()
             is_patron = user.is_authenticated and user.userprofile.is_patron()
         except UserProfile.DoesNotExist:
-            return redirect('users/login_page.html')
+            return redirect('users:login_page.html')
     else:
         return render(request, "users/login_page.html")
+
+    if request.method == 'POST':
+        form = ProfilePictureForm(request.POST, request.FILES, instance=request.user.userprofile)
+        if form.is_valid():
+            form.save()
+    else:
+        form = ProfilePictureForm(instance=request.user.userprofile)
 
     return render(request, "users/profile.html", {
         "is_authenticated": is_authenticated,
         "is_librarian": is_librarian,
         "is_patron": is_patron,
+        "form": form,
     })
 
 def delete(request, book_id):

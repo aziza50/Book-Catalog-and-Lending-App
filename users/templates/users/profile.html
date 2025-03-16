@@ -44,21 +44,24 @@
   <h1 class="mb-0 ms-4">My Account</h1>
   <hr class="mt-0" style="border: 1px solid gray; width: 100%;">
 
-    <div class = "profileSeparate" >
-        <div class = "leftSide">
-        <img src = "{% static 'users/images/profile.png' %}" alt = " " class="img-fluid rounded" style="width:200px;height:auto;">
+  <div class="profileSeparate">
+    <div class="leftSide">
+        {% if user.userprofile.profile_pic %}
+            <img src="{{ user.userprofile.profile_pic.url }}" alt="Profile Picture" class="img-fluid rounded" style="width:200px;height:auto;">
+        {% else %}
+            <img src="{% static 'users/images/profile.png' %}" alt="Default Profile Picture" class="img-fluid rounded" style="width:200px;height:auto;">
+        {% endif %}
         {% if is_librarian %}
             <p>You are a Librarian! </p>
         {% endif %}
         {% if is_patron %}
             <p>You are a Patron! </p>
         {% endif %}
-        </div>
-        <div class = "rightSide">
-            {% if is_librarian %}
-            <p>Books you lent! </p>
-            {% endif %}
-            <p>Favorites!</p>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Upload Profile Picture</button>
+        </form>
         </div>
     </div>
 

@@ -24,6 +24,11 @@ class UserProfile(models.Model):
         blank=True
     )
 
+    profile_pic = models.ImageField(upload_to='profile_pics', blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.user.username} Profile'
+
     def is_librarian(self):
         return self.role == 'librarian'
 
