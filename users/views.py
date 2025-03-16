@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.contrib.auth.models import User,auth
 from .models import UserProfile, Book
-from .forms import BooksForm
+from .forms import BooksForm, ProfilePictureForm
 
 def home(request):
     return redirect('users:dashboard')
