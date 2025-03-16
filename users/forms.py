@@ -1,5 +1,5 @@
 from django import forms
-from .models import Book
+from .models import Book, UserProfile
 
 class BooksForm(forms.ModelForm):
 
@@ -24,3 +24,12 @@ class BooksForm(forms.ModelForm):
         # Make all fields required
         for field_name, field in self.fields.items():
             field.required = True
+
+class ProfilePictureForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['profile_pic']
+        labels = {
+            'profile_pic': 'Profile Picture',
+        }
+    
