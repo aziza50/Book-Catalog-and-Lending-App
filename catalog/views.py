@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.http import HttpResponseForbidden
 from .models import Book
 from .forms import BookForm
 
@@ -9,6 +10,9 @@ def book_list(request):
 
 
 def add_book(request):
+    if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_librarian():
+        return HttpResponseForbidden("You do not have permission to add books.")
+    
     if request.method == 'POST':
         form = BookForm(request.POST, request.FILES)  # Make sure to pass request.FILES
         if form.is_valid():
