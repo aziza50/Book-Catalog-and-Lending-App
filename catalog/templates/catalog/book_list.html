@@ -1,9 +1,13 @@
 <h1>Book Catalog</h1>
 <ul>
     {% for book in books %}
-        <li>{{ book.title }} by {{ book.author.name }} - ISBN: {{ book.isbn }}</li>
-        {% if book.cover_image %}
-            <img src="{{ book.cover_image.url }}" alt="{{ book.title }} Cover" width="150">
-        {% endif %}
+        <li>
+            <a href="{% url 'catalog:book_detail' book.id %}">{{ book.title }}</a> 
+            by {{ book.author.name }} - ISBN: {{ book.isbn }}
+            {% if book.cover_image %}
+                <br>
+                <img src="{{ book.cover_image.url }}" alt="{{ book.title }} Cover" width="150">
+            {% endif %}
+        </li>
     {% endfor %}
 </ul>
