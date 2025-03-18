@@ -1,26 +1,29 @@
 from django import forms
-from .models import Book, Author
-import datetime
+from .models import Book
 
-class BookForm(forms.ModelForm):
-    published_date = forms.DateField(
-        widget=forms.SelectDateWidget(
-            years=range(1900, datetime.datetime.now().year + 1)
-        )
-    )
+class BooksForm(forms.ModelForm):
+    cover_image = forms.ImageField(required=False)  # Allow optional image upload
 
     class Meta:
         model = Book
-        fields = ['title', 'author', 'isbn', 'published_date', 'genre', 'summary']
+        fields = ['title', 'author', 'status', 'condition', 'genre', 'location', 'description', 'cover_image']
 
-    def clean_published_date(self):
-        date = self.cleaned_data['published_date']
-        return date  
+    def __init__(self, *args, **kwargs):
+        super(BooksForm, self).__init__(*args, **kwargs)
+        self.fields['title'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter title'})
+        self.fields['author'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter author'})
+        self.fields['status'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select status'})
+        self.fields['status'].choices = Book.Status.choices
+        self.fields['condition'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select condition'})
+        self.fields['condition'].choices = Book.Condition.choices
+        self.fields['genre'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select genre'})
+        self.fields['genre'].choices = Book.Genre.choices
+        self.fields['location'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select location'})
+        self.fields['location'].choices = Book.Location.choices
+        self.fields['description'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Provide description'})
+        self.fields['cover_image'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Provide description'})
 
 
-
-
-class AuthorForm(forms.ModelForm):
-    class Meta:
-        model = Author
-        fields = ['name']
+        # Make all fields required
+        for field_name, field in self.fields.items():
+            field.required = True

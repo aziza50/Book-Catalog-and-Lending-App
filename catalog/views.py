@@ -1,30 +1,86 @@
-from django.shortcuts import render, redirect
-from .models import Book, Author
-from .forms import BookForm, AuthorForm
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Book
+from .forms import BooksForm
 
 
-def book_list(request):
-    books = Book.objects.all()
-    return render(request, 'catalog/book_list.html', {'books': books})
-
-def add_book(request):
+def lend_book(request):
+    user = request.user
     if request.method == 'POST':
-        form = BookForm(request.POST)
+        form = BooksForm(request.POST, request.FILES)
+        if form.is_valid():
+            book = form.save(commit = False)
+            book.lender = user
+            book.save()
+            return redirect('users:dashboard')
+        else:
+            print(form.errors)
+    else:
+        form = BooksForm()
+    return render(request, 'catalog/add_book.html', {'form':form})
+
+def browse_all_books(request):
+    #get all the books from the model
+    books = Book.objects.all().order_by('-title')
+
+    return render(request, "catalog/collections.html"
+    ,{
+        "books": books,
+    })
+
+def item(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    return render(request, "catalog/item.html", {'book':book})
+
+def edit(request, book_id):
+    book_to_edit = Book.objects.get(id = book_id)
+    if request.method == 'POST':
+        form = BooksForm(request.POST, request.FILES, instance = book_to_edit)
         if form.is_valid():
             form.save()
-            return redirect('catalog:book_list')  # Redirect to the book list after saving
+            return redirect('users:dashboard')
+        else:
+            print(form.errors)
     else:
-        form = BookForm()
+        form = BooksForm(instance=book_to_edit)
+    return render(request, 'catalog/edit_item.html', {'form': form, 'book':book_to_edit})
 
-    return render(request, 'catalog/add_book.html', {'form': form})
+def filter_book(request, filterCategory):
+    CATEGORY_MAP = {
+        "genre":
+            ["Fantasy",
+            "Adventure",
+            "Mystery",
+            "Non-Fiction",
+            "Romance"]
+        ,
+        "status":
+            ["Available",
+            "Checked Out"]
+        ,
+        "condition":
+            ["LikeNew",
+            "Good",
+            "Acceptable",
+             "Poor"]
+        ,
+    }
+    for categories, items in CATEGORY_MAP.items():
+        if filterCategory in items:
+            filter_books = Book.objects.filter(**{categories : filterCategory})
+        return render(request, "catalog/collections.html"
+                  , {
+                      "books": filter_books,
+    })
 
-def add_author(request):
-    if request.method == 'POST':
-        form = AuthorForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('catalog:add_book')  # Redirect to the add book page
-    else:
-        form = AuthorForm()
+def search(request):
+    query = request.GET.get('query', '')
+    book_to_query = Book.objects.filter(title__icontains = query)
+    return render(request, "catalog/collections.html"
+                  , {
+                      "books": book_to_query,
+                  })
 
-    return render(request, 'catalog/add_author.html', {'form': form})
+def delete(request, book_id):
+    book_to_delete = Book.objects.get(id = book_id)
+    book_to_delete.delete()
+    return redirect('users:dashboard')

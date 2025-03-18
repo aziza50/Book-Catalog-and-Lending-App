@@ -1,11 +1,68 @@
+{% extends "catalog/base.html" %}
 {% block content %}
-  <h2>Add a New Book</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}  <!-- This will automatically render the day, month, and year dropdowns -->
-    <button type="submit" class="btn btn-primary">Add Book</button>
-</form>
+{% load static %}
+    <div class="container">
+        <h1>Add a New Book</h1>
+      {% csrf_token %}
 
+        <!-- Display form errors if they exist -->
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
 
-  <a href="{% url 'catalog:book_list' %}">Back to Book List</a>
-{% endblock %}
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="{{ form.title.id_for_label }}">Title</label>
+                {{ form.title }}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.author.id_for_label }}">Author</label>
+                {{ form.author }}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.status.id_for_label }}">Status</label>
+                {{ form.status }}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.condition.id_for_label }}">Condition</label>
+                {{ form.condition }}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.genre.id_for_label }}">Genre</label>
+                {{ form.genre }}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.location.id_for_label }}">Location</label>
+                {{ form.location }}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">Description</label>
+                {{ form.description }}
+            </div>
+
+          <div class="image-group">
+                <label for="{{ form.description.id_for_label }}">Description</label>
+                {{ form.cover_image }}
+            </div>
+
+            <button type="submit" class="btn btn-custom active text-white">Add Book</button>
+        </form>
+    </div>
+
+{% endblock content %}
