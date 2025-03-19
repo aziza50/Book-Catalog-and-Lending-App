@@ -55,7 +55,7 @@ def filter_book(request, filterCategory):
         ,
         "status":
             ["Available",
-            "Checked Out"]
+            "Checked out"]
         ,
         "condition":
             ["LikeNew",
@@ -67,7 +67,7 @@ def filter_book(request, filterCategory):
     for categories, items in CATEGORY_MAP.items():
         if filterCategory in items:
             filter_books = Book.objects.filter(**{categories : filterCategory})
-        return render(request, "catalog/collections.html"
+            return render(request, "catalog/collections.html"
                   , {
                       "books": filter_books,
     })

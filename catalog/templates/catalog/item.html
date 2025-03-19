@@ -3,7 +3,7 @@
 {% load static %}
 
 <div class = "bookSeparate">
-    <img src = "{% static 'users/images/HP.png' %}" alt = " " class = "image-item">
+    <img src = "{{ book.cover_image.url }}" alt = " " class = "image-item">
     <div class = text-content>
         <h1>{{ book.title }} </h1>
         <div>
