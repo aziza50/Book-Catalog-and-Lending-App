@@ -156,7 +156,7 @@ h5 {
 
     #googleMap,
     .map-text {
-        width: 80%;
+        width: 60% !important;
         font-family: 'Newsreader';
 
     }
