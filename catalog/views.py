@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Book
-from .forms import BooksForm
+from .models import Book, Collection, PrivateCollection
+from .forms import BooksForm, AddBooksToCollectionForm, CreateCollectionForm
 
 
 def lend_book(request):
@@ -22,7 +22,7 @@ def browse_all_books(request):
     #get all the books from the model
     books = Book.objects.all().order_by('-title')
 
-    return render(request, "catalog/collections.html"
+    return render(request, "catalog/books.html"
     ,{
         "books": books,
     })
@@ -67,7 +67,7 @@ def filter_book(request, filterCategory):
     for categories, items in CATEGORY_MAP.items():
         if filterCategory in items:
             filter_books = Book.objects.filter(**{categories : filterCategory})
-            return render(request, "catalog/collections.html"
+            return render(request, "catalog/books.html"
                   , {
                       "books": filter_books,
     })
@@ -75,7 +75,7 @@ def filter_book(request, filterCategory):
 def search(request):
     query = request.GET.get('query', '')
     book_to_query = Book.objects.filter(title__icontains = query)
-    return render(request, "catalog/collections.html"
+    return render(request, "catalog/books.html"
                   , {
                       "books": book_to_query,
                   })
@@ -84,3 +84,75 @@ def delete(request, book_id):
     book_to_delete = Book.objects.get(id = book_id)
     book_to_delete.delete()
     return redirect('users:dashboard')
+
+# More TODO: collections/user shows their collections...
+# TODO: collections appear in user profile
+def collections(request):
+    user = request.user
+    is_authenticated = user.is_authenticated
+    if is_authenticated:
+        user_profile = user.userprofile
+        is_librarian = user.is_authenticated and user_profile.is_librarian()
+        is_patron = user.is_authenticated and user_profile.is_patron()
+    #TODO: if user is authenticated, user can create collections (button or smth should show up)
+    #TODO: only creator or librarian can delete collection
+    #TODO: only librarians can see private collections
+
+    collections = Collection.objects.all()
+
+    # Only show private collections to librarians
+    if not is_librarian:
+        collections = collections.exclude(id__in=PrivateCollection.objects.values('id'))
+
+    user_collections = collections.filter(creator=user)
+
+    # Additional context for the template
+    context = {
+        'collections': collections,
+        'user_collections': user_collections,
+        'is_librarian': is_librarian,
+        'is_patron': is_patron,
+    }
+
+    if is_authenticated:
+        for collection in collections:
+            collection.can_delete = collection.creator == user or is_librarian
+        
+    # If the user is authenticated, show the option to create a collection
+    context['can_create'] = is_authenticated
+
+    return render(request, 'catalog/collections.html', context)
+
+def add_books_to_collection(request, collection_id):
+    # Fetch the collection
+    collection = get_object_or_404(Collection, id=collection_id)
+
+    # Check if the user is the creator of the collection
+    if collection.creator != request.user:
+        return redirect('catalog:collections')  # Redirect to the collections page if not the creator
+
+    # If the form is submitted
+    if request.method == 'POST':
+        form = AddBooksToCollectionForm(request.POST, instance=collection)
+        if form.is_valid():
+            form.save()  # Save the form and update the books in the collection
+            return redirect('catalog:collections')  # Redirect to the collection list after adding books
+    else:
+        form = AddBooksToCollectionForm(instance=collection)
+
+    # Render the page with the form
+    return render(request, 'catalog/add_books_to_collection.html', {'form': form, 'collection': collection})
+
+def create_collection(request):
+    if request.method == 'POST':
+        form = CreateCollectionForm(request.POST)
+        if form.is_valid():
+            collection = form.save(commit=False)
+            collection.creator = request.user  # Set the current user as the creator
+            collection.save()
+            # Redirect to the page to add books to the newly created collection
+            return redirect('catalog:add_books_to_collection', collection_id=collection.id)
+    else:
+        form = CreateCollectionForm()
+
+    return render(request, 'catalog/create_collection.html', {'form': form})

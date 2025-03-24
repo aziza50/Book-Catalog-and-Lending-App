@@ -1,5 +1,5 @@
 from django import forms
-from .models import Book
+from .models import Book, Collection, PrivateCollection
 
 class BooksForm(forms.ModelForm):
     cover_image = forms.ImageField(required=False)  # Allow optional image upload
@@ -27,3 +27,16 @@ class BooksForm(forms.ModelForm):
         # Make all fields required
         for field_name, field in self.fields.items():
             field.required = True
+
+
+class AddBooksToCollectionForm(forms.ModelForm):
+    books = forms.ModelMultipleChoiceField(queryset=Book.objects.all(), widget=forms.CheckboxSelectMultiple)
+
+    class Meta:
+        model = Collection
+        fields = ['books']
+
+class CreateCollectionForm(forms.ModelForm):
+    class Meta:
+        model = Collection
+        fields = ['title', 'description']

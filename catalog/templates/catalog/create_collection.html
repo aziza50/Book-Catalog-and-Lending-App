@@ -1,0 +1,9 @@
+<h2>Create New Collection</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create Collection</button>
+</form>
+
+<a href="{% url 'catalog:collections' %}">Back to collections</a>

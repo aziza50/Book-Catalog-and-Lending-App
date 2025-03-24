@@ -15,7 +15,10 @@ import dj_database_url
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(dotenv_path=os.path.join(BASE_DIR, ".env"))
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -30,8 +33,7 @@ ALLOWED_HOSTS = ['localhost','127.0.0.1','project-b-14-app-ebaaf643b243.herokuap
 
 # Application definition
 
-SITE_ID = 4
-
+SITE_ID = 5
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
