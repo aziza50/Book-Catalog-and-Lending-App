@@ -28,7 +28,7 @@ function myMap() {
 
     var mapProp= {
         center:new google.maps.LatLng(38.0341423,-78.5100518),
-        zoom:15,
+        zoom:20,
         disableDefaultUI: true,
         styles:
         [

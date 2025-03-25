@@ -1,5 +1,11 @@
 /*=================== GENERAL THEME ==========================*/
-
+h5 {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+}
 body {
     background-color: #FBF8F2 !important;
     font-family: 'Newsreader';
@@ -150,7 +156,7 @@ h5 {
 
     #googleMap,
     .map-text {
-        width: 80%;
+        width: 60% !important;
         font-family: 'Newsreader';
 
     }
@@ -409,5 +415,7 @@ container {
 .contact-button {
     margin-top: 40px;
 }
+
+
 
 
