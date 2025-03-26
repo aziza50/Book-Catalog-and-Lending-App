@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Book, Collection, PrivateCollection
+from django.contrib.auth.decorators import login_required
 from .forms import BooksForm, AddBooksToCollectionForm, CreateCollectionForm
 
 
@@ -87,6 +88,7 @@ def delete(request, book_id):
 
 # More TODO: collections/user shows their collections...
 # TODO: collections appear in user profile
+# TODO: this doesn't work for un signed in users :(
 def collections(request):
     user = request.user
     is_authenticated = user.is_authenticated
@@ -143,16 +145,15 @@ def add_books_to_collection(request, collection_id):
     # Render the page with the form
     return render(request, 'catalog/add_books_to_collection.html', {'form': form, 'collection': collection})
 
+
+@login_required  
 def create_collection(request):
     if request.method == 'POST':
-        form = CreateCollectionForm(request.POST)
+        form = CreateCollectionForm(request.POST, request=request)  
         if form.is_valid():
-            collection = form.save(commit=False)
-            collection.creator = request.user  # Set the current user as the creator
-            collection.save()
-            # Redirect to the page to add books to the newly created collection
+            collection = form.save()
             return redirect('catalog:add_books_to_collection', collection_id=collection.id)
     else:
-        form = CreateCollectionForm()
+        form = CreateCollectionForm(request=request)  
 
     return render(request, 'catalog/create_collection.html', {'form': form})

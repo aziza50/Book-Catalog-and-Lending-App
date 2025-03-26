@@ -1,5 +1,6 @@
 from django import forms
 from .models import Book, Collection, PrivateCollection
+from django.core.exceptions import ValidationError
 
 class BooksForm(forms.ModelForm):
     cover_image = forms.ImageField(required=False)  # Allow optional image upload
@@ -37,6 +38,54 @@ class AddBooksToCollectionForm(forms.ModelForm):
         fields = ['books']
 
 class CreateCollectionForm(forms.ModelForm):
+    books = forms.ModelMultipleChoiceField(
+        queryset=Book.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
+
+    collection_type = forms.ChoiceField(
+        choices=[('public', 'Public'), ('private', 'Private')],
+        widget=forms.RadioSelect,
+        required=True
+    )
+
     class Meta:
         model = Collection
-        fields = ['title', 'description']
+        fields = ['title', 'description', 'books']
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)  
+        super().__init__(*args, **kwargs)
+
+        if self.request and self.request.user.is_authenticated:
+            user = self.request.user
+            if not user.userprofile.is_librarian():
+                self.fields['collection_type'].choices = [('public', 'Public')]
+
+    def save(self, commit=True):
+        if not self.request or not self.request.user.is_authenticated:
+            raise ValidationError("A logged-in user is required to create a collection.")
+
+        user = self.request.user
+        collection_type = self.cleaned_data.get('collection_type')
+
+        if collection_type == 'private':
+            if not user.userprofile.is_librarian():
+                raise ValidationError("Only librarians can create private collections.")
+
+            instance = PrivateCollection.objects.create(
+                title=self.cleaned_data['title'],
+                description=self.cleaned_data['description'],
+                creator=user
+            )
+        else:
+            instance = Collection.objects.create(
+                title=self.cleaned_data['title'],
+                description=self.cleaned_data['description'],
+                creator=user
+            )
+
+        instance.books.set(self.cleaned_data['books'])
+
+        return instance

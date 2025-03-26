@@ -1,3 +1,6 @@
+{% extends "catalog/base.html" %}
+{% block content %}
+{% load static %}
 <h2>Create New Collection</h2>
 
 <form method="POST">
@@ -7,3 +10,4 @@
 </form>
 
 <a href="{% url 'catalog:collections' %}">Back to collections</a>
+{% endblock content%}
