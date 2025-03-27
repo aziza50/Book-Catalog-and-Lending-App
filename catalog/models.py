@@ -45,6 +45,7 @@ class Book(models.Model):
     comments = models.CharField(max_length = 200, blank = True, null =True)
     description = models.TextField(max_length = 200, default = " ")
     cover_image = models.ImageField(storage=MediaStorage(), upload_to='book_covers/', null=True, blank=True)
+    is_private = models.BooleanField(default=False)  # Private field    
 
 
     def __str__(self):
