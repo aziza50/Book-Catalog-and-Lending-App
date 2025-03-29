@@ -39,7 +39,7 @@ class AddBooksToCollectionForm(forms.ModelForm):
 
 class CreateCollectionForm(forms.ModelForm):
     books = forms.ModelMultipleChoiceField(
-        queryset=Book.objects.all(),
+        queryset=Book.objects.filter(is_private = False),
         widget=forms.CheckboxSelectMultiple,
         required=False
     )
