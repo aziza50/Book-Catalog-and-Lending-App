@@ -21,7 +21,18 @@ def lend_book(request):
 
 def browse_all_books(request):
     #get all the books from the model
-    books = Book.objects.all().order_by('-title')
+    user = request.user
+    is_authenticated = user.is_authenticated
+    if is_authenticated:
+        user_profile = user.userprofile
+        is_librarian = user.is_authenticated and user_profile.is_librarian()
+        is_patron = user.is_authenticated and user_profile.is_patron()
+    if is_librarian:
+        books = Book.objects.all().order_by('-title')
+    else:
+        books = Book.objects.filter(is_private=False).order_by('-title')
+
+
 
     return render(request, "catalog/books.html"
     ,{
@@ -152,7 +163,8 @@ def create_collection(request):
         form = CreateCollectionForm(request.POST, request=request)  
         if form.is_valid():
             collection = form.save()
-            return redirect('catalog:add_books_to_collection', collection_id=collection.id)
+            return redirect('catalog:collections')
+            # return redirect('catalog:collections', collection_id=collection.id)
     else:
         form = CreateCollectionForm(request=request)  
 
