@@ -22,6 +22,9 @@
         <li class="nav-item">
           <a class="nav-link" href="{% url 'catalog:book_list' %}">Collections</a>
         </li>
+          <li class="nav-item">
+          <a class="nav-link" href="{% url 'users:help_page' %}">Help</a>
+        </li>
           {% if user.is_librarian %}
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'catalog:lend_book' %}">Lend A Book</a>

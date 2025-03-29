@@ -11,5 +11,5 @@ urlpatterns = [
     path("profile/", views.profile, name="profile"),
     path("resources/", views.resources, name="resources"),
     path("browseGuest/", views.browseGuest, name = "browseGuest"),
-
+    path("help_page/", views.helpPage, name = "help_page"),
 ]

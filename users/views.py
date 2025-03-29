@@ -43,6 +43,9 @@ def dashboard(request):
 def resources(request):
     return render(request, "users/resources.html")
 
+def helpPage(request):
+    return render(request, "users/help_page.html")
+
 def profile(request):
     user = request.user
     is_authenticated = user.is_authenticated
