@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from app.storage_backend import MediaStorage
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models.signals import m2m_changed
+from django.dispatch import receiver
 
 class Lender(models.Model):
     name = models.CharField(max_length=255)
@@ -63,4 +65,27 @@ class Collection(models.Model):
 class PrivateCollection(Collection):
     allowed_users = models.ManyToManyField(User, related_name="private_collections", blank=True)
 
-   
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Ensure books in private collection are removed from other collections
+        for book in self.books.all():
+            book.collections.clear()  # Remove from all collections
+            book.is_private = True    # Mark book as private
+            book.save()
+
+@receiver(m2m_changed, sender=PrivateCollection.books.through)
+def enforce_privacy(sender, instance, action, pk_set, **kwargs):
+    """ Ensure books in a private collection are removed from other collections and cannot be added elsewhere """
+    if action == "post_add":
+        for book_id in pk_set:
+            book = Book.objects.get(id=book_id)
+            book.collections.clear()  
+            book.is_private = True
+            book.save()
+
+    elif action == "post_remove":
+        for book_id in pk_set:
+            book = Book.objects.get(id=book_id)
+            if not PrivateCollection.objects.filter(books=book).exists():
+                book.is_private = False  
+                book.save()

@@ -152,7 +152,7 @@ def create_collection(request):
         form = CreateCollectionForm(request.POST, request=request)  
         if form.is_valid():
             collection = form.save()
-            return redirect('catalog:add_books_to_collection', collection_id=collection.id)
+            return redirect('catalog:collections', collection_id=collection.id)
     else:
         form = CreateCollectionForm(request=request)  
 
