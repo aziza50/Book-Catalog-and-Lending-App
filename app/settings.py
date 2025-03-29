@@ -29,6 +29,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['localhost','127.0.0.1','project-b-14-app-ebaaf643b243.herokuapp.com']
 
 # Application definition
+load_dotenv()
 
 SITE_ID = 4
 
@@ -103,6 +104,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "app.context_processors.user_roles",
             ],
         },
     },
@@ -161,7 +163,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 # SHERRIFF: Added the static_root variable here to fix an erorr with static files not being found
-STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
@@ -187,35 +188,60 @@ LOGOUT_REDIRECT_URL = "/"
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+print(AWS_ACCESS_KEY_ID)
 AWS_STORAGE_BUCKET_NAME = 'library-lending-app'
 AWS_S3_SIGNATURE_NAME = 's3v4'
 AWS_S3_REGION_NAME = 'us-east-2'
-
+DEBUG = True
 AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+if DEBUG:
+    # In development, use local storage for static and media files
+    STORAGES = {
+        "default": {  # For media files, use local storage
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+            "LOCATION": os.path.join(BASE_DIR, 'media')
+        },
+        "staticfiles": {  # For static files, use local storage
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+            "LOCATION": os.path.join(BASE_DIR, 'staticfiles')
+        },
+    }
 
-STORAGES = {
-    "default": {  # For media files
-        "BACKEND": "app.storage_backend.MediaStorage",
-        "OPTIONS": {
-            "bucket_name": AWS_STORAGE_BUCKET_NAME,
-            "location": "media",
-            "file_overwrite": False,
-            "object_parameters": {
-                "CacheControl": "max-age=86400",
+    # Local static URL for development
+    STATIC_URL = '/static/'  # Local static path in dev environment
+else:
+    # In production, use S3 storage for static and media files
+    STORAGES = {
+        "default": {  # For media files
+            "BACKEND": "app.storage_backend.MediaStorage",
+            "OPTIONS": {
+                "bucket_name": AWS_STORAGE_BUCKET_NAME,
+                "location": "media",
+                "file_overwrite": False,
+                "object_parameters": {
+                    "CacheControl": "max-age=3600",
+                },
             },
         },
-    },
-    "staticfiles": {  # For static files
-        "BACKEND": "app.storage_backend.StaticStorage",
-        "OPTIONS": {
-            "bucket_name": AWS_STORAGE_BUCKET_NAME,
-            "location": "static",
-            "object_parameters": {
-                "CacheControl": "max-age=86400",
+        "staticfiles": {  # For static files
+            "BACKEND": "app.storage_backend.StaticStorage",
+            "OPTIONS": {
+                "bucket_name": AWS_STORAGE_BUCKET_NAME,
+                "location": "static",
+                "object_parameters": {
+                    "CacheControl": "max-age=86400",
+                },
             },
         },
-    },
-}
-STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
-MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+    }
+
+    # S3 URL for static and media files in production
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+
+    # Use manifest storage to avoid caching issues in production
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+
 AWS_S3_FILE_OVERWRITE = False
+
+

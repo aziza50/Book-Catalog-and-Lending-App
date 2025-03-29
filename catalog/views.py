@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Book
-from .forms import BooksForm
+from .models import Book, Comment
+from .forms import BooksForm, CommentsForm
 
 
 def lend_book(request):
@@ -17,6 +17,23 @@ def lend_book(request):
     else:
         form = BooksForm()
     return render(request, 'catalog/add_book.html', {'form':form})
+def add_comment(request, book_id):
+    user = request.user
+    book = get_object_or_404(Book, id=book_id)
+
+    if request.method == 'POST':
+        form = CommentsForm(request.POST, request.FILES)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.user = user
+            comment.book = book
+            comment.save()
+            return redirect('users:item', book_id = book.id)
+        else:
+            print(form.errors)
+    else:
+        form = CommentsForm()
+    return render(request, 'catalog/item.html', {'form': form, 'book':book})
 
 def browse_all_books(request):
     #get all the books from the model

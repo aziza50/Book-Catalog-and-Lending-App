@@ -1,4 +1,192 @@
 /*=================== GENERAL THEME ==========================*/
+
+
+
+/*==================BOOK ITEM STYLING ==================*/
+.bookSeparate {
+    display: flex;
+    gap: 80px;
+    margin: 100px auto;
+    max-width: 80%;
+    justify-content: space-between;
+}
+
+.profileSeparate {
+    display: flex;
+    gap: 80px;
+    margin: 100px auto;
+    max-width: 80%;
+}
+
+.image-item {
+    width: 500px;
+    height: auto;
+    border-radius: 25px;
+}
+
+.text-content {
+    margin-top: 20px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 600px;
+}
+
+.rounded-box {
+    padding: 25px 30px;
+    border-radius: 25px;
+    display: inline-block;
+    font-size: 16px;
+    font-family: 'Newsreader';
+    color: #4a4a4a;
+    border: 3px solid #E3D4B5;
+    background-color: #f9f5eb;
+    line-height: 1.6;
+    max-width: 80%;
+}
+
+.text-item{
+    margin: 10px 10px;
+}
+
+.contact-button {
+    margin-top: 40px;
+}
+
+/*==================REVIEWS STYLING ===============*/
+.rating {
+  display: flex;
+}
+
+.rating input {
+  position: absolute;
+  left: -100vw;
+}
+
+.rating label {
+  width: 48px;
+  height: 48px;
+  color: gold;
+  padding: 0 5px;
+  cursor: pointer;
+}
+
+
+.rating:not(:hover) input:indeterminate + label,
+.rating:not(:hover) input:checked ~ input + label,
+.rating input:hover ~ input + label {
+  color: #ccc;
+}
+
+.rating:not(:hover) input:focus-visible + label {
+  color: #ccc;
+}
+
+#comments {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    width: 100%;
+}
+
+.comment-heading{
+    letter-spacing: 1px;
+    margin: 30px 0px;
+    padding: 10px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items:center;
+}
+
+.comment-heading h1{
+    font-size: 2.2rem;
+    font-weight: 500;
+    padding: 10px 20px;
+}
+
+.comment-heading span{
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.comment-box-container{
+    display:flex;
+    justify-content:center;
+    align-items: center;
+    flex-direction: row;
+    width: 100%;
+    gap: 20px;
+}
+
+.comment-box{
+    width: 500px;
+    box-shadow: 2px 2px 30px rgba(0,0,0,0.1);
+    background-color: #ffffff;
+    padding: 20px;
+    margin: 15px;
+    cursor: pointer;
+    border-radius: 15px;
+}
+.profile-img{
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 10px
+}
+.profile-img img {
+    width: 100%;
+    height: 100%;
+    object-fit:cover;
+    object-position: center;
+}
+.profile{
+    display:flex;
+    align-items: center;
+}
+
+.name-user{
+    display: flex;
+    flex-direction: column;
+}
+.name-user strong{
+    color: #3d3d3d
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+}
+.name-user span{
+    font-size:0.8 rem;
+    color: #6D6D6D;
+}
+
+.box-top{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.client-comment p{
+  font-size: 0.9 rem;
+  color: #4b4b4b;
+}
+.comment-box:hover{
+ transform: translateY(-10px);
+ transition: all ease 0.3s;
+}
+
+
+*{
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+}
+a {
+    text-decoration: none;
+}
 h1{
     font-size: 10px !important;
     font-family: 'Newsreader';
@@ -120,7 +308,6 @@ h5 {
   align-items: center;
   height: 0vh;
 }
-
 
 
 /*
