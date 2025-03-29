@@ -75,17 +75,18 @@ class PrivateCollection(Collection):
 
 @receiver(m2m_changed, sender=PrivateCollection.books.through)
 def enforce_privacy(sender, instance, action, pk_set, **kwargs):
-    """ Ensure books in a private collection are removed from other collections and cannot be added elsewhere """
+    """ Ensure books in a private collection are removed from other collections and cannot be added elsewhere. """
     if action == "post_add":
         for book_id in pk_set:
             book = Book.objects.get(id=book_id)
-            book.collections.clear()  
-            book.is_private = True
-            book.save()
+            if isinstance(instance, PrivateCollection):  # Only for private collections
+                book.collections.clear()  # Remove from all collections
+                book.is_private = True
+                book.save()
 
     elif action == "post_remove":
         for book_id in pk_set:
             book = Book.objects.get(id=book_id)
             if not PrivateCollection.objects.filter(books=book).exists():
-                book.is_private = False  
+                book.is_private = False  # Only reset if no longer in any private collection
                 book.save()
