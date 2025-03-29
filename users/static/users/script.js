@@ -27,8 +27,8 @@ function myMap() {
     ];
 
     var mapProp= {
-        center:new google.maps.LatLng(38.0341423,-78.5100518),
-        zoom:14,
+        center:new google.maps.LatLng(38.0341423,-78.5111598),
+        zoom:15,
         disableDefaultUI: true,
         styles:
         [
@@ -269,3 +269,24 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    let openPopupBtn = document.getElementById("openPopup");
+    let modalContent = document.getElementById("modal-content");
+
+    openPopupBtn.addEventListener("click", function (event) {
+        event.preventDefault();
+
+        fetch(openPopupBtn.href, {
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+        .then(response => response.text())
+        .then(data => {
+            modalContent.innerHTML = data;
+        })
+        .catch(error => console.error("Error loading form:", error));
+    });
+});
+

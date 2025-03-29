@@ -1,5 +1,5 @@
 from django import forms
-from .models import Book, Comment
+from .models import Book, Comments
 
 class BooksForm(forms.ModelForm):
     cover_image = forms.ImageField(required=False)  # Allow optional image upload
@@ -30,9 +30,11 @@ class BooksForm(forms.ModelForm):
             field.required = True
 
 class CommentsForm(forms.ModelForm):
+    rating = forms.ChoiceField(choices=[(str(i), str(i)) for i in range(1, 6)], widget=forms.RadioSelect)
+
     class Meta:
-        model = Comment
-        fields = ['comment']
+        model = Comments
+        fields = ['comment', 'rating']
     def __init__(self, *args, **kwargs):
         super(CommentsForm, self).__init__(*args, **kwargs)
         self.fields['comment'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter comment'})

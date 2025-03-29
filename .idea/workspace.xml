@@ -5,21 +5,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="34699367-aa68-480d-a833-4439be2ae9e2" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/catalog/templates/catalog/add_comment.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/catalog/templatetags/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/catalog/templatetags/range.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/settings.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/catalog/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/catalog/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog/migrations/0001_initial.py" beforeDir="false" afterPath="$PROJECT_DIR$/catalog/migrations/0001_initial.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/catalog/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/catalog/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog/templates/catalog/add_book.html" beforeDir="false" afterPath="$PROJECT_DIR$/catalog/templates/catalog/add_book.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog/templates/catalog/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/catalog/templates/catalog/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/catalog/templates/catalog/collections.html" beforeDir="false" afterPath="$PROJECT_DIR$/catalog/templates/catalog/collections.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/catalog/templates/catalog/item.html" beforeDir="false" afterPath="$PROJECT_DIR$/catalog/templates/catalog/item.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catalog/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/catalog/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/catalog/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/catalog/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/migrations/0001_initial.py" beforeDir="false" afterPath="$PROJECT_DIR$/users/migrations/0001_initial.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/users/static/users/script.js" beforeDir="false" afterPath="$PROJECT_DIR$/users/static/users/script.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/users/static/users/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/users/static/users/style.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/templates/users/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/users/templates/users/dashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/users/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/users/templates/users/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/users/templates/users/profile.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,11 +57,11 @@
       <recent name="$PROJECT_DIR$/catalog/static/catalog/images" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/catalog/templatetags" />
       <recent name="$PROJECT_DIR$/catalog" />
       <recent name="$PROJECT_DIR$/app" />
       <recent name="$PROJECT_DIR$/catalog/templates/catalog" />
       <recent name="$PROJECT_DIR$/catalog/templates" />
-      <recent name="$PROJECT_DIR$" />
     </key>
   </component>
   <component name="SharedIndexes">

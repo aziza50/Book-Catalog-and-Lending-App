@@ -49,12 +49,11 @@ class Book(models.Model):
     def __str__(self):
         return self.title
 
-class Comment(models.Model):
+class Comments(models.Model):
     book = models.ForeignKey(Book, related_name='comments', on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null = True)
     comment = models.TextField(max_length=200)
     date = models.DateTimeField(auto_now_add=True)
     rating = models.IntegerField(default = 0)
 
-    def __str__(self):
-        return self.title
+

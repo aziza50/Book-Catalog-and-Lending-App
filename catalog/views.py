@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Book, Comment
+from .models import Book, Comments
 from .forms import BooksForm, CommentsForm
 
 
@@ -21,18 +21,25 @@ def add_comment(request, book_id):
     user = request.user
     book = get_object_or_404(Book, id=book_id)
 
+
     if request.method == 'POST':
         form = CommentsForm(request.POST, request.FILES)
         if form.is_valid():
             comment = form.save(commit=False)
             comment.user = user
             comment.book = book
+            comment.rating = request.POST.get("rating",None)
+            print(request.POST.get("rating",None))
             comment.save()
-            return redirect('users:item', book_id = book.id)
+            return redirect('catalog:item', book_id = book.id)
         else:
             print(form.errors)
     else:
         form = CommentsForm()
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return render(request, "catalog/add_comment.html", {"form": form, "book": book})
+
     return render(request, 'catalog/item.html', {'form': form, 'book':book})
 
 def browse_all_books(request):
@@ -46,7 +53,12 @@ def browse_all_books(request):
 
 def item(request, book_id):
     book = get_object_or_404(Book, id=book_id)
-    return render(request, "catalog/item.html", {'book':book})
+    ratings = 0
+    comments = book.comments.all()
+    for comment in comments:
+        ratings += comment.rating
+    book.rating = ratings/len(comments)
+    return render(request, "catalog/item.html", {'book':book, 'comments':comments})
 
 def edit(request, book_id):
     book_to_edit = Book.objects.get(id = book_id)
