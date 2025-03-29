@@ -1,47 +1,158 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponseForbidden
-from .models import Book
-from .forms import BookForm
+from .models import Book, Collection, PrivateCollection
+from .forms import BooksForm, AddBooksToCollectionForm, CreateCollectionForm
 
 
-
-def book_list(request):
-    books = Book.objects.all()
-    return render(request, 'catalog/book_list.html', {'books': books})
-
-
-def add_book(request):
-    if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_librarian():
-        return HttpResponseForbidden("You do not have permission to add books.")
-    
+def lend_book(request):
+    user = request.user
     if request.method == 'POST':
-        form = BookForm(request.POST, request.FILES)  # Make sure to pass request.FILES
+        form = BooksForm(request.POST, request.FILES)
+        if form.is_valid():
+            book = form.save(commit = False)
+            book.lender = user
+            book.save()
+            return redirect('users:dashboard')
+        else:
+            print(form.errors)
+    else:
+        form = BooksForm()
+    return render(request, 'catalog/add_book.html', {'form':form})
+
+def browse_all_books(request):
+    #get all the books from the model
+    books = Book.objects.all().order_by('-title')
+
+    return render(request, "catalog/books.html"
+    ,{
+        "books": books,
+    })
+
+def item(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    return render(request, "catalog/item.html", {'book':book})
+
+def edit(request, book_id):
+    book_to_edit = Book.objects.get(id = book_id)
+    if request.method == 'POST':
+        form = BooksForm(request.POST, request.FILES, instance = book_to_edit)
         if form.is_valid():
             form.save()
-            return redirect('catalog:book_list')  # Redirect to the book list after saving
+            return redirect('users:dashboard')
+        else:
+            print(form.errors)
     else:
-        form = BookForm()
+        form = BooksForm(instance=book_to_edit)
+    return render(request, 'catalog/edit_item.html', {'form': form, 'book':book_to_edit})
 
-    return render(request, 'catalog/add_book.html', {'form': form})
+def filter_book(request, filterCategory):
+    CATEGORY_MAP = {
+        "genre":
+            ["Fantasy",
+            "Adventure",
+            "Mystery",
+            "Non-Fiction",
+            "Romance"]
+        ,
+        "status":
+            ["Available",
+            "Checked out"]
+        ,
+        "condition":
+            ["LikeNew",
+            "Good",
+            "Acceptable",
+             "Poor"]
+        ,
+    }
+    for categories, items in CATEGORY_MAP.items():
+        if filterCategory in items:
+            filter_books = Book.objects.filter(**{categories : filterCategory})
+            return render(request, "catalog/books.html"
+                  , {
+                      "books": filter_books,
+    })
 
+def search(request):
+    query = request.GET.get('query', '')
+    book_to_query = Book.objects.filter(title__icontains = query)
+    return render(request, "catalog/books.html"
+                  , {
+                      "books": book_to_query,
+                  })
 
-def book_detail(request, book_id):
-    book = get_object_or_404(Book, id=book_id)
-    return render(request, 'catalog/book_detail.html', {'book': book})
+def delete(request, book_id):
+    book_to_delete = Book.objects.get(id = book_id)
+    book_to_delete.delete()
+    return redirect('users:dashboard')
 
-def edit_book(request, book_id):
-    book = get_object_or_404(Book, id=book_id)
+# More TODO: collections/user shows their collections...
+# TODO: collections appear in user profile
+def collections(request):
+    user = request.user
+    is_authenticated = user.is_authenticated
+    if is_authenticated:
+        user_profile = user.userprofile
+        is_librarian = user.is_authenticated and user_profile.is_librarian()
+        is_patron = user.is_authenticated and user_profile.is_patron()
+    #TODO: if user is authenticated, user can create collections (button or smth should show up)
+    #TODO: only creator or librarian can delete collection
+    #TODO: only librarians can see private collections
 
-    # Ensure only librarians can edit books
-    if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_librarian():
-        return HttpResponseForbidden("You do not have permission to edit books.")
-    
+    collections = Collection.objects.all()
+
+    # Only show private collections to librarians
+    if not is_librarian:
+        collections = collections.exclude(id__in=PrivateCollection.objects.values('id'))
+
+    user_collections = collections.filter(creator=user)
+
+    # Additional context for the template
+    context = {
+        'collections': collections,
+        'user_collections': user_collections,
+        'is_librarian': is_librarian,
+        'is_patron': is_patron,
+    }
+
+    if is_authenticated:
+        for collection in collections:
+            collection.can_delete = collection.creator == user or is_librarian
+        
+    # If the user is authenticated, show the option to create a collection
+    context['can_create'] = is_authenticated
+
+    return render(request, 'catalog/collections.html', context)
+
+def add_books_to_collection(request, collection_id):
+    # Fetch the collection
+    collection = get_object_or_404(Collection, id=collection_id)
+
+    # Check if the user is the creator of the collection
+    if collection.creator != request.user:
+        return redirect('catalog:collections')  # Redirect to the collections page if not the creator
+
+    # If the form is submitted
     if request.method == 'POST':
-        form = BookForm(request.POST, request.FILES, instance=book)  # Pass existing book instance
+        form = AddBooksToCollectionForm(request.POST, instance=collection)
         if form.is_valid():
-            form.save()
-            return redirect('catalog:book_detail', book_id=book.id)  # Redirect to book detail page
+            form.save()  # Save the form and update the books in the collection
+            return redirect('catalog:collections')  # Redirect to the collection list after adding books
     else:
-        form = BookForm(instance=book)  # Pre-fill form with book details
+        form = AddBooksToCollectionForm(instance=collection)
 
-    return render(request, 'catalog/edit_book.html', {'form': form, 'book': book})
+    # Render the page with the form
+    return render(request, 'catalog/add_books_to_collection.html', {'form': form, 'collection': collection})
+
+def create_collection(request):
+    if request.method == 'POST':
+        form = CreateCollectionForm(request.POST)
+        if form.is_valid():
+            collection = form.save(commit=False)
+            collection.creator = request.user  # Set the current user as the creator
+            collection.save()
+            # Redirect to the page to add books to the newly created collection
+            return redirect('catalog:add_books_to_collection', collection_id=collection.id)
+    else:
+        form = CreateCollectionForm()
+
+    return render(request, 'catalog/create_collection.html', {'form': form})

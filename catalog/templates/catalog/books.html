@@ -1,0 +1,88 @@
+{% extends "catalog/base.html" %}
+{% block content %}
+{% load static %}
+<div class = "page">
+<div class="d-flex justify-content-between align-items-center p-2">
+  <h1 class="mb-0 ms-4">Books</h1>
+  <button class="btn btn-custom active text-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+    Filter
+  </button>
+</div>
+
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Filter</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <ul class="navbar-nav">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Availability
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Available' %}">Available</a></li>
+                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Checked out'%}">Checked Out</a></li>
+                </ul>
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Condition
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'LikeNew'%}">Like New</a></li>
+                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Good' %}">Good</a></li>
+                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Acceptable'%}">Acceptable</a></li>
+                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Poor'%}">Poor</a></li>
+                </ul>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Category
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Fantasy' %}">Fantasy</a></li>
+                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Adventure'%}">Adventure</a></li>
+                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Mystery'%}">Mystery</a></li>
+                  <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Non-Fiction'%}">Non-fiction</a></li>
+                  <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Romance'%}">Romance</a></li>
+
+
+                </ul>
+            </li>
+        </ul>
+        <form class="d-flex mt-3" role="search" action ="{% url 'catalog:search' %}" >
+            <input class="form-control me-2" type="search"  name = "query" placeholder="Search" aria-label="Search">
+            <button class="btn btn-custom active text-white" type="submit">Search</button>
+        </form>
+    </div>
+</div>
+
+<hr class="mt-0" style="border: 1px solid gray; width: 100%;">
+<div class="container mt-4">
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+    {% for book in books %}
+      <div class="col">
+        <div class="card">
+          <div class="card-body text-center">
+            <img src= "{{ book.cover_image.url }}" alt="Fairy Tale" class="img-fluid rounded">
+            <h5 class="card-title mt-3">{{ book|truncatechars:20 }}</h5>
+            <div class="d-flex align-items-center justify-content-between mt-2">
+              <div class="d-flex align-items-center gap-2">
+                <img src="{% static 'users/images/star.png' %}" alt="Star" style="height: 30px;">
+                <p class="card-text mb-0"><small class="text-muted">{{ book.rating }}/5</small></p>
+              </div>
+                {% if user.is_authenticated %}
+              <div class="text-end">
+                <a href="{% url 'catalog:item' book.id %}" class="btn btn-custom active text-white" role="button">Borrow</a>
+              </div>
+                {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script src="{% static  'users/script.js' %}"></script>
+</div>
+{% endblock content %}
+

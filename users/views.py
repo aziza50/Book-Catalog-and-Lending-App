@@ -1,10 +1,7 @@
-from allauth.account.internal.flows.email_verification import is_verification_rate_limited
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from django.contrib.auth.models import User,auth
-from .models import UserProfile, Book
-from .forms import BooksForm, ProfilePictureForm
+from .models import UserProfile
+from .forms import ProfilePictureForm
 
 def home(request):
     return redirect('users:dashboard')
@@ -35,6 +32,44 @@ def dashboard(request):
             return redirect('users/login_page.html')
     else:
         return render(request, "users/login_page.html")
+
+
+    return render(request, "users/dashboard.html", {
+        "is_authenticated" : is_authenticated,
+        "is_librarian": is_librarian,
+        "is_patron" : is_patron,
+    })
+
+def resources(request):
+    return render(request, "users/resources.html")
+
+def profile(request):
+    user = request.user
+    is_authenticated = user.is_authenticated
+
+    if is_authenticated:
+        try:
+            user_profile = user.userprofile
+            is_librarian = user.is_authenticated and user.userprofile.is_librarian()
+            is_patron = user.is_authenticated and user.userprofile.is_patron()
+        except UserProfile.DoesNotExist:
+            return redirect('users:login_page.html')
+    else:
+        return render(request, "users/login_page.html")
+
+    if request.method == 'POST':
+        form = ProfilePictureForm(request.POST, request.FILES, instance=request.user.userprofile)
+        if form.is_valid():
+            form.save()
+    else:
+        form = ProfilePictureForm(instance=request.user.userprofile)
+
+    return render(request, "users/profile.html", {
+        "is_authenticated": is_authenticated,
+        "is_librarian": is_librarian,
+        "is_patron": is_patron,
+        "form": form,
+    })
 
     return render(request, "users/dashboard.html", {
         "is_authenticated" : is_authenticated,

@@ -1,0 +1,32 @@
+{% extends "catalog/base.html" %}
+{% block content %}
+{% load static %}
+
+<div class = "bookSeparate">
+    <img src = "{{ book.cover_image.url }}" alt = " " class = "image-item">
+    <div class = text-content>
+        <h1>{{ book.title }} </h1>
+        <div>
+            <div class = "rounded-box">
+                <p>Reviews: </p>
+                <h3>{{ book.rating }}/5  <img src = "{% static 'users/images/star.png' %}" alt = " " class = "star"> </h3>
+            </div>
+                <div class = "rounded-box">
+                    <p>Pick-up Location: </p>
+                    <h3>{{ book.location }}</h3>
+                </div>
+                <div class = "rounded-box">
+                    <p>Condition: </p>
+                    <h3>{{ book.condition }}</h3>
+                </div>
+                <div class = "text-item">
+                <p> Description: {{ book.description }}</p>
+                <p> Lender username: {{ book.lender }}</p>
+                </div>
+        <button class="btn btn-custom active text-white contact-button" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+                    Contact Seller
+                </button>
+            </div>
+        </div>
+    </div>
+{% endblock content%}
