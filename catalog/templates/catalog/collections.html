@@ -35,17 +35,16 @@
         <ul class="navbar-nav">
             <li class="nav-item dropdown">
                 {% if is_authenticated %}
-                {% if is_librarian %}
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Category
-                </a>
+                    {% if is_librarian %}
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Category
+                        </a>
 
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="{% url 'catalog:filter_collection' 'public' %}">Public</a></li>
-                    <li><a class="dropdown-item" href="{% url 'catalog:filter_collection' 'private'%}">Private</a></li>
-
-                </ul>
-                {% endif %}
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'catalog:filter_collection' 'public' %}">Public</a></li>
+                            <li><a class="dropdown-item" href="{% url 'catalog:filter_collection' 'private'%}">Private</a></li>
+                        </ul>
+                    {% endif %}
                 {% endif %}
             </li>
         </ul>
@@ -70,8 +69,8 @@
               {% for book in collection.books.all %}
                 <div class="align-items-center gap-2">
                   <p class="card-text mb-0"><small class="text-muted">{{ book.title|truncatechars:20}}</small></p>
-              </div>
-                {% endfor %}
+                </div>
+              {% endfor %}
               <div class="text-end">
                 <a href = "{% url 'catalog:book_list' %}?collection_title={{ collection.title }}" class="btn btn-custom active text-white" role="button">View</a>
               </div>
@@ -82,5 +81,7 @@
     {% endfor %}
   </div>
 </div>
-</div>
+
+{% endfor %}
 {% endblock content %}
+
