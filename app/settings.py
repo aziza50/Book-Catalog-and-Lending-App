@@ -186,37 +186,45 @@ AUTHENTICATION_BACKENDS = (
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = 'library-lending-app'
-AWS_S3_SIGNATURE_NAME = 's3v4'
-AWS_S3_REGION_NAME = 'us-east-2'
+load_dotenv()
 
-AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+if os.environ.get('ENVIRONMENT') == 'development':
+    STATIC_URL = '/static/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    MEDIA_URL = '/media/'
+else:
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = 'library-lending-app'
+    AWS_S3_SIGNATURE_NAME = 's3v4'
+    AWS_S3_REGION_NAME = 'us-east-2'
 
-STORAGES = {
-    "default": {  # For media files
-        "BACKEND": "app.storage_backend.MediaStorage",
-        "OPTIONS": {
-            "bucket_name": AWS_STORAGE_BUCKET_NAME,
-            "location": "media",
-            "file_overwrite": False,
-            "object_parameters": {
-                "CacheControl": "max-age=86400",
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+
+    STORAGES = {
+        "default": {  # For media files
+            "BACKEND": "app.storage_backend.MediaStorage",
+            "OPTIONS": {
+                "bucket_name": AWS_STORAGE_BUCKET_NAME,
+                "location": "media",
+                "file_overwrite": False, 
+                "object_parameters": {
+                    "CacheControl": "max-age=86400",
+                },
             },
         },
-    },
-    "staticfiles": {  # For static files
-        "BACKEND": "app.storage_backend.StaticStorage",
-        "OPTIONS": {
-            "bucket_name": AWS_STORAGE_BUCKET_NAME,
-            "location": "static",
-            "object_parameters": {
-                "CacheControl": "max-age=86400",
+        "staticfiles": {  # For static files
+            "BACKEND": "app.storage_backend.StaticStorage",
+            "OPTIONS": {
+                "bucket_name": AWS_STORAGE_BUCKET_NAME,
+                "location": "static",
+                "object_parameters": {
+                    "CacheControl": "max-age=86400",
+                },
             },
         },
-    },
-}
-STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
-MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
-AWS_S3_FILE_OVERWRITE = False
+    }
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+    AWS_S3_FILE_OVERWRITE = False
