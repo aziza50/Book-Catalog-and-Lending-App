@@ -142,6 +142,8 @@ def delete(request, book_id):
 def collections(request):
     user = request.user
     is_authenticated = user.is_authenticated
+    is_librarian = False
+
     if is_authenticated:
         user_profile = user.userprofile
         is_librarian = user.is_authenticated and user_profile.is_librarian()
@@ -155,9 +157,7 @@ def collections(request):
 
     collections = Collection.objects.all()
 
-    # Only show private collections to librarians
-    if not is_librarian:
-        collections = collections.exclude(id__in=PrivateCollection.objects.values('id'))
+    collections_qs = Collection.objects.all()
 
     if is_authenticated:
         user_collections = collections.filter(creator=user)
@@ -166,9 +166,8 @@ def collections(request):
     # Additional context for the template
     context = {
         'collections': collections,
-        'user_collections': user_collections,
         'is_librarian': is_librarian,
-        'is_patron': is_patron,
+        'can_create': is_authenticated,  # Show create button to logged-in users
     }
 
     if is_authenticated:
@@ -177,7 +176,6 @@ def collections(request):
 
     # If the user is authenticated, show the option to create a collection
     context['can_create'] = is_authenticated
-
     return render(request, 'catalog/collections.html', context)
 
 def add_books_to_collection(request, collection_id):
@@ -242,3 +240,51 @@ def search_collection(request):
                   , {
                       "collections": collection_to_query,
                   })
+def delete_collection(request, collection_id):
+    collection = get_object_or_404(Collection, id=collection_id)
+    is_librarian = request.user.userprofile.is_librarian()
+    
+    # Authorization check
+    if not (collection.creator == request.user or is_librarian):
+        raise PermissionDenied("You don't have permission to delete this collection")
+
+    # Handle private collection deletion
+    if hasattr(collection, 'privatecollection'):
+        collection.privatecollection.delete()
+    else:
+        collection.delete()
+
+    return redirect('catalog:collections')
+
+@login_required
+def edit_collection(request, collection_id):
+    collection = get_object_or_404(Collection, id=collection_id)
+    is_librarian = request.user.userprofile.is_librarian()
+
+    # Authorization check: only creator or librarian can edit
+    if not (collection.creator == request.user or is_librarian):
+        return redirect('catalog:collections')
+
+    # Handle form submission
+    if request.method == 'POST':
+        form = AddBooksToCollectionForm(request.POST, instance=collection)
+        if form.is_valid():
+            form.save()
+            return redirect('catalog:collections')
+    else:
+        form = AddBooksToCollectionForm(instance=collection)
+
+    return render(request, 'catalog/edit_collection.html', {
+        'form': form,
+        'collection': collection
+    })
+
+def collection_books_view(request, collection_id):
+    # Get the collection by ID
+    collection = get_object_or_404(Collection, id=collection_id)
+    # Get all books in this collection
+    books = collection.books.all()
+    return render(request, 'catalog/view_collection.html', {
+        'collection': collection,
+        'books': books,
+    })

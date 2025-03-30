@@ -1,21 +1,35 @@
 {% extends "catalog/base.html" %}
 {% block content %}
 
-<div class = "page">
-<div class="header-books d-flex justify-content-between align-items-center">
-    <h1 class="mb-0 ms-4">Collections</h1>
-  <div class>
-    <button class="btn btn-custom active text-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
-    Filter
-  </button>
-    <a class="btn btn-custom active text-white" href="{% url 'catalog:create_collection' %}">Create a New Collection</a>
-      </div>
-</div>
+<!-- Button for creating a new collection -->
+{% if can_create %}
+    <a href="{% url 'catalog:create_collection' %}">
+        <button>Create New Collection</button>
+    </a>
+{% endif %}
 
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
-    <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Filter</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+<!-- Loop through collections -->
+{% for collection in collections %}
+    <div>
+        <!-- Collection title -->
+        <h3>
+            {% if collection.is_private and not is_librarian %}
+                <span class="text-muted">{{ collection.title }} (Private)</span>
+            {% else %}
+                <a href="{% url 'catalog:collection_books_view' collection.id %}">
+                    {{ collection.title }}
+                </a>
+            {% endif %}
+        </h3>
+
+        <!-- Edit and Delete Buttons -->
+        {% if collection.can_delete %}
+            <a href="{% url 'catalog:edit_collection' collection.id %}" class="btn btn-primary">Edit Books</a>
+            <form action="{% url 'catalog:delete_collection' collection.id %}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this collection?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+        {% endif %}
     </div>
     <div class="offcanvas-body">
         <ul class="navbar-nav">
