@@ -79,6 +79,7 @@ def item(request, book_id):
         book.rating = ratings/len(comments)
     else:
         book.rating =0
+    book.save()
     return render(request, "catalog/item.html", {'book':book, 'comments':comments})
 
 def edit(request, book_id):
@@ -145,6 +146,9 @@ def collections(request):
         user_profile = user.userprofile
         is_librarian = user.is_authenticated and user_profile.is_librarian()
         is_patron = user.is_authenticated and user_profile.is_patron()
+    else:
+        is_librarian = False
+        is_patron = False
     #TODO: if user is authenticated, user can create collections (button or smth should show up)
     #TODO: only creator or librarian can delete collection
     #TODO: only librarians can see private collections
@@ -155,8 +159,10 @@ def collections(request):
     if not is_librarian:
         collections = collections.exclude(id__in=PrivateCollection.objects.values('id'))
 
-    user_collections = collections.filter(creator=user)
-
+    if is_authenticated:
+        user_collections = collections.filter(creator=user)
+    else:
+        user_collections = []
     # Additional context for the template
     context = {
         'collections': collections,
@@ -207,3 +213,32 @@ def create_collection(request):
         form = CreateCollectionForm(request=request)
 
     return render(request, 'catalog/create_collection.html', {'form': form})
+
+def filter_collection(request, filterCategory):
+    user = request.user
+    is_authenticated = user.is_authenticated
+    if is_authenticated:
+        user_profile = user.userprofile
+        is_librarian = user.is_authenticated and user_profile.is_librarian()
+    print(is_librarian)
+    if filterCategory == "private" and is_librarian:
+        filter_collections = Collection.objects.filter(is_private = True)
+    else:
+        filter_collections = Collection.objects.filter(is_private = False)
+    print(filter_collections)
+    return render(request, "catalog/collections.html"
+                  , {
+                      "collections": filter_collections,
+    })
+
+def search_collection(request):
+    query = request.GET.get('query', '')
+    if not request.user.userprofile.is_librarian():
+        collection_to_query = Collection.objects.filter(title__icontains = query, is_private = False)
+    else:
+        collection_to_query = Collection.objects.filter(title__icontains = query)
+
+    return render(request, "catalog/collections.html"
+                  , {
+                      "collections": collection_to_query,
+                  })

@@ -67,7 +67,7 @@ class Collection(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="collections")
     books = models.ManyToManyField(Book, related_name="collections", blank=True)
     cover_image = models.ImageField(storage=MediaStorage(), upload_to='book_covers/', null=True, blank=True)
-
+    is_private = models.BooleanField(default = False)
     def __str__(self):
         return self.title
 

@@ -19,38 +19,23 @@
     </div>
     <div class="offcanvas-body">
         <ul class="navbar-nav">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Availability
-                </a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Available' %}">Available</a></li>
-                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Checked out'%}">Checked Out</a></li>
-                </ul>
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Condition
-                </a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'LikeNew'%}">Like New</a></li>
-                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Good' %}">Good</a></li>
-                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Acceptable'%}">Acceptable</a></li>
-                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Poor'%}">Poor</a></li>
-                </ul>
             <li class="nav-item dropdown">
+                {% if is_authenticated %}
+                {% if is_librarian %}
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Category
                 </a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Fantasy' %}">Fantasy</a></li>
-                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Adventure'%}">Adventure</a></li>
-                    <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Mystery'%}">Mystery</a></li>
-                  <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Non-Fiction'%}">Non-fiction</a></li>
-                  <li><a class="dropdown-item" href="{% url 'catalog:filter' 'Romance'%}">Romance</a></li>
 
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'catalog:filter_collection' 'public' %}">Public</a></li>
+                    <li><a class="dropdown-item" href="{% url 'catalog:filter_collection' 'private'%}">Private</a></li>
 
                 </ul>
+                {% endif %}
+                {% endif %}
             </li>
         </ul>
-        <form class="d-flex mt-3" role="search" action ="{% url 'catalog:search' %}" >
+        <form class="d-flex mt-3" role="search" action ="{% url 'catalog:search_collection' %}" >
             <input class="form-control me-2" type="search"  name = "query" placeholder="Search" aria-label="Search">
             <button class="btn btn-custom active text-white" type="submit">Search</button>
         </form>
@@ -67,11 +52,12 @@
           <div class="card-body text-center">
             <img src= "{{ collection.cover_image.url }}" alt=" " class="img-fluid rounded">
             <h4 class="card-title mt-3">{{ collection.title|truncatechars:20 }}</h4>
-            <div class="d-flex align-items-center justify-content-between mt-2">
-              <div class="d-flex align-items-center gap-2">
-                  <p class="card-text mb-0"><small class="text-muted">{{ book.rating }}/5</small></p>
-                  <i class = "fas fa-star" style="color: #BFA054; font-size:1.3em;"></i>
+            <div class="align-items-center justify-content-between mt-2">
+              {% for book in collection.books.all %}
+                <div class="align-items-center gap-2">
+                  <p class="card-text mb-0"><small class="text-muted">{{ book.title|truncatechars:20}}</small></p>
               </div>
+                {% endfor %}
               <div class="text-end">
                 <a href = "{% url 'catalog:book_list' %}?collection_title={{ collection.title }}" class="btn btn-custom active text-white" role="button">View</a>
               </div>

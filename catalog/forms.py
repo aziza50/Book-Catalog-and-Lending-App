@@ -89,6 +89,7 @@ class CreateCollectionForm(forms.ModelForm):
         collection_type = self.cleaned_data.get('collection_type')
 
         if collection_type == 'private':
+            is_private = True
             if not user.userprofile.is_librarian():
                 raise ValidationError("Only librarians can create private collections.")
 
