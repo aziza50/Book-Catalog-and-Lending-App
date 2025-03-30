@@ -52,12 +52,12 @@ def browse_all_books(request):
     if is_authenticated:
         user_profile = user.userprofile
         is_librarian = user.is_authenticated and user_profile.is_librarian()
+
     collection_title = request.GET.get('collection_title')
 
     if collection_title:
         collection = Collection.objects.get(title = collection_title)
         books = collection.books.all().order_by("-title")
-
     else:
         if is_librarian:
             books = Book.objects.all().order_by('-title')
