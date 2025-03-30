@@ -24,16 +24,17 @@ load_dotenv(dotenv_path=os.path.join(BASE_DIR, ".env"))
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-j)=r+!0l8_#dst3!p6%l@b54(4=hj*=f(un$*ltdc^lho$7_yi"
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-fallback-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = ['localhost','127.0.0.1','project-b-14-app-ebaaf643b243.herokuapp.com']
 
 # Application definition
 
-SITE_ID = 5
+SITE_ID = int(os.getenv("SITE_ID", 5))
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -51,8 +52,6 @@ INSTALLED_APPS = [
     "django_bootstrap5",
     "storages",
 ]
-
-
 
 SOCIALACCOUNT_LOGIN_ON_GET=True
 

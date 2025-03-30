@@ -1,0 +1,13 @@
+<h1>{{ book.title }}</h1>
+<p><strong>Author:</strong> {{ book.author }}</p>
+<p><strong>ISBN:</strong> {{ book.isbn }}</p>
+
+{% if book.cover_image %}
+    <img src="{{ book.cover_image.url }}" alt="{{ book.title }} Cover" width="200">
+{% endif %}
+
+<p><a href="{% url 'catalog:book_list' %}">Back to book list</a></p>
+
+{% if user.is_authenticated and user.userprofile.is_librarian %}
+    <p><a href="{% url 'catalog:edit_book' book.id %}">Edit Book</a></p>
+{% endif %}

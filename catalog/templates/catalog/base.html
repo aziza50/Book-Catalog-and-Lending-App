@@ -22,12 +22,14 @@
         <li class="nav-item">
           <a class="nav-link" href="{% url 'catalog:collections' %}">Collections</a>
         </li>
-        {% if user.is_authenticated and user.userprofile.is_librarian %}
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'catalog:lend_book' %}">Add A Book</a>
+          <li class="nav-item">
+          <a class="nav-link" href="{% url 'users:help_page' %}">Help</a>
         </li>
-        {% endif %}
-    
+          {% if user.is_authenticated and user.userprofile.is_librarian %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'catalog:lend_book' %}">Add A Book</a>
+            </li>
+          {% endif %}
           {% if user.is_authenticated %}
           <li class="nav-item">
               <a class="nav-link mx-lg-2" href="{% url 'users:profile'%}">My Profile</a>
