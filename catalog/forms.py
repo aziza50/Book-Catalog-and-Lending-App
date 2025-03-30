@@ -69,7 +69,7 @@ class CreateCollectionForm(forms.ModelForm):
 
     class Meta:
         model = Collection
-        fields = ['title', 'description', 'books']
+        fields = ['title', 'description', 'books','cover_image']
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
@@ -79,6 +79,7 @@ class CreateCollectionForm(forms.ModelForm):
             user = self.request.user
             if not user.userprofile.is_librarian():
                 self.fields['collection_type'].choices = [('public', 'Public')]
+        self.fields['cover_image'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Provide description'})
 
     def save(self, commit=True):
         if not self.request or not self.request.user.is_authenticated:
@@ -94,13 +95,15 @@ class CreateCollectionForm(forms.ModelForm):
             instance = PrivateCollection.objects.create(
                 title=self.cleaned_data['title'],
                 description=self.cleaned_data['description'],
-                creator=user
+                creator=user,
+                cover_image = self.cleaned_data.get('cover_image')
             )
         else:
             instance = Collection.objects.create(
                 title=self.cleaned_data['title'],
                 description=self.cleaned_data['description'],
-                creator=user
+                creator=user,
+                cover_image = self.cleaned_data.get('cover_image')
             )
 
         instance.books.set(self.cleaned_data['books'])

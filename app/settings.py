@@ -243,6 +243,3 @@ else:
 
 AWS_S3_FILE_OVERWRITE = False
 
-
-
-

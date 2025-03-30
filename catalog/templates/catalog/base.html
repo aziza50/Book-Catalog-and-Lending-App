@@ -34,6 +34,9 @@
               <a class="nav-link mx-lg-2" href="{% url 'users:profile'%}">My Profile</a>
           </li>
           <li class="nav-item">
+                <a class="nav-link" href="{% url 'users:help_page' %}">Help</a>
+            </li>
+          <li class="nav-item">
               <a class="nav-link mx-lg-2" href="{% url 'users:logout'%}">Logout</a>
           </li>
           {% endif %}

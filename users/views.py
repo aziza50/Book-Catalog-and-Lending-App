@@ -39,6 +39,9 @@ def dashboard(request):
 def resources(request):
     return render(request, "users/resources.html")
 
+def helpPage(request):
+    return render(request, "users/help_page.html")
+
 def profile(request):
     if request.method == 'POST':
         form = ProfilePictureForm(request.POST, request.FILES, instance=request.user.userprofile)

@@ -55,19 +55,19 @@
     </div>
 </div>
 
-<hr class="mt-0" style="border: 1px solid gray; width: 100%;">
-<div class="container mt-4">
+<hr class="mt-0 line-strip" >
+    <div class="container mt-4">
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
     {% for book in books %}
       <div class="col">
         <div class="card">
           <div class="card-body text-center">
             <img src= "{{ book.cover_image.url }}" alt="Fairy Tale" class="img-fluid rounded">
-            <h5 class="card-title mt-3">{{ book|truncatechars:20 }}</h5>
+            <h4 class="card-title mt-3">{{ book|truncatechars:20 }}</h4>
             <div class="d-flex align-items-center justify-content-between mt-2">
               <div class="d-flex align-items-center gap-2">
-                <img src="{% static 'users/images/star.png' %}" alt="Star" style="height: 30px;">
-                <p class="card-text mb-0"><small class="text-muted">{{ book.rating }}/5</small></p>
+                  <p class="card-text mb-0"><small class="text-muted">{{ book.rating }}/5</small></p>
+                  <i class = "fas fa-star" style="color: #BFA054; font-size:1.3em;"></i>
               </div>
                 {% if user.is_authenticated %}
               <div class="text-end">

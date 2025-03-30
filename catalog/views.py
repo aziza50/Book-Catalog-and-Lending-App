@@ -52,11 +52,17 @@ def browse_all_books(request):
     if is_authenticated:
         user_profile = user.userprofile
         is_librarian = user.is_authenticated and user_profile.is_librarian()
-        is_patron = user.is_authenticated and user_profile.is_patron()
-    if is_librarian:
-        books = Book.objects.all().order_by('-title')
+    collection_title = request.GET.get('collection_title')
+
+    if collection_title:
+        collection = Collection.objects.get(title = collection_title)
+        books = collection.books.all().order_by("-title")
+
     else:
-        books = Book.objects.filter(is_private=False).order_by('-title')
+        if is_librarian:
+            books = Book.objects.all().order_by('-title')
+        else:
+            books = Book.objects.filter(is_private=False).order_by('-title')
 
     return render(request, "catalog/books.html"
     ,{
@@ -69,7 +75,10 @@ def item(request, book_id):
     comments = book.comments.all()
     for comment in comments:
         ratings += comment.rating
-    book.rating = ratings/len(comments)
+    if len(comments)>0:
+        book.rating = ratings/len(comments)
+    else:
+        book.rating =0
     return render(request, "catalog/item.html", {'book':book, 'comments':comments})
 
 def edit(request, book_id):
@@ -189,7 +198,7 @@ def add_books_to_collection(request, collection_id):
 @login_required
 def create_collection(request):
     if request.method == 'POST':
-        form = CreateCollectionForm(request.POST, request=request)
+        form = CreateCollectionForm(request.POST, request.FILES, request=request)
         if form.is_valid():
             collection = form.save()
             return redirect('catalog:collections')
