@@ -38,19 +38,29 @@ class Book(models.Model):
     title = models.CharField(max_length=255)
     author = models.CharField(max_length = 20)
     lender = models.ForeignKey(User, on_delete = models.SET_NULL, null = True)
-    #isbn = models.CharField(max_length=13, unique=True)
+    isbn = models.CharField(max_length=13, unique=True)
     status = models.CharField(max_length = 13, choices= Status.choices, default = Status.AVAILABLE)
     condition = models.CharField(max_length = 13, choices = Condition.choices, default=Condition.ACCEPTABLE)
     genre = models.CharField(max_length=100, choices = Genre.choices)
     rating = models.IntegerField(default = 0, validators = [MinValueValidator(1), MaxValueValidator(5)])
     location = models.CharField(max_length = 27, choices = Location.choices, default = Location.SHANNON)
+    comments = models.CharField(max_length = 200, blank = True, null =True)
     description = models.TextField(max_length = 200, default = " ")
     cover_image = models.ImageField(storage=MediaStorage(), upload_to='book_covers/', null=True, blank=True)
-    is_private = models.BooleanField(default=False)  # Private field    
+    is_private = models.BooleanField(default=False)  # Private field
 
 
     def __str__(self):
         return self.title
+
+class Comments(models.Model):
+    book = models.ForeignKey(Book, related_name='comments', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null = True)
+    comment = models.TextField(max_length=200)
+    date = models.DateTimeField(auto_now_add=True)
+    rating = models.IntegerField(default = 0)
+
+
 
 class Collection(models.Model):
     title = models.CharField(max_length=255)

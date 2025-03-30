@@ -31,7 +31,7 @@ ALLOWED_HOSTS = ['localhost','127.0.0.1','project-b-14-app-ebaaf643b243.herokuap
 # Application definition
 load_dotenv()
 
-SITE_ID = 5
+SITE_ID = 4
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -242,4 +242,7 @@ else:
     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 AWS_S3_FILE_OVERWRITE = False
+
+
+
 

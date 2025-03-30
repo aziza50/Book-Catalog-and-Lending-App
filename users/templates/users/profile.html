@@ -2,7 +2,7 @@
 {% block content %}
 {% load static %}
 
-      <h1 class="mb-0 ms-4">My Account</h1>
+<h1 class="mb-0 ms-4 header-books" >My Account</h1>
   <hr class="mt-0" style="border: 1px solid gray; width: 100%;">
 
   <div class="profileSeparate">
@@ -21,7 +21,7 @@
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit">Upload Profile Picture</button>
+            <button class = "btn btn-custom active text-white" type="submit">Upload Profile Picture</button>
         </form>
         </div>
     </div>

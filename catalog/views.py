@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Book, Collection, PrivateCollection
 from django.contrib.auth.decorators import login_required
 from .forms import BooksForm, AddBooksToCollectionForm, CreateCollectionForm
+from .models import Book, Comments
+from .forms import BooksForm, CommentsForm
 
 
 def lend_book(request):
@@ -18,6 +20,30 @@ def lend_book(request):
     else:
         form = BooksForm()
     return render(request, 'catalog/add_book.html', {'form':form})
+def add_comment(request, book_id):
+    user = request.user
+    book = get_object_or_404(Book, id=book_id)
+
+
+    if request.method == 'POST':
+        form = CommentsForm(request.POST, request.FILES)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.user = user
+            comment.book = book
+            comment.rating = request.POST.get("rating",None)
+            print(request.POST.get("rating",None))
+            comment.save()
+            return redirect('catalog:item', book_id = book.id)
+        else:
+            print(form.errors)
+    else:
+        form = CommentsForm()
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return render(request, "catalog/add_comment.html", {"form": form, "book": book})
+
+    return render(request, 'catalog/item.html', {'form': form, 'book':book})
 
 def browse_all_books(request):
     #get all the books from the model
@@ -39,7 +65,12 @@ def browse_all_books(request):
 
 def item(request, book_id):
     book = get_object_or_404(Book, id=book_id)
-    return render(request, "catalog/item.html", {'book':book})
+    ratings = 0
+    comments = book.comments.all()
+    for comment in comments:
+        ratings += comment.rating
+    book.rating = ratings/len(comments)
+    return render(request, "catalog/item.html", {'book':book, 'comments':comments})
 
 def edit(request, book_id):
     book_to_edit = Book.objects.get(id = book_id)
@@ -128,7 +159,7 @@ def collections(request):
     if is_authenticated:
         for collection in collections:
             collection.can_delete = collection.creator == user or is_librarian
-        
+
     # If the user is authenticated, show the option to create a collection
     context['can_create'] = is_authenticated
 
@@ -158,12 +189,12 @@ def add_books_to_collection(request, collection_id):
 @login_required
 def create_collection(request):
     if request.method == 'POST':
-        form = CreateCollectionForm(request.POST, request=request)  
+        form = CreateCollectionForm(request.POST, request=request)
         if form.is_valid():
             collection = form.save()
             return redirect('catalog:collections')
             # return redirect('catalog:collections', collection_id=collection.id)
     else:
-        form = CreateCollectionForm(request=request)  
+        form = CreateCollectionForm(request=request)
 
     return render(request, 'catalog/create_collection.html', {'form': form})

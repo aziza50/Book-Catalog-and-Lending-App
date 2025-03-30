@@ -1,6 +1,7 @@
 {% extends "catalog/base.html" %}
 {% block content %}
 {% load static %}
+{% load range %}
 
 <div class = "bookSeparate">
     <img src = "{{ book.cover_image.url }}" alt = " " class = "image-item">
@@ -9,7 +10,7 @@
         <div>
             <div class = "rounded-box">
                 <p>Reviews: </p>
-                <h3>{{ book.rating }}/5  <img src = "{% static 'users/images/star.png' %}" alt = " " class = "star"> </h3>
+                <h3>{{ book.rating }}/5  <i class="fas fa-star" style="color: #BFA054;"></i> </h3>
             </div>
                 <div class = "rounded-box">
                     <p>Pick-up Location: </p>
@@ -19,14 +20,82 @@
                     <p>Condition: </p>
                     <h3>{{ book.condition }}</h3>
                 </div>
+
                 <div class = "text-item">
                 <p> Description: {{ book.description }}</p>
                 <p> Lender username: {{ book.lender }}</p>
                 </div>
+            {% if user.is_authenticated %}
+
         <button class="btn btn-custom active text-white contact-button" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
                     Contact Seller
                 </button>
+            {% endif %}
+            </div>
+    </div>
+    </div>
+
+<!-- Used a tutorial to create the comments - https://www.youtube.com/watch?v=O-QUBZuZlXM&ab_channel=Going-ToInternet -->
+<div class = "comment-heading">
+    <span>Comments</span>
+    <h1>Readers Say</h1>
+</div>
+<div class = "center-button">
+<a id="openPopup" href="{% url 'catalog:add_comment' book.id %}" class="btn btn-custom active text-white" style = data-bs-toggle="modal" data-bs-target="#commentModal">
+    Write A Review
+</a>
+</div>
+
+    <section id = "comments">
+        {% if comments %}
+        {% for comment in comments %}
+        <div class = "comment-box-container">
+            <div class = "comment-box">
+                <div class = "box-top">
+                    <div class = "profile">
+                    <div class = "profile-img">
+                        <img src = "{% static 'users/images/markerIcon.png' %}">
+                    </div>
+                    <div class = "name-user">
+                        <strong>{{ comment.user }}</strong>
+                        <span>{{ comment.date  }}</span>
+
+                    </div>
+                    </div>
+                    <div class="reviews">
+                        {% for i in comment.rating|times %}
+                        <i class="fas fa-star" style="color: #BFA054;"></i>
+                        {% endfor %}
+                        {% for i in comment.rating|negate %}
+                        <i class="far fa-star" style="color: #BFA054;"></i>
+                        {% endfor %}
+
+                    </div>
+                    </div>
+
+                    <div class = "client-comment">
+                        <p>{{ comment.comment }}</p>
+                    </div>
+
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+            </section>
+
+<div class="modal fade" id="commentModal" tabindex="-1" aria-labelledby="commentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="commentModalLabel">Write A Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modal-content">
             </div>
         </div>
     </div>
-{% endblock content%}
+</div>
+
+<script src="{% static  'users/script.js' %}"></script>
+
+{% endblock content %}
