@@ -169,3 +169,29 @@ def create_collection(request):
         form = CreateCollectionForm(request=request)  
 
     return render(request, 'catalog/create_collection.html', {'form': form})
+
+def delete_collection(request, collection_id):
+    collection = get_object_or_404(Collection, id=collection_id)
+    is_librarian = request.user.userprofile.is_librarian()
+    
+    # Authorization check
+    if not (collection.creator == request.user or is_librarian):
+        raise PermissionDenied("You don't have permission to delete this collection")
+
+    # Handle private collection deletion
+    if hasattr(collection, 'privatecollection'):
+        collection.privatecollection.delete()
+    else:
+        collection.delete()
+
+    return redirect('catalog:collections')
+
+def collection_books_view(request, collection_id):
+    # Get the collection by ID
+    collection = get_object_or_404(Collection, id=collection_id)
+    # Get all books in this collection
+    books = collection.books.all()
+    return render(request, 'catalog/view_collection.html', {
+        'collection': collection,
+        'books': books,
+    })

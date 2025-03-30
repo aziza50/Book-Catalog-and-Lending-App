@@ -1,0 +1,22 @@
+{% extends "catalog/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>{{ collection.title }}</h1>
+    <p>{{ collection.description }}</p>
+
+    {% if books %}
+        <ul class="list-group mt-4">
+            {% for book in books %}
+                <li class="list-group-item">
+                    <strong>{{ book.title }}</strong> by {{ book.author }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No books are currently in this collection.</p>
+    {% endif %}
+
+    <a href="{% url 'catalog:collections' %}" class="btn btn-secondary mt-3">Back to Collections</a>
+</div>
+{% endblock %}
