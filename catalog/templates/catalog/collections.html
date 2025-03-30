@@ -1,17 +1,34 @@
 {% extends "catalog/base.html" %}
 {% block content %}
 
+<!-- Button for creating a new collection -->
 {% if can_create %}
     <a href="{% url 'catalog:create_collection' %}">
         <button>Create New Collection</button>
     </a>
 {% endif %}
 
+<!-- Loop through collections -->
 {% for collection in collections %}
     <div>
-        <h3>{{ collection.title }}</h3>
+        <!-- Collection title -->
+        <h3>
+            {% if collection.is_private and not is_librarian %}
+                <span class="text-muted">{{ collection.title }} (Private)</span>
+            {% else %}
+                <a href="{% url 'catalog:collection_books_view' collection.id %}">
+                    {{ collection.title }}
+                </a>
+            {% endif %}
+        </h3>
+
+        <!-- Edit and Delete Buttons -->
         {% if collection.can_delete %}
-            <button>Delete</button>
+            <a href="{% url 'catalog:edit_collection' collection.id %}" class="btn btn-primary">Edit Books</a>
+            <form action="{% url 'catalog:delete_collection' collection.id %}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this collection?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
         {% endif %}
     </div>
 {% endfor %}
