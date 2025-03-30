@@ -111,9 +111,6 @@ def collections(request):
 
     collections_qs = Collection.objects.all()
 
-    if not is_librarian:
-        collections_qs = collections_qs.exclude(id__in=PrivateCollection.objects.values('id'))
-
     collections = []
     for collection in collections_qs:
         collection.is_private = PrivateCollection.objects.filter(id=collection.id).exists()
