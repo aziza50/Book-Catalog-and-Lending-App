@@ -22,12 +22,9 @@ def lend_book(request):
 def browse_all_books(request):
     #get all the books from the model
     user = request.user
-    is_authenticated = user.is_authenticated
-    if is_authenticated:
+    if user.is_authenticated:
         user_profile = user.userprofile
-        is_librarian = user.is_authenticated and user_profile.is_librarian()
-        is_patron = user.is_authenticated and user_profile.is_patron()
-    if is_librarian:
+    if user_profile.is_librarian():
         books = Book.objects.all().order_by('-title')
     else:
         books = Book.objects.filter(is_private=False).order_by('-title')
@@ -159,19 +156,25 @@ def create_collection(request):
 
     return render(request, 'catalog/create_collection.html', {'form': form})
 
+@login_required
 def delete_collection(request, collection_id):
+    # Fetch the collection by ID
     collection = get_object_or_404(Collection, id=collection_id)
     is_librarian = request.user.userprofile.is_librarian()
-    
-    # Authorization check
-    if not (collection.creator == request.user or is_librarian):
-        raise PermissionDenied("You don't have permission to delete this collection")
 
-    # Handle private collection deletion
-    if hasattr(collection, 'privatecollection'):
-        collection.privatecollection.delete()
-    else:
-        collection.delete()
+    # Authorization check: Only creator or librarian can delete
+    if not (collection.creator == request.user or is_librarian):
+        raise ValueError("You do not have permission to delete this collection.")
+
+    # If it's a private collection, update the books' privacy status
+    if isinstance(collection, PrivateCollection):
+        for book in collection.books.all():
+            # Check if the book is still in any other private collections
+            book.is_private = False  # Mark as public
+            book.save(update_fields=['is_private'])
+
+    # Delete the collection
+    collection.delete()
 
     return redirect('catalog:collections')
 

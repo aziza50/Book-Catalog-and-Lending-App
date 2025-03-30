@@ -46,7 +46,7 @@ class Book(models.Model):
     location = models.CharField(max_length = 27, choices = Location.choices, default = Location.SHANNON)
     comments = models.CharField(max_length = 200, blank = True, null =True)
     description = models.TextField(max_length = 200, default = " ")
-    cover_image = models.ImageField(storage=MediaStorage(), upload_to='book_covers/', null=True, blank=True)
+    cover_image = models.ImageField(upload_to='book_covers/', null=True, blank=True)
     is_private = models.BooleanField(default=False)  # Private field    
 
 
@@ -87,6 +87,7 @@ def enforce_privacy(sender, instance, action, pk_set, **kwargs):
     elif action == "post_remove":
         for book_id in pk_set:
             book = Book.objects.get(id=book_id)
-            if not PrivateCollection.objects.filter(books=book).exists():
-                book.is_private = False  # Only reset if no longer in any private collection
+            # Check if book exists in ANY private collection
+            if not book.collections.filter(privatecollection__isnull=False).exists():
+                book.is_private = False
                 book.save()
