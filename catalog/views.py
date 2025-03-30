@@ -32,8 +32,6 @@ def browse_all_books(request):
     else:
         books = Book.objects.filter(is_private=False).order_by('-title')
 
-
-
     return render(request, "catalog/books.html"
     ,{
         "books": books,
@@ -157,7 +155,7 @@ def add_books_to_collection(request, collection_id):
     return render(request, 'catalog/add_books_to_collection.html', {'form': form, 'collection': collection})
 
 
-@login_required  
+@login_required
 def create_collection(request):
     if request.method == 'POST':
         form = CreateCollectionForm(request.POST, request=request)  

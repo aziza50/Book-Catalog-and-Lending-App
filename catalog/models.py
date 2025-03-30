@@ -44,7 +44,6 @@ class Book(models.Model):
     genre = models.CharField(max_length=100, choices = Genre.choices)
     rating = models.IntegerField(default = 0, validators = [MinValueValidator(1), MaxValueValidator(5)])
     location = models.CharField(max_length = 27, choices = Location.choices, default = Location.SHANNON)
-    comments = models.CharField(max_length = 200, blank = True, null =True)
     description = models.TextField(max_length = 200, default = " ")
     cover_image = models.ImageField(storage=MediaStorage(), upload_to='book_covers/', null=True, blank=True)
     is_private = models.BooleanField(default=False)  # Private field    

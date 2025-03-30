@@ -1,18 +1,13 @@
 {% extends "catalog/base.html" %}
 {% block content %}
 
-{% if can_create %}
     <a href="{% url 'catalog:create_collection' %}">
         <button>Create New Collection</button>
     </a>
-{% endif %}
-
 {% for collection in collections %}
     <div>
         <h3>{{ collection.title }}</h3>
-        {% if collection.can_delete %}
             <button>Delete</button>
-        {% endif %}
     </div>
 {% endfor %}
 
