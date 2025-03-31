@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Book, Collection, PrivateCollection
+from .models import Book, Collection
 from django.contrib.auth.decorators import login_required
 from .forms import BooksForm, AddBooksToCollectionForm, CreateCollectionForm
 
@@ -110,7 +110,6 @@ def collections(request):
 
     collections = []
     for collection in collections_qs:
-        collection.is_private = PrivateCollection.objects.filter(id=collection.id).exists()
         collection.can_delete = (collection.creator == user) or is_librarian
         collections.append(collection)
 
@@ -166,16 +165,8 @@ def delete_collection(request, collection_id):
     if not (collection.creator == request.user or is_librarian):
         raise ValueError("You do not have permission to delete this collection.")
 
-    # If it's a private collection, update the books' privacy status
-    if isinstance(collection, PrivateCollection):
-        for book in collection.books.all():
-            # Check if the book is still in any other private collections
-            book.is_private = False  # Mark as public
-            book.save(update_fields=['is_private'])
-
     # Delete the collection
     collection.delete()
-
     return redirect('catalog:collections')
 
 @login_required

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Book, Collection, PrivateCollection
+from .models import Book, Collection
 from django.core.exceptions import ValidationError
 
 class BooksForm(forms.ModelForm):
@@ -70,22 +70,23 @@ class CreateCollectionForm(forms.ModelForm):
         user = self.request.user
         collection_type = self.cleaned_data.get('collection_type')
 
-        if collection_type == 'private':
-            if not user.userprofile.is_librarian():
-                raise ValidationError("Only librarians can create private collections.")
+        instance = Collection(
+            title=self.cleaned_data['title'],
+            description=self.cleaned_data['description'],
+            creator=user,
+            is_private=(collection_type == 'private')
+        )
 
-            instance = PrivateCollection.objects.create(
-                title=self.cleaned_data['title'],
-                description=self.cleaned_data['description'],
-                creator=user
-            )
-        else:
-            instance = Collection.objects.create(
-                title=self.cleaned_data['title'],
-                description=self.cleaned_data['description'],
-                creator=user
-            )
+        if commit:
+            instance.save()  # Save first
+            instance.books.set(self.cleaned_data['books'])  # Assign books after save
 
-        instance.books.set(self.cleaned_data['books'])
+            # Manually trigger privacy logic
+            if instance.is_private:
+                for book in instance.books.all():
+                    book.collections.clear()  # Remove from other collections
+                    book.collections.set([instance])
+                    book.is_private = True
+                    book.save()
 
         return instance
