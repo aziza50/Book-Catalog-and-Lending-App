@@ -1,4 +1,5 @@
 {% load static %}
+{% load socialaccount %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,7 +23,10 @@
         <li class="nav-item">
           <a class="nav-link" href="{% url 'catalog:collections' %}">Collections</a>
         </li>
-          <li class="nav-item">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'catalog:book_list' %}">Catalog</a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link" href="{% url 'users:help_page' %}">Help</a>
         </li>
           {% if user.is_authenticated and user.userprofile.is_librarian %}
@@ -36,6 +40,11 @@
           </li>
           <li class="nav-item">
               <a class="nav-link mx-lg-2" href="{% url 'users:logout'%}">Logout</a>
+          </li>
+          {% endif %}
+          {% if not user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link mx-lg-2" href="{% provider_login_url 'google' %}">Login</a>
           </li>
           {% endif %}
 

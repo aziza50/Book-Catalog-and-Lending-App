@@ -24,12 +24,12 @@ def browse_all_books(request):
     user = request.user
     if user.is_authenticated:
         user_profile = user.userprofile
-    if user_profile.is_librarian():
-        books = Book.objects.all().order_by('-title')
+        if user_profile.is_librarian():
+            books = Book.objects.all().order_by('-title')
+        if user_profile.is_patron():
+            books = Book.objects.filter(is_private=False).order_by('-title')
     else:
         books = Book.objects.filter(is_private=False).order_by('-title')
-
-
 
     return render(request, "catalog/books.html"
     ,{

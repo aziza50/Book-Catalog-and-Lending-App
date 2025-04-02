@@ -28,17 +28,16 @@ def dashboard(request):
             user_profile = user.userprofile
             is_librarian = user.is_authenticated and user.userprofile.is_librarian()
             is_patron = user.is_authenticated and user.userprofile.is_patron()
+            if user_profile:
+                return render(request, "users/dashboard.html", {
+                    "is_authenticated" : is_authenticated,
+                    "is_librarian": is_librarian,
+                    "is_patron" : is_patron,
+                })
         except UserProfile.DoesNotExist:
-            return redirect('users/login_page.html')
+            return browseGuest(request)
     else:
-        return render(request, "users/login_page.html")
-
-
-    return render(request, "users/dashboard.html", {
-        "is_authenticated" : is_authenticated,
-        "is_librarian": is_librarian,
-        "is_patron" : is_patron,
-    })
+        return browseGuest(request)
 
 def resources(request):
     return render(request, "users/resources.html")
@@ -72,12 +71,6 @@ def profile(request):
         "is_librarian": is_librarian,
         "is_patron": is_patron,
         "form": form,
-    })
-
-    return render(request, "users/dashboard.html", {
-        "is_authenticated" : is_authenticated,
-        "is_librarian": is_librarian,
-        "is_patron" : is_patron,
     })
 
 def lendItem(request):
@@ -212,6 +205,7 @@ def search(request):
                       "is_patron": is_patron,
                       "books": book_to_query,
                   })
+
 def logout_view(request):
     logout(request)
     return redirect("/")
