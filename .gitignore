@@ -1,5 +1,10 @@
 .vscode/settings.json
 Book_Cover.jpg
+
+# Local static files
+media/book_covers/*
+!media/.gitkeep
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
