@@ -15,23 +15,25 @@ import dj_database_url
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(dotenv_path=os.path.join(BASE_DIR, ".env"))
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-j)=r+!0l8_#dst3!p6%l@b54(4=hj*=f(un$*ltdc^lho$7_yi"
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-fallback-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = ['localhost','127.0.0.1','project-b-14-app-ebaaf643b243.herokuapp.com']
 
 # Application definition
-load_dotenv()
 
-SITE_ID = 4
+SITE_ID = int(os.getenv("SITE_ID", 6))
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -186,30 +188,22 @@ AUTHENTICATION_BACKENDS = (
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = 'library-lending-app'
-AWS_S3_SIGNATURE_NAME = 's3v4'
-AWS_S3_REGION_NAME = 'us-east-2'
-DEBUG = True
-AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
-if DEBUG:
-    # In development, use local storage for static and media files
-    STORAGES = {
-        "default": {  # For media files, use local storage
-            "BACKEND": "django.core.files.storage.FileSystemStorage",
-            "LOCATION": os.path.join(BASE_DIR, 'media')
-        },
-        "staticfiles": {  # For static files, use local storage
-            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-            "LOCATION": os.path.join(BASE_DIR, 'staticfiles')
-        },
-    }
+load_dotenv()
 
-    # Local static URL for development
-    STATIC_URL = '/static/'  # Local static path in dev environment
+if os.environ.get('ENVIRONMENT') == 'development':
+    STATIC_URL = '/static/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    MEDIA_URL = '/media/'
 else:
-    # In production, use S3 storage for static and media files
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = 'library-lending-app'
+    AWS_S3_SIGNATURE_NAME = 's3v4'
+    AWS_S3_REGION_NAME = 'us-east-2'
+
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+
     STORAGES = {
         "default": {  # For media files
             "BACKEND": "app.storage_backend.MediaStorage",
@@ -218,7 +212,7 @@ else:
                 "location": "media",
                 "file_overwrite": False,
                 "object_parameters": {
-                    "CacheControl": "max-age=3600",
+                    "CacheControl": "max-age=86400",
                 },
             },
         },
@@ -233,13 +227,6 @@ else:
             },
         },
     }
-
-    # S3 URL for static and media files in production
     STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
-
-    # Use manifest storage to avoid caching issues in production
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
-
-AWS_S3_FILE_OVERWRITE = False
-
+    AWS_S3_FILE_OVERWRITE = False

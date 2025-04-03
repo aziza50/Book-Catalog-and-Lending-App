@@ -1,20 +1,18 @@
 from django import forms
 from .models import Book, Collection, PrivateCollection
 from django.core.exceptions import ValidationError
-from .models import Book, Comments
 
 class BooksForm(forms.ModelForm):
     cover_image = forms.ImageField(required=False)  # Allow optional image upload
 
     class Meta:
         model = Book
-        fields = ['title', 'author', 'isbn','status', 'condition', 'genre', 'location', 'description', 'cover_image']
+        fields = ['title', 'author', 'status', 'condition', 'genre', 'location', 'description', 'cover_image']
 
     def __init__(self, *args, **kwargs):
         super(BooksForm, self).__init__(*args, **kwargs)
         self.fields['title'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter title'})
         self.fields['author'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter author'})
-        self.fields['isbn'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter isbn'})
         self.fields['status'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select status'})
         self.fields['status'].choices = Book.Status.choices
         self.fields['condition'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select condition'})
@@ -46,7 +44,6 @@ class CommentsForm(forms.ModelForm):
             field.required = True
 
 
-
 class AddBooksToCollectionForm(forms.ModelForm):
     books = forms.ModelMultipleChoiceField(queryset=Book.objects.all(), widget=forms.CheckboxSelectMultiple)
 
@@ -69,10 +66,10 @@ class CreateCollectionForm(forms.ModelForm):
 
     class Meta:
         model = Collection
-        fields = ['title', 'description', 'books','cover_image']
+        fields = ['title', 'description', 'books']
 
     def __init__(self, *args, **kwargs):
-        self.request = kwargs.pop('request', None)
+        self.request = kwargs.pop('request', None)  
         super().__init__(*args, **kwargs)
 
         if self.request and self.request.user.is_authenticated:
@@ -88,25 +85,23 @@ class CreateCollectionForm(forms.ModelForm):
         user = self.request.user
         collection_type = self.cleaned_data.get('collection_type')
 
-        if collection_type == 'private':
-            is_private = True
-            if not user.userprofile.is_librarian():
-                raise ValidationError("Only librarians can create private collections.")
+        instance = Collection(
+            title=self.cleaned_data['title'],
+            description=self.cleaned_data['description'],
+            creator=user,
+            is_private=(collection_type == 'private')
+        )
 
-            instance = PrivateCollection.objects.create(
-                title=self.cleaned_data['title'],
-                description=self.cleaned_data['description'],
-                creator=user,
-                cover_image = self.cleaned_data.get('cover_image')
-            )
-        else:
-            instance = Collection.objects.create(
-                title=self.cleaned_data['title'],
-                description=self.cleaned_data['description'],
-                creator=user,
-                cover_image = self.cleaned_data.get('cover_image')
-            )
+        if commit:
+            instance.save()  # Save first
+            instance.books.set(self.cleaned_data['books'])  # Assign books after save
 
-        instance.books.set(self.cleaned_data['books'])
+            # Manually trigger privacy logic
+            if instance.is_private:
+                for book in instance.books.all():
+                    book.collections.clear()  # Remove from other collections
+                    book.collections.set([instance])
+                    book.is_private = True
+                    book.save()
 
         return instance
