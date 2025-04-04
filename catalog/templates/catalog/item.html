@@ -1,32 +1,71 @@
+<!-- catalog/item.html -->
 {% extends "catalog/base.html" %}
-{% block content %}
 {% load static %}
 
-<div class = "bookSeparate">
-    <img src = "{{ book.cover_image.url }}" alt = " " class = "image-item">
-    <div class = text-content>
-        <h1>{{ book.title }} </h1>
+{% block content %}
+<div class="bookSeparate">
+    <img src="{{ book.cover_image.url }}" alt="" class="image-item">
+    <div class="text-content">
+        <h1>{{ book.title }}</h1>
         <div>
-            <div class = "rounded-box">
-                <p>Reviews: </p>
-                <h3>{{ book.rating }}/5  <img src = "{% static 'users/images/star.png' %}" alt = " " class = "star"> </h3>
+            <div class="rounded-box">
+                <p>Reviews:</p>
+                <h3>{{ book.rating }}/5
+                    <img src="{% static 'users/images/star.png' %}" alt="" class="star">
+                </h3>
             </div>
-                <div class = "rounded-box">
-                    <p>Pick-up Location: </p>
-                    <h3>{{ book.location }}</h3>
-                </div>
-                <div class = "rounded-box">
-                    <p>Condition: </p>
-                    <h3>{{ book.condition }}</h3>
-                </div>
-                <div class = "text-item">
-                <p> Description: {{ book.description }}</p>
-                <p> Lender username: {{ book.lender }}</p>
-                </div>
-        <button class="btn btn-custom active text-white contact-button" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
-                    Contact Seller
-                </button>
+            <div class="rounded-box">
+                <p>Pick-up Location:</p>
+                <h3>{{ book.location }}</h3>
             </div>
+            <div class="rounded-box">
+                <p>Condition:</p>
+                <h3>{{ book.condition }}</h3>
+            </div>
+            <div class="text-item">
+                <p>Description: {{ book.description }}</p>
+                <p>Lender username: {{ book.lender }}</p>
+            </div>
+
+            <!-- Button to open the offcanvas -->
+            <button class="btn btn-custom active text-white contact-button"
+                    type="button"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#offcanvasNavbar"
+                    aria-controls="offcanvasNavbar">
+                Borrow Book
+            </button>
         </div>
     </div>
-{% endblock content%}
+</div>
+
+<!-- Offcanvas with the BookRequestForm -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Request Book</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form method="POST" action="">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            
+            {{ form.non_field_errors }}
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+            {% endfor %}
+            
+
+            <button type="submit" class="btn btn-primary">Submit Request</button>
+        </form>
+
+        <!-- Optional success message -->
+        {% if request_sent %}
+            <p class="text-success">Request successfully sent!</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}

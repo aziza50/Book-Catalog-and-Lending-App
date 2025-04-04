@@ -36,3 +36,20 @@ class UserProfile(models.Model):
 
     def is_patron(self):
         return self.role == 'patron'
+
+class BookRequest(models.Model):
+    book = models.ForeignKey('catalog.Book', on_delete=models.CASCADE, related_name='requests')
+    patron = models.ForeignKey(User, on_delete=models.CASCADE, related_name='outgoing_requests')
+    librarian = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='incoming_requests')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    pickup_hour = models.IntegerField(default=9) 
+
+    STATUS_CHOICES = [
+        ('approved', 'Approved'),
+        ('waiting', 'Waiting'),
+        ('denied', 'Denied'),
+        ('expired', 'Expired'),
+    ]
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='waiting')
+

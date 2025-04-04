@@ -45,34 +45,6 @@ def resources(request):
 def helpPage(request):
     return render(request, "users/help_page.html")
 
-def profile(request):
-    user = request.user
-    is_authenticated = user.is_authenticated
-
-    if is_authenticated:
-        try:
-            user_profile = user.userprofile
-            is_librarian = user.is_authenticated and user.userprofile.is_librarian()
-            is_patron = user.is_authenticated and user.userprofile.is_patron()
-        except UserProfile.DoesNotExist:
-            return redirect('users:login_page.html')
-    else:
-        return render(request, "users/login_page.html")
-
-    if request.method == 'POST':
-        form = ProfilePictureForm(request.POST, request.FILES, instance=request.user.userprofile)
-        if form.is_valid():
-            form.save()
-    else:
-        form = ProfilePictureForm(instance=request.user.userprofile)
-
-    return render(request, "users/profile.html", {
-        "is_authenticated": is_authenticated,
-        "is_librarian": is_librarian,
-        "is_patron": is_patron,
-        "form": form,
-    })
-
 def lendItem(request):
     user = request.user
     if request.method == 'POST':
@@ -112,30 +84,41 @@ def resources(request):
 
 def profile(request):
     user = request.user
-    is_authenticated = user.is_authenticated
+    if not user.is_authenticated:
+        return redirect('users:login_page.html')
 
-    if is_authenticated:
-        try:
-            user_profile = user.userprofile
-            is_librarian = user.is_authenticated and user.userprofile.is_librarian()
-            is_patron = user.is_authenticated and user.userprofile.is_patron()
-        except UserProfile.DoesNotExist:
-            return redirect('users:login_page.html')
-    else:
-        return render(request, "users/login_page.html")
+    try:
+        user_profile = user.userprofile
+        is_librarian = user_profile.is_librarian()
+        is_patron = user_profile.is_patron()
+    except UserProfile.DoesNotExist:
+        return redirect('users:login_page.html')
 
     if request.method == 'POST':
-        form = ProfilePictureForm(request.POST, request.FILES, instance=request.user.userprofile)
+        form = ProfilePictureForm(request.POST, request.FILES, instance=user_profile)
         if form.is_valid():
             form.save()
     else:
-        form = ProfilePictureForm(instance=request.user.userprofile)
+        form = ProfilePictureForm(instance=user_profile)
+
+    # Get requests based on role:
+    pending_requests = None
+    incoming_requests = None
+    if is_patron:
+        pending_requests = user.outgoing_requests.all()
+    elif is_librarian:
+        incoming_requests = user.incoming_requests.all()
+
+    # Retrieve collections for the user (assuming a Collection model exists)
+    collections = user.created_collections.all()
 
     return render(request, "users/profile.html", {
-        "is_authenticated": is_authenticated,
         "is_librarian": is_librarian,
         "is_patron": is_patron,
         "form": form,
+        "pending_requests": pending_requests,
+        "incoming_requests": incoming_requests,
+        "collections": collections,
     })
 
 def delete(request, book_id):

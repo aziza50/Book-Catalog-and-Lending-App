@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Book, Collection
 from django.contrib.auth.decorators import login_required
 from .forms import BooksForm, AddBooksToCollectionForm, CreateCollectionForm
+from users.forms import BookRequestForm
 
 
 def lend_book(request):
@@ -38,8 +39,28 @@ def browse_all_books(request):
 
 def item(request, book_id):
     book = get_object_or_404(Book, id=book_id)
-    return render(request, "catalog/item.html", {'book':book})
+    request_sent = False
 
+    if request.method == 'POST':
+        form = BookRequestForm(request.POST)
+        if form.is_valid():
+            book_request = form.save(commit=False)
+            book_request.patron = request.user
+            book_request.librarian = book_request.book.lender
+            book_request.save()
+            request_sent = True
+    else:
+        # For GET requests, instantiate an empty or initial form
+        form = BookRequestForm(initial={'book': book.id})
+
+    # Now `form` is defined in both branches
+    return render(request, 'catalog/item.html', {
+        'book': book,
+        'form': form,
+        'request_sent': request_sent,
+    })
+
+    
 def edit(request, book_id):
     book_to_edit = Book.objects.get(id = book_id)
     if request.method == 'POST':
@@ -201,3 +222,5 @@ def collection_books_view(request, collection_id):
         'collection': collection,
         'books': books,
     })
+
+    
