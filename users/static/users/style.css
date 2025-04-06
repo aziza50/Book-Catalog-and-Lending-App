@@ -2,7 +2,7 @@
 h1{
     font-size: 50px;
     font-family: 'Newsreader';
-    margin: 1px;
+    margin: 10px;
 }
 
 
@@ -58,17 +58,23 @@ body {
     max-width: 600px;
 }
 
+.item-h3 {
+    font-size:20px;
+
+}
+
 .rounded-box {
-    padding: 25px 30px;
+    padding: 20px 25px;
     border-radius: 25px;
     display: inline-block;
-    font-size: 16px;
+    font-size: 14px;
     font-family: 'Newsreader';
     color: #4a4a4a;
-    border: 3px solid #E3D4B5;
+    border: 2px solid #E3D4B5;
     background-color: #f9f5eb;
     line-height: 1.6;
     max-width: 80%;
+    margin: 5px;
 }
 
 .text-item{
@@ -271,6 +277,7 @@ a {
 
 .custom-navbar {
     background-color: #FBF8F2 !important;
+    margin-top: 0px !important;
 }
 
 .nav-item {
@@ -278,7 +285,7 @@ a {
     position: relative;
     font-size:15px;
     margin-right: 30px;
-    margin-top: 20px;
+    margin-top: 0px !important;
 }
 
 .nav-item:hover {
@@ -292,8 +299,8 @@ a {
     transition: 0.3s color;
     font-family: 'Newsreader';
     line-height: 1.6;
-    padding: 40px;
-    margin-top: 20px 10px;
+    padding: 20px;
+    margin-top: 0px 10px !important;
 }
 
 
@@ -383,6 +390,7 @@ a {
 
 .card:hover {
     transform: scale(1.05);
+
 }
 
 .col {
@@ -557,7 +565,7 @@ container {
     border-radius: 10px;
     padding: 20px;
     margin: 20px auto;
-    margin-top: 100px;
+    margin-top: 20px;
     width: 50%;
     background-color: #ECF5FD ;
     box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);

@@ -4,7 +4,7 @@
 
 <div class="container">
     <h1>Create A New Collection</h1>
-    <hr class="mt-0" style="border: 1px solid gray; width: 100%;">
+    <hr class="mt-0 line-strip" >
     <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
             <div class="form-group">
@@ -29,9 +29,10 @@
                 <label for="{{ form.description.id_for_label }}">Image Upload</label>
                 {{ form.cover_image }}
             </div>
-    <button class="btn btn-custom active text-white" type="submit">Create Collection</button>
+        <div class = "d-flex justify-content-between align-items-center" style = "margin-top: 20px;">
+            <a class="btn btn-custom active text-white" href="{% url 'catalog:collections' %}">Back to collections</a>
+            <button class="btn btn-custom active text-white" type="submit" >Create Collection</button>
+        </div>
     </form>
-
-<a class="btn btn-custom active text-white" href="{% url 'catalog:collections' %}">Back to collections</a>
 </div>
 {% endblock content%}

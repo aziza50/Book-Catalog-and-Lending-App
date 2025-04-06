@@ -1,9 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Book, Collection, PrivateCollection
+from .models import Book, Collection, Comments
 from django.contrib.auth.decorators import login_required
-from .forms import BooksForm, AddBooksToCollectionForm, CreateCollectionForm
-from .models import Book, Comments
-from .forms import BooksForm, CommentsForm
+from .forms import BooksForm, CommentsForm, AddBooksToCollectionForm, CreateCollectionForm
 
 
 def lend_book(request):
@@ -11,6 +9,7 @@ def lend_book(request):
     if request.method == 'POST':
         form = BooksForm(request.POST, request.FILES)
         if form.is_valid():
+            print("File received:", request.FILES.get('cover_image'))  # Debug
             book = form.save(commit = False)
             book.lender = user
             book.save()
@@ -20,20 +19,25 @@ def lend_book(request):
     else:
         form = BooksForm()
     return render(request, 'catalog/add_book.html', {'form':form})
+
+
 def add_comment(request, book_id):
     user = request.user
     book = get_object_or_404(Book, id=book_id)
 
 
     if request.method == 'POST':
-        form = CommentsForm(request.POST, request.FILES)
+        form = CommentsForm(request.POST)
         if form.is_valid():
             comment = form.save(commit=False)
             comment.user = user
             comment.book = book
             comment.rating = request.POST.get("rating",None)
-            print(request.POST.get("rating",None))
+            book.rating += comment.rating
+            comments = Comments.objects.filter(book=book)
+            book.rating = book.rating/comments.count()
             comment.save()
+            book.save()
             return redirect('catalog:item', book_id = book.id)
         else:
             print(form.errors)
@@ -45,37 +49,37 @@ def add_comment(request, book_id):
 
     return render(request, 'catalog/item.html', {'form': form, 'book':book})
 
+
 def browse_all_books(request):
-    #get all the books from the model
+    # get all the books from the model
     user = request.user
-    if user.is_authenticated:
+    is_authenticated = user.is_authenticated
+    if is_authenticated:
         user_profile = user.userprofile
-        if user_profile.is_librarian():
-            books = Book.objects.all().order_by('-title')
-        if user_profile.is_patron():
-            books = Book.objects.filter(is_private=False).order_by('-title')
+        is_librarian = user.is_authenticated and user_profile.is_librarian()
+
+    collection_title = request.GET.get('collection_title')
+
+    if collection_title:
+        collection = Collection.objects.get(title=collection_title)
+        books = collection.books.all().order_by("-title")
+
     else:
-        books = Book.objects.filter(is_private=False).order_by('-title')
-
-
+        if is_librarian:
+            books = Book.objects.all().order_by('-title')
+        else:
+            books = Book.objects.filter(is_private=False).order_by('-title')
 
     return render(request, "catalog/books.html"
-    ,{
-        "books": books,
-    })
+                  , {
+                      "books": books,
+                  })
+
 
 def item(request, book_id):
     book = get_object_or_404(Book, id=book_id)
-    ratings = 0
-    comments = book.comments.all()
-    for comment in comments:
-        ratings += comment.rating
-    if len(comments)>0:
-        book.rating = ratings/len(comments)
-    else:
-        book.rating =0
-    book.save()
-    return render(request, "catalog/item.html", {'book':book, 'comments':comments})
+
+    return render(request, "catalog/item.html", {'book':book})
 
 def edit(request, book_id):
     book_to_edit = Book.objects.get(id = book_id)
@@ -170,8 +174,10 @@ def add_books_to_collection(request, collection_id):
     if request.method == 'POST':
         form = AddBooksToCollectionForm(request.POST, instance=collection)
         if form.is_valid():
-            form.save()  # Save the form and update the books in the collection
-            return redirect('catalog:collections')  # Redirect to the collection list after adding books
+            instance = form.save(commit=False)
+            books = form.cleaned_data['books']
+            instance.books.set(books)
+            instance.save()
     else:
         form = AddBooksToCollectionForm(instance=collection)
 
@@ -182,12 +188,12 @@ def add_books_to_collection(request, collection_id):
 @login_required  
 def create_collection(request):
     if request.method == 'POST':
-        form = CreateCollectionForm(request.POST, request=request)  
+        form = CreateCollectionForm(request.POST,request.FILES, request=request)
         if form.is_valid():
             collection = form.save()
             return redirect('catalog:collections')
-            # return redirect('catalog:collections', collection_id=collection.id)
     else:
+        print("FILES:", request.FILES)
         form = CreateCollectionForm(request=request)  
 
     return render(request, 'catalog/create_collection.html', {'form': form})

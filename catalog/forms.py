@@ -1,5 +1,5 @@
 from django import forms
-from .models import Book, Collection, PrivateCollection
+from .models import Book, Collection, Comments
 from django.core.exceptions import ValidationError
 
 class BooksForm(forms.ModelForm):
@@ -13,13 +13,13 @@ class BooksForm(forms.ModelForm):
         super(BooksForm, self).__init__(*args, **kwargs)
         self.fields['title'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter title'})
         self.fields['author'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter author'})
-        self.fields['status'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select status'})
+        self.fields['status'].widget.attrs.update({'class': 'form-select', 'placeholder': 'Select status'})
         self.fields['status'].choices = Book.Status.choices
-        self.fields['condition'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select condition'})
+        self.fields['condition'].widget.attrs.update({'class': 'form-select', 'placeholder': 'Select condition'})
         self.fields['condition'].choices = Book.Condition.choices
-        self.fields['genre'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select genre'})
+        self.fields['genre'].widget.attrs.update({'class': 'form-select', 'placeholder': 'Select genre'})
         self.fields['genre'].choices = Book.Genre.choices
-        self.fields['location'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select location'})
+        self.fields['location'].widget.attrs.update({'class': 'form-select', 'placeholder': 'Select location'})
         self.fields['location'].choices = Book.Location.choices
         self.fields['description'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Provide description'})
         self.fields['cover_image'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Provide description'})
@@ -66,7 +66,7 @@ class CreateCollectionForm(forms.ModelForm):
 
     class Meta:
         model = Collection
-        fields = ['title', 'description', 'books']
+        fields = ['title', 'description', 'books', 'cover_image']
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)  
@@ -76,7 +76,11 @@ class CreateCollectionForm(forms.ModelForm):
             user = self.request.user
             if not user.userprofile.is_librarian():
                 self.fields['collection_type'].choices = [('public', 'Public')]
-        self.fields['cover_image'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Provide description'})
+        self.fields['cover_image'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Upload a Cover Image'})
+        #nicely render all forms fields
+        for field_name, field in self.fields.items():
+            if not isinstance(field.widget, (forms.CheckboxSelectMultiple, forms.RadioSelect)):
+                field.widget.attrs.update({'class': 'form-control'})
 
     def save(self, commit=True):
         if not self.request or not self.request.user.is_authenticated:
@@ -89,7 +93,8 @@ class CreateCollectionForm(forms.ModelForm):
             title=self.cleaned_data['title'],
             description=self.cleaned_data['description'],
             creator=user,
-            is_private=(collection_type == 'private')
+            is_private=(collection_type == 'private'),
+            cover_image = self.cleaned_data['cover_image'],
         )
 
         if commit:
@@ -99,8 +104,8 @@ class CreateCollectionForm(forms.ModelForm):
             # Manually trigger privacy logic
             if instance.is_private:
                 for book in instance.books.all():
-                    book.collections.clear()  # Remove from other collections
-                    book.collections.set([instance])
+                    book.collections.remove(*book.collections.all())  # Remove from other collections
+                    book.collections.add(instance)
                     book.is_private = True
                     book.save()
 
