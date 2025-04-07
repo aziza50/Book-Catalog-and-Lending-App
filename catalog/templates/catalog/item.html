@@ -44,11 +44,13 @@
     <span>Comments</span>
     <h1>Readers Say</h1>
 </div>
+{% if is_authenticated %}
 <div class = "center-button">
 <a id="openPopup" href="{% url 'catalog:add_comment' book.id %}" class="btn btn-custom active text-white" data-bs-toggle="modal" data-bs-target="#commentModal">
     Write A Review
 </a>
 </div>
+{% endif %}
 
     <section id = "comments">
         {% if comments %}

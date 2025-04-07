@@ -65,7 +65,7 @@ def browse_all_books(request):
         books = collection.books.all().order_by("-title")
 
     else:
-        if is_librarian:
+        if is_authenticated and is_librarian:
             books = Book.objects.all().order_by('-title')
         else:
             books = Book.objects.filter(is_private=False).order_by('-title')
