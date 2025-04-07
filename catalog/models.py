@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.db import models
-from app.storage_backend import MediaStorage
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models.signals import m2m_changed, pre_delete, post_save
 from django.dispatch import receiver
@@ -38,6 +37,7 @@ class Book(models.Model):
     title = models.CharField(max_length=255)
     author = models.CharField(max_length = 20)
     lender = models.ForeignKey(User, on_delete = models.SET_NULL, null = True)
+    isbn = models.CharField(max_length=13, unique=True)
     status = models.CharField(max_length = 13, choices= Status.choices, default = Status.AVAILABLE)
     condition = models.CharField(max_length = 13, choices = Condition.choices, default=Condition.ACCEPTABLE)
     genre = models.CharField(max_length=100, choices = Genre.choices)

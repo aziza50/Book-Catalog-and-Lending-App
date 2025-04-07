@@ -69,11 +69,9 @@
                   <p class="card-text mb-0"><small class="text-muted">{{ book.rating }}/5</small></p>
                   <i class = "fas fa-star" style="color: #BFA054; font-size:1.3em;"></i>
               </div>
-                {% if user.is_authenticated %}
               <div class="text-end">
                 <a href="{% url 'catalog:item' book.id %}" class="btn btn-custom active text-white" role="button">Borrow</a>
               </div>
-                {% endif %}
             </div>
           </div>
         </div>
