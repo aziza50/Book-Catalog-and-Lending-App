@@ -2,13 +2,27 @@
 {% load static %}
 
 {% block content %}
+<style>
+  .leftSide {
+    max-width: 500px;
+  }
+  .fixed-box {
+    height: 150px;
+    overflow-y: auto;
+  }
+  .request-buttons form {
+    display: inline-block;
+    margin-right: 5px;
+  }
+</style>
+
 <div class="container">
   <h1 class="mb-0 ms-4">My Account</h1>
   <hr class="mt-0" style="border: 1px solid gray; width: 100%;">
 
   <div class="row">
     <!-- Left Side: Profile and Upload Form -->
-    <div class="col-md-6">
+    <div class="col-md-4">
       <div class="leftSide">
         {% if user.userprofile.profile_pic %}
           <img src="{{ user.userprofile.profile_pic.url }}" alt="Profile Picture" class="img-fluid rounded" style="width:200px;height:auto;">
@@ -31,44 +45,94 @@
     </div>
 
     <!-- Right Side: Requests and Collections -->
-    <div class="col-md-6">
+    <div class="col-md-8">
       <div class="rightSide">
         <!-- Requests Section -->
         <div class="mb-4">
           <h3>Requests</h3>
-          <ul class="list-group">
-            {% if is_patron %}
-              {% for request in pending_requests %}
-                <li class="list-group-item">
-                  Request for "{{ request.book.title }}" - Status: {{ request.status }}
-                </li>
-              {% empty %}
-                <li class="list-group-item">No pending requests.</li>
-              {% endfor %}
-            {% elif is_librarian %}
-              {% for request in incoming_requests %}
-                <li class="list-group-item">
-                  Request from {{ request.patron.username }} for "{{ request.book.title }}" - Status: {{ request.status }} - Pick-up Time: {{request.pickup_datetime}}
-                </li>
-              {% empty %}
-                <li class="list-group-item">No incoming requests.</li>
-              {% endfor %}
-            {% endif %}
-          </ul>
+          <div class="fixed-box">
+            <ul class="list-group">
+              <!-- Patron -->
+              {% if is_patron %}
+                {% for request in pending_requests %}
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                      Request for "{{ request.book.title }}" - Pick-up Time: {{ request.pickup_datetime }}
+                    </div>
+                    <div class="request-buttons">
+                      <button type="button" class="btn btn-secondary btn-sm" disabled>{{ request.status|capfirst }}</button>
+                    </div>
+                  </li>
+                {% empty %}
+                  <li class="list-group-item">No pending requests.</li>
+                {% endfor %}
+
+              <!-- Librarian -->
+              {% elif is_librarian %}
+                {% for request in incoming_requests %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                      <div>
+                        Request from {{ request.patron.username }} for "{{ request.book.title }}" - Pick-up Time: {{ request.pickup_datetime }}
+                      </div>
+                      <div class="request-buttons">
+                        {% if request.status == 'waiting' %}
+                          <form method="post" action="" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="approve_request_id" value="{{ request.id }}">
+                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure you want to approve this request?');">
+                              Approve
+                            </button>
+                          </form>
+                          <form method="post" action="" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="deny_request_id" value="{{ request.id }}">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to deny this request?');">
+                              Deny
+                            </button>
+                          </form>
+                        {% elif request.status == 'approved' %}
+                          <button type="button" class="btn btn-success btn-sm" disabled>Approved</button>
+                          <form method="post" action="" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="mark_returned_id" value="{{ request.id }}">
+                            <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Mark this book as returned and expire the request?');">
+                              Mark Returned
+                            </button>
+                          </form>
+                        {% else %}
+                          <button type="button" class="btn btn-secondary btn-sm" disabled>{{ request.status|capfirst }}</button>
+                        {% endif %}
+                      </div>
+                    </li>
+                {% empty %}
+                  <li class="list-group-item">No incoming requests.</li>
+                {% endfor %}
+
+              {% endif %}
+
+            </ul>
+          </div>
         </div>
 
         <!-- Collections Section -->
         <div class="mb-4">
           <h3>My Collections</h3>
-          <ul class="list-group">
-            {% for collection in collections %}
-              <li class="list-group-item">
-                {{ collection.title }}
-              </li>
-            {% empty %}
-              <li class="list-group-item">No collections found.</li>
-            {% endfor %}
-          </ul>
+          <div class="fixed-box">
+            <ul class="list-group">
+              {% for collection in collections %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
+                    {{ collection.title }}
+                  </div>
+                  <a href="{% url 'catalog:edit_collection' collection.id %}" class="btn btn-outline-primary btn-sm">
+                    Edit
+                  </a>
+                </li>
+              {% empty %}
+                <li class="list-group-item">No collections found.</li>
+              {% endfor %}
+            </ul>
+          </div>
         </div>
       </div>
     </div>

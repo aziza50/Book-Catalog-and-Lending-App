@@ -1,7 +1,7 @@
 from django import forms
 from .models import UserProfile, BookRequest
 from django.forms import DateTimeInput
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 
 class ProfilePictureForm(forms.ModelForm):
     class Meta:
@@ -17,6 +17,13 @@ class BookRequestForm(forms.ModelForm):
         choices=[(f"{h:02d}:00", f"{h:02d}:00") for h in range(9, 17)],
         label='Pickup Time (9am–5pm)'
     )
+    duration = forms.IntegerField(
+        min_value=1,
+        max_value=8,
+        label="Duration (weeks)",
+        help_text="Enter between 1 and 8 weeks",
+    )
+    
 
     class Meta:
         model = BookRequest
@@ -33,6 +40,7 @@ class BookRequestForm(forms.ModelForm):
         cleaned_data = super().clean()
         date = cleaned_data.get('pickup_date')
         time_str = cleaned_data.get('pickup_time')
+        duration = cleaned_data.get('duration')
 
         # Validate that the pickup date is on a weekday.
         if date and date.weekday() >= 5:
@@ -40,12 +48,16 @@ class BookRequestForm(forms.ModelForm):
 
         if date and time_str:
             hour, minute = map(int, time_str.split(':'))
-            cleaned_data['pickup_datetime'] = datetime.combine(date, time(hour, minute))
-
+            pickup_dt = datetime.combine(date, time(hour, minute))
+            cleaned_data['pickup_datetime'] = pickup_dt
+        
+        if duration:
+            cleaned_data['due_date'] = pickup_dt + timedelta(weeks=duration)
+        
         # Check for duplicate open requests (excluding those already denied)
         book = cleaned_data.get('book')
         if self.patron and book:
-            qs = BookRequest.objects.filter(book=book, patron=self.patron).exclude(status='denied')
+            qs = BookRequest.objects.filter(book=book, patron=self.patron).exclude(status__in=['denied', 'expired'])
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():

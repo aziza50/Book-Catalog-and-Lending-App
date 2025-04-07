@@ -54,11 +54,17 @@ class BookRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     pickup_datetime = models.DateTimeField(default=default_time)
 
+    # in weeks capped at 2 months
+    duration = models.PositiveIntegerField(default=1)
+
+    # automatically calculated by the form
+    due_date = models.DateTimeField(blank=True, null=True)
+
     STATUS_CHOICES = [
         ('approved', 'Approved'),
         ('waiting', 'Waiting'),
         ('denied', 'Denied'),
-        ('expired', 'Expired'),
+        ('expired', 'Expired')
     ]
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='waiting')
 
@@ -69,7 +75,7 @@ class BookRequest(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['book', 'patron'],
-                condition=~Q(status='denied'),
+                condition=~Q(status='denied')| Q(status='expired'),
                 name='unique_open_request'
             )
         ]
