@@ -1,6 +1,7 @@
 from django import forms
 from .models import UserProfile, BookRequest
-import datetime
+from django.forms import DateTimeInput
+from datetime import datetime, time
 
 class ProfilePictureForm(forms.ModelForm):
     class Meta:
@@ -10,29 +11,45 @@ class ProfilePictureForm(forms.ModelForm):
             'profile_pic': 'Profile Picture',
         }
 
-class HourSliderField(forms.IntegerField):
-    def to_python(self, value):
-        hour = super().to_python(value)
-        if hour is None:
-            return None
-        if not (9 <= hour <= 17):
-            raise forms.ValidationError("Pickup time must be between 9 and 17.")
-        return datetime.time(hour=hour, minute=0)
-
 class BookRequestForm(forms.ModelForm):
-    pickup_time = HourSliderField(
-        widget=forms.NumberInput(attrs={
-            'type': 'range',
-            'min': '9',
-            'max': '17',
-            'step': '1',
-        }),
-        label='Pickup Hour (9–17)'
+    pickup_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    pickup_time = forms.ChoiceField(
+        choices=[(f"{h:02d}:00", f"{h:02d}:00") for h in range(9, 17)],
+        label='Pickup Time (9am–5pm)'
     )
 
     class Meta:
         model = BookRequest
-        fields = ['pickup_time', 'book']
+        fields = ['book', 'pickup_datetime']
         widgets = {
             'book': forms.HiddenInput(),
         }
+
+    def __init__(self, *args, **kwargs):
+        self.patron = kwargs.pop('patron', None)
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        date = cleaned_data.get('pickup_date')
+        time_str = cleaned_data.get('pickup_time')
+
+        # Validate that the pickup date is on a weekday.
+        if date and date.weekday() >= 5:
+            self.add_error('pickup_date', "Pickup must be on a weekday (Mon–Fri).")
+
+        if date and time_str:
+            hour, minute = map(int, time_str.split(':'))
+            cleaned_data['pickup_datetime'] = datetime.combine(date, time(hour, minute))
+
+        # Check for duplicate open requests (excluding those already denied)
+        book = cleaned_data.get('book')
+        if self.patron and book:
+            qs = BookRequest.objects.filter(book=book, patron=self.patron).exclude(status='denied')
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                self.add_error(None, "You already have an open request for this book.")
+
+        return cleaned_data
+

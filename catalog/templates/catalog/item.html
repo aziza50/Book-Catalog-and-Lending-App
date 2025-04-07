@@ -26,15 +26,28 @@
                 <p>Description: {{ book.description }}</p>
                 <p>Lender username: {{ book.lender }}</p>
             </div>
-
-            <!-- Button to open the offcanvas -->
-            <button class="btn btn-custom active text-white contact-button"
-                    type="button"
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#offcanvasNavbar"
-                    aria-controls="offcanvasNavbar">
-                Borrow Book
-            </button>
+            {% if active_request %}
+                <button class="btn btn-secondary disabled" type="button" disabled>
+                    {% if active_request_obj.status == 'waiting' %}
+                        Request Pending
+                    {% elif active_request_obj.status == 'approved' %}
+                        Request Approved
+                    {% elif active_request_obj.status == 'expired' %}
+                        Request Expired
+                    {% else %}
+                        Request Active
+                    {% endif %}
+                </button>
+            {% else %}
+                <!-- Button to open the offcanvas -->
+                <button class="btn btn-custom active text-white contact-button"
+                        type="button"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#offcanvasNavbar"
+                        aria-controls="offcanvasNavbar">
+                    Borrow Book
+                </button>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -42,29 +55,46 @@
 <!-- Offcanvas with the BookRequestForm -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Request Book</h5>
+        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">
+            {% if active_request %}
+                Request Status
+            {% else %}
+                Request Book
+            {% endif %}
+        </h5>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
-        <form method="POST" action="">
-            {% csrf_token %}
-            {{ form.as_p }}
-
-            
-            {{ form.non_field_errors }}
-            {% for field in form %}
-                {% for error in field.errors %}
-                    <div class="alert alert-danger">{{ error }}</div>
+        {% if active_request %}
+            <p>You already have an active request for this book.</p>
+            <p>Status: 
+                {% if active_request_obj.status == 'waiting' %}
+                    Request Pending
+                {% elif active_request_obj.status == 'approved' %}
+                    Request Approved
+                {% elif active_request_obj.status == 'expired' %}
+                    Request Expired
+                {% else %}
+                    Request Active
+                {% endif %}
+            </p>
+        {% else %}
+            <form method="POST" action="">
+                {% csrf_token %}
+                {{ form.as_p }}
+                
+                {{ form.non_field_errors }}
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endfor %}
                 {% endfor %}
-            {% endfor %}
-            
-
-            <button type="submit" class="btn btn-primary">Submit Request</button>
-        </form>
-
-        <!-- Optional success message -->
-        {% if request_sent %}
-            <p class="text-success">Request successfully sent!</p>
+                
+                <button type="submit" class="btn btn-primary">Submit Request</button>
+            </form>
+            {% if request_sent %}
+                <p class="text-success">Request successfully sent!</p>
+            {% endif %}
         {% endif %}
     </div>
 </div>

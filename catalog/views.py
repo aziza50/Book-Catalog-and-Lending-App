@@ -3,7 +3,10 @@ from .models import Book, Collection
 from django.contrib.auth.decorators import login_required
 from .forms import BooksForm, AddBooksToCollectionForm, CreateCollectionForm
 from users.forms import BookRequestForm
-
+from django.core.exceptions import ValidationError
+from django.http import JsonResponse
+from users.models import BookRequest
+from users.forms import BookRequestForm
 
 def lend_book(request):
     user = request.user
@@ -39,27 +42,37 @@ def browse_all_books(request):
 
 def item(request, book_id):
     book = get_object_or_404(Book, id=book_id)
-    request_sent = False
 
-    if request.method == 'POST':
-        form = BookRequestForm(request.POST)
+    active_request_obj = None
+    if request.user.is_authenticated:
+        active_request_obj = BookRequest.objects.filter(
+            book=book,
+            patron=request.user
+        ).exclude(status='denied').first()
+
+    if request.method == 'POST' and request.user.is_authenticated and not active_request_obj:
+        form = BookRequestForm(request.POST, patron=request.user)
         if form.is_valid():
             book_request = form.save(commit=False)
             book_request.patron = request.user
-            book_request.librarian = book_request.book.lender
+            book_request.librarian = book_request.book.lender  
             book_request.save()
-            request_sent = True
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'message': "Request sent successfully."})
+            else:
+                return redirect('catalog:item', book_id=book.id)
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
-        # For GET requests, instantiate an empty or initial form
-        form = BookRequestForm(initial={'book': book.id})
+        form = BookRequestForm(initial={'book': book.id}, patron=request.user) if not active_request_obj else None
 
-    # Now `form` is defined in both branches
     return render(request, 'catalog/item.html', {
         'book': book,
         'form': form,
-        'request_sent': request_sent,
+        'active_request': active_request_obj is not None,
+        'active_request_obj': active_request_obj,
     })
-
     
 def edit(request, book_id):
     book_to_edit = Book.objects.get(id = book_id)

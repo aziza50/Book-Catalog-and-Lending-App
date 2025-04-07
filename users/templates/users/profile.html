@@ -48,7 +48,7 @@
             {% elif is_librarian %}
               {% for request in incoming_requests %}
                 <li class="list-group-item">
-                  Request from {{ request.patron.username }} for "{{ request.book.title }}" - Status: {{ request.status }}
+                  Request from {{ request.patron.username }} for "{{ request.book.title }}" - Status: {{ request.status }} - Pick-up Time: {{request.pickup_datetime}}
                 </li>
               {% empty %}
                 <li class="list-group-item">No incoming requests.</li>
