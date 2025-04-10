@@ -62,9 +62,9 @@
                       </div>
                       <div class="request-buttons">
                         {% if request.book.status == 'Available'%}
-                            <button type="button" class="btn btn-warning btn-sm" disabled>{{ request.status|capfirst }}</button>
+                            <button type="button" class="btn btn-warning btn-sm" disabled>Pending</button>
                         {% else %}
-                            <button type="button" class="btn btn-warning btn-sm" disabled>Currently {{ request.book.status }}</button>
+                            <button type="button" class="btn btn-warning btn-sm" disabled>Currently checked out</button>
                         {% endif %}
                       </div>
                     {% elif request.status == 'approved'%}
@@ -77,10 +77,20 @@
                       </div>
                     {% else %}
                       <div>
-                        Request for "{{ request.book.title }}" - Pick-up Time: {{ request.pickup_datetime }}
+                        Request for "{{ request.book.title }}"
                       </div>
-                      <div class="request-buttons">
+                      <div class="request-buttons">       
                         <button type="button" class="btn btn-danger btn-sm" disabled>{{ request.status|capfirst }}</button>
+                        <a href="{% url 'catalog:item' request.book.id %}" class="btn btn-outline-primary btn-sm">
+                          Make a new request
+                        </a>
+                        <form method="post" action="" style="display: inline;">
+                          {% csrf_token %}
+                          <input type="hidden" name="delete_request_id" value="{{ request.id }}">
+                          <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to clear this request?');">
+                            Clear Request
+                          </button>
+                        </form>
                       </div>
                     {% endif %}
                     </li>
@@ -93,7 +103,7 @@
                 {% for request in incoming_requests %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                       <div>
-                        Request from {{ request.patron.username }} for "{{ request.book.title }}" - Pick-up Time: {{ request.pickup_datetime }}
+                        Request from {{ request.patron.username }} for "{{ request.book.title }}"
                       </div>
                       <div class="request-buttons">
                         {% if request.status == 'waiting' %}
@@ -112,7 +122,8 @@
                             </button>
                           </form>
                         {% elif request.status == 'approved' %}
-                          <button type="button" class="btn btn-success btn-sm" disabled>Approved</button>
+                          <button type="button" class="btn btn-success btn-sm" disabled>Pick-up: {{request.pickup_datetime}} at {{request.book.location}}</button>
+                          <button type="button" class="btn btn-secondary btn-sm" disabled>Due: {{ request.due_date|date:"F j, Y" }}</button>
                           <form method="post" action="" style="display: inline;">
                             {% csrf_token %}
                             <input type="hidden" name="mark_returned_id" value="{{ request.id }}">
@@ -121,8 +132,16 @@
                             </button>
                           </form>
                         {% else %}
-                          <button type="button" class="btn btn-secondary btn-sm" disabled>{{ request.status|capfirst }}</button>
+                          <button type="button" class="btn btn-danger btn-sm" disabled>{{ request.status|capfirst }}</button>
+                          <form method="post" action="" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete_request_id" value="{{ request.id }}">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to clear this request?');">
+                              Clear Request
+                            </button>
+                          </form>
                         {% endif %}
+                        
                       </div>
                     </li>
                 {% empty %}

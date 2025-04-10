@@ -125,12 +125,22 @@ def profile(request):
                     book_request.save()
             except BookRequest.DoesNotExist:
                 pass
+        elif 'delete_request_id' in request.POST:
+            req_id = request.POST.get('delete_request_id')
+            try:
+                book_request = BookRequest.objects.get(id=req_id)
+                book_request.delete()
+            except BookRequest.DoesNotExist:
+                pass
         else:
             form = ProfilePictureForm(request.POST, request.FILES, instance=user_profile)
             if form.is_valid():
                 form.save()
 
-    if request.method != 'POST' or ('approve_request_id' in request.POST or 'deny_request_id' in request.POST or 'mark_returned_id' in request.POST):
+    if request.method != 'POST' or ('approve_request_id' in request.POST 
+                                or 'deny_request_id' in request.POST 
+                                or 'mark_returned_id' in request.POST
+                                or 'delete_request_id' in request.POST):
         form = ProfilePictureForm(instance=user_profile)
 
     # Get requests based on role:

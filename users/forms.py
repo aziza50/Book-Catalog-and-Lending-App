@@ -1,7 +1,7 @@
 from django import forms
 from .models import UserProfile, BookRequest
 from django.forms import DateTimeInput
-from datetime import datetime, time, timedelta
+from datetime import datetime, date, time, timedelta
 
 class ProfilePictureForm(forms.ModelForm):
     class Meta:
@@ -35,33 +35,48 @@ class BookRequestForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.patron = kwargs.pop('patron', None)
         super().__init__(*args, **kwargs)
+        min_date = date.today() + timedelta(days=2)
+        self.fields['pickup_date'].widget.attrs['min'] = min_date.strftime('%Y-%m-%d')
 
     def clean(self):
         cleaned_data = super().clean()
         date = cleaned_data.get('pickup_date')
         time_str = cleaned_data.get('pickup_time')
         duration = cleaned_data.get('duration')
-
-        # Validate that the pickup date is on a weekday.
-        if date and date.weekday() >= 5:
-            self.add_error('pickup_date', "Pickup must be on a weekday (Mon–Fri).")
-
+        
+        # Must be two days out
+        if date:
+            min_date = date.today() + timedelta(days=2)
+            if date < min_date:
+                self.add_error('pickup_date', "Pickup date must be at least 2 days from today.")
+        
         if date and time_str:
             hour, minute = map(int, time_str.split(':'))
             pickup_dt = datetime.combine(date, time(hour, minute))
             cleaned_data['pickup_datetime'] = pickup_dt
         
-        if duration:
+        # Calculate the due date and store it
+        if duration and date and time_str:
             cleaned_data['due_date'] = pickup_dt + timedelta(weeks=duration)
         
-        # Check for duplicate open requests (excluding those already denied)
+        # Check for duplicate open requests (excluding those already denied or expired)
         book = cleaned_data.get('book')
         if self.patron and book:
-            qs = BookRequest.objects.filter(book=book, patron=self.patron).exclude(status__in=['denied', 'expired'])
+            qs = BookRequest.objects.filter(book=book, patron=self.patron).exclude(
+                status__in=['denied', 'expired']
+            )
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():
                 self.add_error(None, "You already have an open request for this book.")
-
+        
         return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        # Due date
+        instance.due_date = self.cleaned_data.get('due_date')
+        if commit:
+            instance.save()
+        return instance
 
