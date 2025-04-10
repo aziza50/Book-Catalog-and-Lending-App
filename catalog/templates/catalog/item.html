@@ -26,16 +26,13 @@
                 <p>Description: {{ book.description }}</p>
                 <p>Lender username: {{ book.lender }}</p>
             </div>
-            {% if active_request %}
+            {% if book.lender == request.user %}
+            {% elif active_request %}
                 <button class="btn btn-secondary disabled" type="button" disabled>
                     {% if active_request_obj.status == 'waiting' %}
                         Request Pending
                     {% elif active_request_obj.status == 'approved' %}
                         Request Approved
-                    {% elif active_request_obj.status == 'expired' %}
-                        Request Expired
-                    {% else %}
-                        Request Active
                     {% endif %}
                 </button>
             {% else %}
@@ -65,35 +62,20 @@
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
-        {% if active_request %}
-            <p>You already have an active request for this book.</p>
-            <p>Status: 
-                {% if active_request_obj.status == 'waiting' %}
-                    Request Pending
-                {% elif active_request_obj.status == 'approved' %}
-                    Request Approved
-                {% elif active_request_obj.status == 'expired' %}
-                    Request Expired
-                {% else %}
-                    Request Active
-                {% endif %}
-            </p>
-        {% else %}
-            <form method="POST" action="">
-                {% csrf_token %}
-                {{ form.as_p }}
-                
-                {{ form.non_field_errors }}
-                {% for field in form %}
-                    {% for error in field.errors %}
-                        <div class="alert alert-danger">{{ error }}</div>
-                    {% endfor %}
+        <form method="POST" action="">
+            {% csrf_token %}
+            {{ form.as_p }}
+            
+            {{ form.non_field_errors }}
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
                 {% endfor %}
-                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Confirm Request?');">Submit Request</button>
-            </form>
-            {% if request_sent %}
-                <p class="text-success">Request successfully sent!</p>
-            {% endif %}
+            {% endfor %}
+            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Confirm Request?');">Submit Request</button>
+        </form>
+        {% if request_sent %}
+            <p class="text-success">Request successfully sent!</p>
         {% endif %}
     </div>
 </div>

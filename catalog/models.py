@@ -52,6 +52,9 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
 
 class Collection(models.Model):
     title = models.CharField(max_length=255)

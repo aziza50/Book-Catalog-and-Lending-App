@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
+from catalog.models import Book
 from .models import UserProfile, BookRequest
 from .forms import ProfilePictureForm
 
@@ -101,6 +102,7 @@ def profile(request):
                 book_request = BookRequest.objects.get(id=req_id, book__lender=user)
                 book_request.status = 'approved'
                 book_request.book.status = "Checked out"
+                book_request.book.save() 
                 book_request.save()
             except BookRequest.DoesNotExist:
                 pass
@@ -119,6 +121,7 @@ def profile(request):
                 if book_request.status == 'approved':
                     book_request.status = 'expired'
                     book_request.book.status = "Available"
+                    book_request.book.save() 
                     book_request.save()
             except BookRequest.DoesNotExist:
                 pass
@@ -127,7 +130,7 @@ def profile(request):
             if form.is_valid():
                 form.save()
 
-    if request.method != 'POST' or ('approve_request_id' in request.POST or 'deny_request_id' in request.POST):
+    if request.method != 'POST' or ('approve_request_id' in request.POST or 'deny_request_id' in request.POST or 'mark_returned_id' in request.POST):
         form = ProfilePictureForm(instance=user_profile)
 
     # Get requests based on role:

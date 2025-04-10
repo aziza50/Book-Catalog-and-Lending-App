@@ -48,7 +48,7 @@ def item(request, book_id):
         active_request_obj = BookRequest.objects.filter(
             book=book,
             patron=request.user
-        ).exclude(status='denied').first()
+        ).exclude(status__in=['denied', 'expired']).first()
 
     if request.method == 'POST' and request.user.is_authenticated and not active_request_obj:
         form = BookRequestForm(request.POST, patron=request.user)

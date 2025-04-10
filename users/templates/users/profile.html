@@ -4,7 +4,7 @@
 {% block content %}
 <style>
   .leftSide {
-    max-width: 500px;
+    max-width: 200px;
   }
   .fixed-box {
     height: 150px;
@@ -22,7 +22,7 @@
 
   <div class="row">
     <!-- Left Side: Profile and Upload Form -->
-    <div class="col-md-4">
+    <div class="col-md-3">
       <div class="leftSide">
         {% if user.userprofile.profile_pic %}
           <img src="{{ user.userprofile.profile_pic.url }}" alt="Profile Picture" class="img-fluid rounded" style="width:200px;height:auto;">
@@ -45,7 +45,7 @@
     </div>
 
     <!-- Right Side: Requests and Collections -->
-    <div class="col-md-8">
+    <div class="col-md-9">
       <div class="rightSide">
         <!-- Requests Section -->
         <div class="mb-4">
@@ -55,14 +55,35 @@
               <!-- Patron -->
               {% if is_patron %}
                 {% for request in pending_requests %}
-                  <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                      Request for "{{ request.book.title }}" - Pick-up Time: {{ request.pickup_datetime }}
-                    </div>
-                    <div class="request-buttons">
-                      <button type="button" class="btn btn-secondary btn-sm" disabled>{{ request.status|capfirst }}</button>
-                    </div>
-                  </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {% if request.status == 'waiting'%}
+                      <div>
+                        Request for "{{ request.book.title }}" - Pick-up Time: {{ request.pickup_datetime }}
+                      </div>
+                      <div class="request-buttons">
+                        {% if request.book.status == 'Available'%}
+                            <button type="button" class="btn btn-warning btn-sm" disabled>{{ request.status|capfirst }}</button>
+                        {% else %}
+                            <button type="button" class="btn btn-warning btn-sm" disabled>Currently {{ request.book.status }}</button>
+                        {% endif %}
+                      </div>
+                    {% elif request.status == 'approved'%}
+                      <div>
+                        Request for "{{ request.book.title }}"
+                      </div>
+                      <div class="request-buttons">
+                        <button type="button" class="btn btn-success btn-sm" disabled>Pick-up: {{request.pickup_datetime}} at {{request.book.location}}</button>
+                        <button type="button" class="btn btn-secondary btn-sm" disabled>Due: {{ request.due_date }}</button>
+                      </div>
+                    {% else %}
+                      <div>
+                        Request for "{{ request.book.title }}" - Pick-up Time: {{ request.pickup_datetime }}
+                      </div>
+                      <div class="request-buttons">
+                        <button type="button" class="btn btn-danger btn-sm" disabled>{{ request.status|capfirst }}</button>
+                      </div>
+                    {% endif %}
+                    </li>
                 {% empty %}
                   <li class="list-group-item">No pending requests.</li>
                 {% endfor %}
