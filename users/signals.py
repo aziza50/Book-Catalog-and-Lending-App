@@ -32,7 +32,7 @@ def populate_profile(request, user, **kwargs):
     # Create the UserProfile with the extra info.
     UserProfile.objects.create(
         user=user,
-        role='patron',         # Default role for regular users
-        full_name=full_name,   # The real name pulled from Google account data
+        role='patron',  # Default role for regular users
+        full_name=full_name,  # The real name pulled from Google account data
         # join_date is automatically set via auto_now_add
     )
