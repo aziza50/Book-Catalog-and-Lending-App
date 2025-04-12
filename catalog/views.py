@@ -108,17 +108,17 @@ def item(request, book_id):
     })
 
 def edit(request, book_id):
-    book_to_edit = Book.objects.get(id = book_id)
+    book_to_edit = get_object_or_404(Book, id=book_id)
     if request.method == 'POST':
         form = BooksForm(request.POST, request.FILES, instance = book_to_edit)
         if form.is_valid():
             form.save()
-            return redirect('users:dashboard')
+            return redirect('catalog:book_list')
         else:
             print(form.errors)
     else:
         form = BooksForm(instance=book_to_edit)
-    return render(request, 'catalog/edit_item.html', {'form': form, 'book':book_to_edit})
+    return render(request, 'catalog/edit_book.html', {'form': form, 'book':book_to_edit})
 
 def filter_book(request, filterCategory):
     user = request.user
