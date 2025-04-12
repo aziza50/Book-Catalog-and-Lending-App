@@ -51,7 +51,6 @@
             {% endif %}
             </div>
     </div>
-            {% endif %}
         </div>
     </div>
 </div>
@@ -86,7 +85,6 @@
         {% endif %}
     </div>
 </div>
-{% endblock content %}
 
 
 <!-- Used a tutorial to create the comments - https://www.youtube.com/watch?v=O-QUBZuZlXM&ab_channel=Going-ToInternet -->
@@ -94,7 +92,7 @@
     <span>Comments</span>
     <h1>Readers Say</h1>
 </div>
-{% if is_authenticated %}
+{% if is_patron %}
 <div class = "center-button">
 <a id="openPopup" href="{% url 'catalog:add_comment' book.id %}" class="btn btn-custom active text-white" data-bs-toggle="modal" data-bs-target="#commentModal">
     Write A Review

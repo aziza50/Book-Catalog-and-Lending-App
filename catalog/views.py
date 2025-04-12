@@ -122,6 +122,12 @@ def edit(request, book_id):
     return render(request, 'catalog/edit_item.html', {'form': form, 'book':book_to_edit})
 
 def filter_book(request, filterCategory):
+    user = request.user
+    is_authenticated = user.is_authenticated
+    if is_authenticated:
+        user_profile = user.userprofile
+        is_librarian = user.is_authenticated and user_profile.is_librarian()
+        is_patron = user.is_authenticated and user_profile.is_patron()
     CATEGORY_MAP = {
         "genre":
             ["Fantasy",
@@ -143,11 +149,19 @@ def filter_book(request, filterCategory):
     }
     for categories, items in CATEGORY_MAP.items():
         if filterCategory in items:
-            filter_books = Book.objects.filter(**{categories : filterCategory})
-            return render(request, "catalog/books.html"
+            if is_patron:
+                filter_books = Book.objects.filter(**{categories : filterCategory}, is_private = False)
+                return render(request, "catalog/books.html"
                   , {
                       "books": filter_books,
-    })
+            }   )
+            else:
+                filter_books = Book.objects.filter(**{categories: filterCategory})
+                return render(request, "catalog/books.html"
+                              , {
+                                  "books": filter_books,
+                              })
+
 
 def search(request):
     query = request.GET.get('query', '')
@@ -162,9 +176,6 @@ def delete(request, book_id):
     book_to_delete.delete()
     return redirect('users:dashboard')
 
-# More TODO: collections/user shows their collections...
-# TODO: collections appear in user profile
-# TODO: this doesn't work for un signed in users :(
 def collections(request):
     user = request.user
     is_authenticated = user.is_authenticated
@@ -183,8 +194,6 @@ def collections(request):
 
     context = {
         'collections': collections,
-        'is_librarian': is_librarian,
-        'can_create': is_authenticated,  # Show create button to logged-in users
     }
 
     return render(request, 'catalog/collections.html', context)
@@ -221,7 +230,6 @@ def create_collection(request):
             return redirect('catalog:collections')
             # return redirect('catalog:collections', collection_id=collection.id)
     else:
-        print("FILES:", request.FILES)
         form = CreateCollectionForm(request=request)
 
     return render(request, 'catalog/create_collection.html', {'form': form})
@@ -233,27 +241,43 @@ def filter_collection(request, filterCategory):
     if is_authenticated:
         user_profile = user.userprofile
         is_librarian = user.is_authenticated and user_profile.is_librarian()
-    print(is_librarian)
     if filterCategory == "private" and is_librarian:
         filter_collections = Collection.objects.filter(is_private = True)
     else:
         filter_collections = Collection.objects.filter(is_private = False)
-    print(filter_collections)
+
+    collections = []
+    for collection in filter_collections:
+        collection.can_delete = (collection.creator == user) or is_librarian
+        collections.append(collection)
+
+
     return render(request, "catalog/collections.html"
                   , {
-                      "collections": filter_collections,
+                      "collections": collections,
     })
 
 def search_collection(request):
+    user = request.user
+    is_authenticated = user.is_authenticated
+    if is_authenticated:
+        user_profile = user.userprofile
+        is_librarian = user.is_authenticated and user_profile.is_librarian()
     query = request.GET.get('query', '')
     if not request.user.userprofile.is_librarian():
         collection_to_query = Collection.objects.filter(title__icontains = query, is_private = False)
     else:
         collection_to_query = Collection.objects.filter(title__icontains = query)
 
+    collections = []
+    for collection in collection_to_query:
+        collection.can_delete = (collection.creator == user) or is_librarian
+        collections.append(collection)
+
+
     return render(request, "catalog/collections.html"
                   , {
-                      "collections": collection_to_query,
+                      "collections": collections,
                   })
 def delete_collection(request, collection_id):
     # Fetch the collection by ID

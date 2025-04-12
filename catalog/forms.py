@@ -1,6 +1,9 @@
 from django import forms
 from .models import Book, Collection, Comments
 from django.core.exceptions import ValidationError
+from django.db.models import Q
+
+
 
 class BooksForm(forms.ModelForm):
     cover_image = forms.ImageField(required=False)  # Allow optional image upload
@@ -47,11 +50,21 @@ class CommentsForm(forms.ModelForm):
 
 
 class AddBooksToCollectionForm(forms.ModelForm):
-    books = forms.ModelMultipleChoiceField(queryset=Book.objects.all(), widget=forms.CheckboxSelectMultiple)
+    books = forms.ModelMultipleChoiceField(queryset=Book.objects.none(), widget=forms.CheckboxSelectMultiple)
 
     class Meta:
         model = Collection
         fields = ['books']
+
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get('instance', None)
+        super().__init__(*args, **kwargs)
+
+        if instance:
+            # Include non-private books AND books in the current collection
+            self.fields['books'].queryset = Book.objects.filter(
+                Q(is_private=False) | Q(collections=instance)
+            ).distinct()
 
 class CreateCollectionForm(forms.ModelForm):
     books = forms.ModelMultipleChoiceField(
@@ -100,8 +113,11 @@ class CreateCollectionForm(forms.ModelForm):
         )
 
         if commit:
-            instance.save()  # Save first
-            instance.books.set(self.cleaned_data['books'])  # Assign books after save
+            instance.save()
+
+            books = self.cleaned_data.get('books')
+            if books:
+                instance.books.set(list(books))
 
             # Manually trigger privacy logic
             if instance.is_private:

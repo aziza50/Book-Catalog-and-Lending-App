@@ -106,7 +106,7 @@ def mark_books_as_private(sender, instance, created, **kwargs):
         for book in instance.books.all():
             # Remove book from all collections except the current one
             book.collections.clear()  # Remove from all collections
-            book.collections.set([instance])
+            book.collections.add(instance)
             book.is_private = True  # Mark book as private
             book.save()
 

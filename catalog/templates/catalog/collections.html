@@ -8,9 +8,11 @@
      <button class="btn btn-custom active text-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
      Filter
    </button>
-       {% if can_create %}
+       {% if is_authenticated %}
+       {% if is_librarian %}
      <a class="btn btn-custom active text-white" href="{% url 'catalog:create_collection' %}">Create a New Collection</a>
-        {% endif %}
+       {% endif %}
+       {% endif %}
    </div>
  </div>
 
