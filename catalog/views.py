@@ -122,7 +122,7 @@ def collections(request):
         user_profile = user.userprofile
         is_librarian = user_profile.is_librarian()
 
-    if not is_authenticated:
+    if not is_librarian:
         collections_qs = Collection.objects.filter(is_private=False)
     else:
         collections_qs = Collection.objects.all()

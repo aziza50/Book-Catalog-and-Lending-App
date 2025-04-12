@@ -15,24 +15,30 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(user_signed_up)
 def populate_profile(request, user, **kwargs):
     """
-    This signal is triggered when a new user signs up (via Allauth).
-    It checks if the signup came from a social account (i.e., Google) and
-    then extracts extra data to pre-populate the UserProfile.
+    Triggered when a new user signs up via Allauth (social signup).
+    It extracts extra data from the social account and creates
+    (or updates) a UserProfile.
     """
+    full_name = ""
     # Check if sociallogin extra data is provided (Google)
     sociallogin = kwargs.get('sociallogin')
     if sociallogin:
         extra_data = sociallogin.account.extra_data
         # For Google, the full name is typically under 'name'
         full_name = extra_data.get('name', '')
-        # The email is set on the user model automatically
     else:
         full_name = ''  # Fallback if not using a social provider
 
-    # Create the UserProfile with the extra info.
-    UserProfile.objects.create(
+    # Use get_or_create to avoid duplicate creation.
+    profile, created = UserProfile.objects.get_or_create(
         user=user,
-        role='patron',  # Default role for regular users
-        full_name=full_name,  # The real name pulled from Google account data
-        # join_date is automatically set via auto_now_add
+        defaults={
+            'role': 'patron',      # Default role for regular users
+            'full_name': full_name,
+            # join_date is automatically set via auto_now_add
+        }
     )
+    if not created:
+        # Optionally update full_name if the profile already existed.
+        profile.full_name = full_name
+        profile.save()
