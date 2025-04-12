@@ -67,7 +67,6 @@ def browse_all_books(request):
             books = Book.objects.all().order_by('-title')
         else:
             books = Book.objects.filter(is_private=False).order_by('-title')
-
     return render(request, "catalog/books.html"
                   , {
                       "books": books,
