@@ -177,5 +177,32 @@
       </div>
     </div>
   </div>
+  {% if notifications %}
+    <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="notificationModalLabel">Request Update Notification</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            {% for notif in notifications %}
+              {% if notif.status == 'approved' %}
+                <p>Your request for <strong>{{ notif.book.title }}</strong> has been <strong style="color: green;">{{ notif.status }}</strong>. Please pick it up at {{ notif.book.location }}, {{ notif.pickup_datetime }}, and return it by {{ notif.due_date }}.</p>
+              {% else %}
+                <p>Your request for <strong>{{ notif.book.title }}</strong> has been <strong style="color: red;">{{ notif.status }}</strong>.</p>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        var notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+        notificationModal.show();
+      });
+    </script>
+  {% endif %}
 </div>
 {% endblock content %}

@@ -54,6 +54,9 @@ class BookRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     pickup_datetime = models.DateTimeField(default=default_time)
 
+    # notification tracking
+    notified = models.BooleanField(default=False)
+
     # in weeks capped at 2 months
     duration = models.PositiveIntegerField(default=1)
 

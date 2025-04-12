@@ -143,16 +143,28 @@ def profile(request):
                                 or 'delete_request_id' in request.POST):
         form = ProfilePictureForm(instance=user_profile)
 
-    # Get requests based on role:
+
+
+    # Requests handling
     pending_requests = None
     incoming_requests = None
+    notifications = None
     if is_patron:
         pending_requests = user.outgoing_requests.order_by('-created_at')
+        notifications_qs = user.outgoing_requests.filter(
+            status__in=['approved', 'denied'],
+            notified=False
+            ).order_by('-created_at')
+        notifications = list(notifications_qs)
+        if notifications:
+            notifications_qs.update(notified=True)
     elif is_librarian:
         incoming_requests = user.incoming_requests.order_by('-created_at')
 
     # Retrieve collections for the user (assuming a Collection model exists)
     collections = user.created_collections.all()
+
+
 
     return render(request, "users/profile.html", {
         "is_librarian": is_librarian,
@@ -161,6 +173,7 @@ def profile(request):
         "pending_requests": pending_requests,
         "incoming_requests": incoming_requests,
         "collections": collections,
+        "notifications": notifications,
     })
     
 
