@@ -380,13 +380,6 @@ a {
 
 }
 
-.card-body {
-    border-radius: 20px;
-    transition: transform 0.3s ease-in-out;
-    background-color: #F5EFE1;
-    padding: 1rem;
-
-}
 
 .card:hover {
     transform: scale(1.05);
@@ -404,7 +397,10 @@ a {
     max-width: 250px;
     max-height: 500px;
     border: none !important;
-    background-color: transparent !important;
+    border-radius: 20px;
+    transition: transform 0.3s ease-in-out;
+    background-color: #F5EFE1;
+    padding: 1rem;
 }
 
 .btn-primary.dropdown-toggle {

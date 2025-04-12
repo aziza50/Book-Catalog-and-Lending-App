@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
     "django_bootstrap5",
     "storages",
+    'widget_tweaks',
+
 ]
 
 

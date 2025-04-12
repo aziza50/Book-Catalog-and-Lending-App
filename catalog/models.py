@@ -1,9 +1,13 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.db.models.signals import m2m_changed, pre_delete, post_save
 from django.dispatch import receiver
 from django.utils import timezone
+isbn_requirement = RegexValidator(
+    regex = r'^\d{13}$',
+    message = 'ISBN must be exactly 13 digits!'
+)
 
 class Lender(models.Model):
     name = models.CharField(max_length=255)
@@ -38,7 +42,7 @@ class Book(models.Model):
     title = models.CharField(max_length=255)
     author = models.CharField(max_length = 20)
     lender = models.ForeignKey(User, on_delete = models.SET_NULL, null = True)
-    isbn = models.CharField(max_length=13, unique=True)
+    isbn = models.CharField(max_length=13, unique=True, validators = [isbn_requirement], help_text = "Enter 13-digit ISBN: ")
     status = models.CharField(max_length = 13, choices= Status.choices, default = Status.AVAILABLE)
     condition = models.CharField(max_length = 13, choices = Condition.choices, default=Condition.ACCEPTABLE)
     genre = models.CharField(max_length=100, choices = Genre.choices)
