@@ -3,6 +3,7 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models.signals import m2m_changed, pre_delete, post_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 class Lender(models.Model):
     name = models.CharField(max_length=255)
@@ -56,8 +57,8 @@ class Comments(models.Model):
     book = models.ForeignKey(Book, related_name='comms', on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null = True)
     comment = models.TextField(max_length=200)
-    date = models.DateTimeField(auto_now_add=True)
-    rating = models.IntegerField(default = 0)
+    date = models.DateTimeField(default = timezone.now)
+    rating = models.IntegerField()
 
 
 

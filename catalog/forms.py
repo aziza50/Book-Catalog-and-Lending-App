@@ -43,6 +43,7 @@ class CommentsForm(forms.ModelForm):
         # Make all fields required
         for field_name, field in self.fields.items():
             field.required = True
+        self.fields['rating'].empty_label = None
 
 
 class AddBooksToCollectionForm(forms.ModelForm):

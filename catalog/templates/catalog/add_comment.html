@@ -8,6 +8,7 @@
 <h4>Select a Rating: </h4>
 <form method="POST" action="{% url 'catalog:add_comment' book.id %}" enctype="multipart/form-data">
     {% csrf_token %}
+
     <!-- Used website https://iamkate.com/code/star-rating-widget/ --->
     <div class="rating">
         <input id="rating1" type="radio" name="rating" value="1">

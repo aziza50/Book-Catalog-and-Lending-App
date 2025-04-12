@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Book, Collection, Comments
 from django.contrib.auth.decorators import login_required
 from .forms import BooksForm, CommentsForm, AddBooksToCollectionForm, CreateCollectionForm
+from django.db.models import Avg
 
 
 def lend_book(request):
@@ -9,7 +10,6 @@ def lend_book(request):
     if request.method == 'POST':
         form = BooksForm(request.POST, request.FILES)
         if form.is_valid():
-            print("File received:", request.FILES.get('cover_image'))  # Debug
             book = form.save(commit = False)
             book.lender = user
             book.save()
@@ -24,23 +24,17 @@ def lend_book(request):
 def add_comment(request, book_id):
     user = request.user
     book = get_object_or_404(Book, id=book_id)
-
-
     if request.method == 'POST':
         form = CommentsForm(request.POST)
         if form.is_valid():
             comment = form.save(commit=False)
             comment.user = user
             comment.book = book
-            comment.rating = request.POST.get("rating",None)
-            book.rating += comment.rating
-            comments = Comments.objects.filter(book=book)
-            book.rating = book.rating/comments.count()
+            comment.rating = form.cleaned_data['rating']
+            book.rating = book.comms.aggregate(avg=Avg('rating'))['avg']
             comment.save()
             book.save()
             return redirect('catalog:item', book_id = book.id)
-        else:
-            print(form.errors)
     else:
         form = CommentsForm()
 
