@@ -9,6 +9,7 @@ urlpatterns = [
     path('add-comment/<int:book_id>/', views.add_comment, name='add_comment'),
     path('item/<int:book_id>/', views.item, name='item'),
     path("edit_item/<int:book_id>/", views.edit, name="edit_book"),
+    path("delete_book/<int:book_id>/", views.delete_book, name="delete_book"),
     path("filter/<str:filterCategory>/", views.filter_book, name="filter"),
     path("filter/collection/<str:filterCategory>/", views.filter_collection, name="filter_collection"),
     path("search/", views.search, name="search"),

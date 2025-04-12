@@ -71,7 +71,14 @@
                   <p class="card-text mb-0"><small class="text-muted">{{ book.rating }}/5</small></p>
                   <i class = "fas fa-star" style="color: #BFA054; font-size:1.3em;"></i>
               </div>
-
+                <form action="{% url 'catalog:delete_book' book.id %}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this book?');">
+                {% csrf_token %}
+                <div class = "hover-icon-delete">
+                <button type="submit" style="border: none; background: none; padding: 0; cursor: pointer; color:gray;">
+                    <i class="fas fa-trash" style="font-size: 24px;"></i>
+                    </button>
+                    </div>
+                </form>
             </div>
           </div>
         </div>

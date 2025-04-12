@@ -170,10 +170,15 @@ def search(request):
                       "books": book_to_query,
                   })
 
-def delete(request, book_id):
-    book_to_delete = Book.objects.get(id = book_id)
+def delete_book(request, book_id):
+    book_to_delete = get_object_or_404(Book, id=book_id)
+    print(f"Request to delete book ID: {book_id} — {book_to_delete.title}")
+
+    if not request.user.is_authenticated or not request.user.userprofile.is_librarian():
+        raise ValueError("You do not have permission to delete this collection.")
     book_to_delete.delete()
-    return redirect('users:dashboard')
+
+    return redirect('catalog:book_list')
 
 def collections(request):
     user = request.user
