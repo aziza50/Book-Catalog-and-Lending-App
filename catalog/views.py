@@ -1,9 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Book, Collection, Comments
 from django.contrib.auth.decorators import login_required
+from users.forms import BookRequestForm
+from django.core.exceptions import ValidationError
+from django.http import JsonResponse
+from users.models import BookRequest
+from users.forms import BookRequestForm
 from .forms import BooksForm, CommentsForm, AddBooksToCollectionForm, CreateCollectionForm
 from django.db.models import Avg
-
 
 def lend_book(request):
     user = request.user
@@ -73,7 +77,36 @@ def browse_all_books(request):
 def item(request, book_id):
     book = get_object_or_404(Book, id=book_id)
 
-    return render(request, "catalog/item.html", {'book':book})
+    active_request_obj = None
+    if request.user.is_authenticated:
+        active_request_obj = BookRequest.objects.filter(
+            book=book,
+            patron=request.user
+        ).exclude(status__in=['denied', 'expired']).first()
+
+    if request.method == 'POST' and request.user.is_authenticated and not active_request_obj:
+        form = BookRequestForm(request.POST, patron=request.user)
+        if form.is_valid():
+            book_request = form.save(commit=False)
+            book_request.patron = request.user
+            book_request.librarian = book_request.book.lender
+            book_request.save()
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'message': "Request sent successfully."})
+            else:
+                return redirect('catalog:item', book_id=book.id)
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    else:
+        form = BookRequestForm(initial={'book': book.id}, patron=request.user) if not active_request_obj else None
+
+    return render(request, 'catalog/item.html', {
+        'book': book,
+        'form': form,
+        'active_request': active_request_obj is not None,
+        'active_request_obj': active_request_obj,
+    })
 
 def edit(request, book_id):
     book_to_edit = Book.objects.get(id = book_id)
@@ -186,9 +219,10 @@ def create_collection(request):
         if form.is_valid():
             collection = form.save()
             return redirect('catalog:collections')
+            # return redirect('catalog:collections', collection_id=collection.id)
     else:
         print("FILES:", request.FILES)
-        form = CreateCollectionForm(request=request)  
+        form = CreateCollectionForm(request=request)
 
     return render(request, 'catalog/create_collection.html', {'form': form})
 

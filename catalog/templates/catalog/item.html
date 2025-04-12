@@ -29,15 +29,65 @@
                 <p> Description: {{ book.description }}</p>
                 <p> Lender username: {{ book.lender }}</p>
                 </div>
-            {% if user.is_authenticated %}
 
-        <button class="btn btn-custom active text-white contact-button" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
-                    Contact Seller
+            {% if book.lender == request.user %}
+            {% elif active_request %}
+                <button class="btn btn-secondary disabled" type="button" disabled>
+                    {% if active_request_obj.status == 'waiting' %}
+                        Request Pending
+                    {% elif active_request_obj.status == 'approved' %}
+                        Request Approved
+                    {% endif %}
+                </button>
+            {% else %}
+                <!-- Button to open the offcanvas -->
+                <button class="btn btn-custom active text-white contact-button"
+                        type="button"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#offcanvasNavbar"
+                        aria-controls="offcanvasNavbar">
+                    Borrow Book
                 </button>
             {% endif %}
             </div>
     </div>
+            {% endif %}
+        </div>
     </div>
+</div>
+
+<!-- Offcanvas with the BookRequestForm -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">
+            {% if active_request %}
+                Request Status
+            {% else %}
+                Request Book
+            {% endif %}
+        </h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form method="POST" action="">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            {{ form.non_field_errors }}
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+            {% endfor %}
+            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Confirm Request?');">Submit Request</button>
+        </form>
+        {% if request_sent %}
+            <p class="text-success">Request successfully sent!</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}
+
 
 <!-- Used a tutorial to create the comments - https://www.youtube.com/watch?v=O-QUBZuZlXM&ab_channel=Going-ToInternet -->
 <div class = "comment-heading">

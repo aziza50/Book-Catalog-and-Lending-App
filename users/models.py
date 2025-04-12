@@ -3,7 +3,8 @@ from email.policy import default
 from django.contrib.auth.models import User
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-
+from django.db.models import Q
+from datetime import datetime, timedelta, time
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="userprofile")
@@ -36,3 +37,59 @@ class UserProfile(models.Model):
 
     def is_patron(self):
         return self.role == 'patron'
+
+def default_time():
+    # default to next wednesday at noon
+    now = datetime.now()
+    days_ahead = (2 - now.weekday()) % 7
+    if days_ahead == 0 and now.time() >= time(12, 0):
+        days_ahead = 7
+    next_wed = now + timedelta(days=days_ahead)
+    return datetime.combine(next_wed.date(), time(12, 0)) 
+
+class BookRequest(models.Model):
+    book = models.ForeignKey('catalog.Book', on_delete=models.CASCADE, related_name='requests')
+    patron = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='outgoing_requests')
+    librarian = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='incoming_requests')
+    created_at = models.DateTimeField(auto_now_add=True)
+    pickup_datetime = models.DateTimeField(default=default_time)
+
+    # in weeks capped at 2 months
+    duration = models.PositiveIntegerField(default=1)
+
+    # automatically calculated by the form
+    due_date = models.DateTimeField(blank=True, null=True)
+
+    STATUS_CHOICES = [
+        ('approved', 'Approved'),
+        ('waiting', 'Waiting'),
+        ('denied', 'Denied'),
+        ('expired', 'Expired')
+    ]
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='waiting')
+
+    def clean(self):
+        super().clean()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['book', 'patron'],
+                condition=~Q(status='denied')| Q(status='expired'),
+                name='unique_open_request'
+            )
+        ]
+
+class CollectionsRequest(models.Model):
+    collection = models.ForeignKey('catalog.Collection', on_delete=models.CASCADE, related_name='requests')
+    patron = models.ForeignKey(User, on_delete=models.CASCADE, related_name='collection_view_requests')
+    librarian = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='collection_permission_requests')
+
+    STATUS_CHOICES = [
+        ('approved', 'Approved'),
+        ('waiting', 'Waiting'),
+        ('denied', 'Denied'),
+    ]
+
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='waiting')
+

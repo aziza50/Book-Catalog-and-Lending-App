@@ -56,6 +56,9 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
 
 class Comments(models.Model):
     book = models.ForeignKey(Book, related_name='comms', on_delete=models.CASCADE)
