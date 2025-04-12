@@ -149,6 +149,7 @@ def profile(request):
     pending_requests = None
     incoming_requests = None
     notifications = None
+    books = None
     if is_patron:
         pending_requests = user.outgoing_requests.order_by('-created_at')
         notifications_qs = user.outgoing_requests.filter(
@@ -160,6 +161,7 @@ def profile(request):
             notifications_qs.update(notified=True)
     elif is_librarian:
         incoming_requests = user.incoming_requests.order_by('-created_at')
+        books = user.listed_books.all()
 
     # Retrieve collections for the user (assuming a Collection model exists)
     collections = user.created_collections.all()
@@ -174,6 +176,7 @@ def profile(request):
         "incoming_requests": incoming_requests,
         "collections": collections,
         "notifications": notifications,
+        "books": books
     })
     
 

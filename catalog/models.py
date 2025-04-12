@@ -41,7 +41,7 @@ class Book(models.Model):
 
     title = models.CharField(max_length=255)
     author = models.CharField(max_length = 20)
-    lender = models.ForeignKey(User, on_delete = models.SET_NULL, null = True)
+    lender = models.ForeignKey(User, on_delete = models.SET_NULL, null = True, related_name = "listed_books")
     isbn = models.CharField(max_length=13, unique=True, validators = [isbn_requirement], help_text = "Enter 13-digit ISBN: ")
     status = models.CharField(max_length = 13, choices= Status.choices, default = Status.AVAILABLE)
     condition = models.CharField(max_length = 13, choices = Condition.choices, default=Condition.ACCEPTABLE)
