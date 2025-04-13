@@ -9,9 +9,7 @@
      Filter
    </button>
        {% if is_authenticated %}
-       {% if is_librarian %}
      <a class="btn btn-custom active text-white" href="{% url 'catalog:create_collection' %}">Create a New Collection</a>
-       {% endif %}
        {% endif %}
    </div>
  </div>
