@@ -217,6 +217,11 @@ def delete_collection(request, collection_id):
     if not (collection.creator == request.user or is_librarian):
         raise ValueError("You do not have permission to delete this collection.")
 
+    if collection.is_private:
+        for book in collection.books.all():
+            book.is_private = False
+            book.save()
+
     # Delete the collection
     collection.delete()
     return redirect('catalog:collections')
