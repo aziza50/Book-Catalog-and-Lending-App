@@ -39,8 +39,8 @@ def add_comment(request, book_id):
             comment.user = user
             comment.book = book
             comment.rating = form.cleaned_data['rating']
-            book.rating = book.comms.aggregate(avg=Avg('rating'))['avg']
             comment.save()
+            book.rating = book.comms.aggregate(avg=Avg('rating'))['avg']
             book.save()
             return redirect('catalog:item', book_id = book.id)
     else:
