@@ -7,10 +7,26 @@
     <title>Title</title>
 </head>
 <body>
-<h2>🧭 Welcome to LendABook: Help</h2>
+<h1 class="mb-0 ms-4">Welcome to LendABook: </h1>
+<hr class="mt-0 line-strip" >
+<nav id="help-navigation">
+  <ul class = "d-flex">
+    <li><a href="#home">Home & Dashboard</a></li>
+    <li><a href="#patron-borrow">Borrowing a Book (Patrons)</a></li>
+    <li><a href="#librarian-lend">Lending a Book (Librarians)</a></li>
+    <li><a href="#browse-books">Browsing Books</a></li>
+    <li><a href="#create-collections">Creating Collections</a></li>
+      <li><a href="#ratings">Rating and Commenting</a></li>
+    <li><a href="#profile">Customize your Profile</a></li>
+    <li><a href="#drop-pickups">Drop-off and Pickup Locations</a></li>
+      <li><a href="#roles">Patrons & Librarians</a></li>
+
+  </ul>
+</nav>
 
 <p>Welcome! Whether you're a <b>Patron</b> or a <b>Librarian</b>, here’s a simple walkthrough of how to use this website to browse, lend, or borrow books.</p>
 
+<section id = "home">
 <h3>🏠 Home & Dashboard</h3>
 <p>Once you log in with your <b>Google account</b>, you’ll land on your <b>dashboard</b>. Your dashboard changes depending on your role:</p>
 
@@ -32,7 +48,9 @@
 
     </li>
 </ul>
+    </section>
 
+<section id = "patron-borrow">
 <h3>📬 Borrowing a Book (Patrons)</h3>
 <ul>
     <li>
@@ -48,7 +66,9 @@
 
     </li>
 </ul>
+        </section>
 
+<section id = "browse-books">
 <h3>🔍 Browsing Books</h3>
 <p>Click <b>“Collections”</b> in the navigation bar to explore all available books:
 </p>
@@ -102,6 +122,9 @@
 
     </li>
 </ul>
+    </section>
+
+<section id = "librarian-lend">
 <h3>🧺 Lending a Book (Librarians)</h3>
 <p>Librarians have an extra button in their dashboard called <b>"Lend an Item"</b>.
 </p>
@@ -119,7 +142,9 @@
 
     </li>
 </ul>
+</section>
 
+<section id = "create-collections">
 <h3>🗂️ Creating Collections</h3>
 <p><b>Patrons</b> can create <b>public collections</b> (e.g., “Best Fantasy Books” or “Senior Year Favorites”).
 </p>
@@ -150,7 +175,9 @@
         	The <b>creator’s name</b> so others know who curated it
     </li>
 </ul>
+</section>
 
+<section id = "ratings">
 <h3>⭐ Rating and Commenting</h3>
 <p>After reading a book, you can:
 </p>
@@ -166,7 +193,9 @@
 </ul>
 <p>This helps build community trust and makes the collection more helpful!
 </p>
+</section>
 
+<section id = "profile">
 <h3>👤 Your Profile Page</h3>
 <p>Go to <b>Profile</b> in the navigation bar to:
 </p>
@@ -184,6 +213,8 @@
 
     </li>
 </ul>
+</section>
+<section id = "drop-pickups">
 <h2>📦 Drop-off and Pickup Locations</h2>
 <p>When borrowing or lending an item, it’s important to know <b>where</b> the exchange happens. Our app is designed to make this as convenient and safe as possible. All items are exchanged at <b>designated campus locations</b>.
 </p>
@@ -207,6 +238,14 @@
 </ul>
 <p>Each book or item will show its <b>location</b> on its detail page.
 </p>
+</section>
+    <h3>🔁 Returning Items</h3>
+<p>Borrowers will be expected to return items to the <b>same location</b> they were picked up from, unless otherwise coordinated.
+</p>
+<p>Librarians can mark items as “Returned” once they receive them back — this helps keep the library updated and organized.
+</p>
+
+    <section id = "roles">
 <h3>🙋 For Patrons </h3>
 <p>1. Once your borrow request is approved, the item will be <b>delivered to the specified location</b>.
 </p>
@@ -241,11 +280,8 @@
         Any notes about return timing, if needed
     </li>
 </ul>
-<h3>🔁 Returning Items</h3>
-<p>Borrowers will be expected to return items to the <b>same location</b> they were picked up from, unless otherwise coordinated.
-</p>
-<p>Librarians can mark items as “Returned” once they receive them back — this helps keep the library updated and organized.
-</p>
+            </section>
 </body>
+
 </html>
 {% endblock %}

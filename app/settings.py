@@ -51,7 +51,12 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
     "django_bootstrap5",
     "storages",
+    'widget_tweaks',
+    
+
 ]
+
+
 
 SOCIALACCOUNT_LOGIN_ON_GET=True
 
@@ -104,6 +109,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "app.context_processors.user_roles",
             ],
         },
     },
@@ -152,7 +158,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "America/New_York"
 
 USE_I18N = True
 
@@ -162,7 +168,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 # SHERRIFF: Added the static_root variable here to fix an erorr with static files not being found
-STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
@@ -208,7 +213,7 @@ else:
             "OPTIONS": {
                 "bucket_name": AWS_STORAGE_BUCKET_NAME,
                 "location": "media",
-                "file_overwrite": False, 
+                "file_overwrite": False,
                 "object_parameters": {
                     "CacheControl": "max-age=86400",
                 },
@@ -228,3 +233,4 @@ else:
     STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
     AWS_S3_FILE_OVERWRITE = False
+

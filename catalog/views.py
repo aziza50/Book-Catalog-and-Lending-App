@@ -1,17 +1,26 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponseForbidden
-from .models import Book, Collection, BookImage
+from .models import Book, Collection, Comments, BookImage
+import users.views
+from .models import Book, Collection, Comments, BookImage
 from django.contrib.auth.decorators import login_required
+from users.forms import BookRequestForm
+from django.core.exceptions import ValidationError
+from django.http import JsonResponse
+from users.models import BookRequest
+from users.forms import BookRequestForm
+from .forms import BooksForm, CommentsForm, AddBooksToCollectionForm, CreateCollectionForm
+from django.db.models import Avg
 from .forms import BooksForm, AddBooksToCollectionForm, CreateCollectionForm
 from users.decorators import librarian_required
 
+from django.http import HttpResponseForbidden
 
 def lend_book(request):
     user = request.user
     if request.method == 'POST':
         form = BooksForm(request.POST, request.FILES)
         if form.is_valid():
-            book = form.save(commit=False)
+            book = form.save(commit = False)
             book.lender = user
             book.save()
             additional_images = request.FILES.getlist('additional_images')
@@ -26,21 +35,51 @@ def lend_book(request):
             print(form.errors)
     else:
         form = BooksForm()
-    return render(request, 'catalog/add_book.html', {'form': form})
+    return render(request, 'catalog/add_book.html', {'form':form})
+
+
+def add_comment(request, book_id):
+    user = request.user
+    book = get_object_or_404(Book, id=book_id)
+    if request.method == 'POST':
+        form = CommentsForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.user = user
+            comment.book = book
+            comment.rating = form.cleaned_data['rating']
+            comment.save()
+            book.rating = book.comms.aggregate(avg=Avg('rating'))['avg']
+            book.save()
+            return redirect('catalog:item', book_id = book.id)
+    else:
+        form = CommentsForm()
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return render(request, "catalog/add_comment.html", {"form": form, "book": book})
+
+    return render(request, 'catalog/item.html', {'form': form, 'book':book})
 
 
 def browse_all_books(request):
     # get all the books from the model
     user = request.user
-    if user.is_authenticated:
+    is_authenticated = user.is_authenticated
+    if is_authenticated:
         user_profile = user.userprofile
-        if user_profile.is_librarian():
-            books = Book.objects.all().order_by('-title')
-        if user_profile.is_patron():
-            books = Book.objects.filter(is_private=False).order_by('-title')
-    else:
-        books = Book.objects.filter(is_private=False).order_by('-title')
+        is_librarian = user.is_authenticated and user_profile.is_librarian()
 
+    collection_title = request.GET.get('collection_title')
+
+    if collection_title:
+        collection = Collection.objects.get(title=collection_title)
+        books = collection.books.all().order_by("-title")
+
+    else:
+        if is_authenticated and is_librarian:
+            books = Book.objects.all().order_by('-title')
+        else:
+            books = Book.objects.filter(is_private=False).order_by('-title')
     return render(request, "catalog/books.html"
                   , {
                       "books": books,
@@ -49,100 +88,191 @@ def browse_all_books(request):
 
 def item(request, book_id):
     book = get_object_or_404(Book, id=book_id)
-    additional_images = book.images.all().order_by('order')
-    return render(request, "catalog/item.html", {
+    active_request_obj = None
+    if request.user.is_authenticated:
+        active_request_obj = BookRequest.objects.filter(
+            book=book,
+            patron=request.user
+        ).exclude(status__in=['denied', 'expired']).first()
+
+    if request.method == 'POST' and request.user.is_authenticated and not active_request_obj:
+        form = BookRequestForm(request.POST, patron=request.user)
+        if form.is_valid():
+            book_request = form.save(commit=False)
+            book_request.patron = request.user
+            book_request.librarian = book_request.book.lender
+            book_request.save()
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'message': "Request sent successfully."})
+            else:
+                return redirect('catalog:item', book_id=book.id)
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    else:
+        form = BookRequestForm(initial={'book': book.id}, patron=request.user) if not active_request_obj else None
+
+    return render(request, 'catalog/item.html', {
         'book': book,
-        'additional_images': additional_images
+        'form': form,
+        'active_request': active_request_obj is not None,
+        'active_request_obj': active_request_obj,
     })
 
-
-@librarian_required
 def edit(request, book_id):
     book_to_edit = get_object_or_404(Book, id=book_id)
+    old_cover_image = book_to_edit.cover_image if book_to_edit.cover_image else None
+    
     if request.method == 'POST':
         form = BooksForm(request.POST, request.FILES, instance=book_to_edit)
         if form.is_valid():
             book = form.save()
-            additional_images = request.FILES.getlist('additional_images')
-            for i, image_file in enumerate(additional_images):
-                BookImage.objects.create(
-                    book=book,
-                    image=image_file,
-                    order=book.images.count() + i  # Add to end of existing images
-                )
-            return redirect('users:dashboard')
+            
+            # Delete old cover image if it was replaced
+            if old_cover_image and book.cover_image and old_cover_image != book.cover_image:
+                old_cover_image.delete(save=False)
+
+            # Handle additional images only if new ones are uploaded
+            files = request.FILES.getlist('additional_images')
+            if files:
+                for i, f in enumerate(files):
+                    BookImage.objects.create(
+                        book=book,
+                        image=f,
+                        order=book.images.count() + i
+                    )
+            return redirect('catalog:book_list')
         else:
             print(form.errors)
     else:
         form = BooksForm(instance=book_to_edit)
-    return render(request, 'catalog/edit_item.html', {
-        'form': form, 
+
+    return render(request, 'catalog/edit_book.html', {
+        'form': form,
         'book': book_to_edit,
-        'additional_images': book_to_edit.images.all()  # Get all additional images
+        'additional_images': book_to_edit.images.all()
     })
 
+@login_required
+def delete_book_image(request, image_id):
+    image = get_object_or_404(BookImage, id=image_id)
+    
+    # Delete the image from the database (and S3 if applicable)
+    image.delete()
+    
+    return redirect('catalog:edit_book', book_id=image.book.id)
+
 def filter_book(request, filterCategory):
+    user = request.user
+    is_authenticated = user.is_authenticated
+    if is_authenticated:
+        user_profile = user.userprofile
+        is_patron = user.is_authenticated and user_profile.is_patron()
+    else:
+        is_patron = False
     CATEGORY_MAP = {
         "genre":
             ["Fantasy",
-             "Adventure",
-             "Mystery",
-             "Non-Fiction",
-             "Romance"]
+            "Adventure",
+            "Mystery",
+            "Non-Fiction",
+            "Romance"]
         ,
         "status":
             ["Available",
-             "Checked out"]
+            "Checked out"]
         ,
         "condition":
             ["LikeNew",
-             "Good",
-             "Acceptable",
+            "Good",
+            "Acceptable",
              "Poor"]
         ,
     }
     for categories, items in CATEGORY_MAP.items():
         if filterCategory in items:
-            filter_books = Book.objects.filter(**{categories: filterCategory})
-            return render(request, "catalog/books.html"
-                          , {
-                              "books": filter_books,
-                          })
+            if is_patron:
+                filter_books = Book.objects.filter(**{categories : filterCategory}, is_private = False)
+                return render(request, "catalog/books.html"
+                  , {
+                      "books": filter_books,
+            }   )
+            else:
+                filter_books = Book.objects.filter(**{categories: filterCategory})
+                return render(request, "catalog/books.html"
+                              , {
+                                  "books": filter_books,
+                              })
 
+def filter_book_collection(request, collection_id, filterCategory):
+    user = request.user
+    is_authenticated = user.is_authenticated
+    if is_authenticated:
+        user_profile = user.userprofile
+        is_patron = user.is_authenticated and user_profile.is_patron()
+    else:
+        is_patron = False
+    CATEGORY_MAP = {
+        "genre":
+            ["Fantasy",
+            "Adventure",
+            "Mystery",
+            "Non-Fiction",
+            "Romance"]
+        ,
+        "status":
+            ["Available",
+            "Checked out"]
+        ,
+        "condition":
+            ["LikeNew",
+            "Good",
+            "Acceptable",
+             "Poor"]
+        ,
+    }
+    collection = get_object_or_404(Collection, id=collection_id)
+    books_in_collection = collection.books.all()
+    filter_books = books_in_collection.none()
+
+    for categories, items in CATEGORY_MAP.items():
+        if filterCategory in items:
+            filter_books = books_in_collection.filter(**{categories : filterCategory})
+
+    return render(request, "catalog/view_collection.html", {
+        "collection": collection,
+        "books": filter_books,
+    })
+
+def search_books_collection(request, collection_id):
+    collection = get_object_or_404(Collection, id=collection_id)
+    books_in_collection = collection.books.all()
+    query = request.GET.get('query', '')
+    book_to_query = books_in_collection.filter(title__icontains = query)
+    return render(request, "catalog/view_collection.html", {
+        "collection": collection,
+        "books": book_to_query,
+    })
 
 def search(request):
     query = request.GET.get('query', '')
-    book_to_query = Book.objects.filter(title__icontains=query)
+    book_to_query = Book.objects.filter(title__icontains = query)
     return render(request, "catalog/books.html"
                   , {
                       "books": book_to_query,
                   })
 
 
-@librarian_required
-def delete_book_image(request, image_id):
-    """Delete a specific additional image"""
-    image = get_object_or_404(BookImage, id=image_id)
-    book_id = image.book.id
+def delete_book(request, book_id):
 
-    image.delete()  # This will trigger the signal to delete from S3
-    
-    # Redirect back to the edit page
-    return redirect('catalog:edit', book_id=book_id)
-
-@librarian_required
-def delete(request, book_id):
     book_to_delete = get_object_or_404(Book, id=book_id)
-    if request.method == 'POST':
-        book_to_delete.delete()
-        return redirect('users:dashboard')
+    print(f"Request to delete book ID: {book_id} — {book_to_delete.title}")
 
-    return render(request, 'catalog/confirm_delete.html', {'book': book_to_delete})
+    if not request.user.is_authenticated or not request.user.userprofile.is_librarian():
+        raise ValueError("You do not have permission to delete this book.")
+    book_to_delete.delete()
 
-# More TODO: collections/user shows their collections...
-# TODO: collections appear in user profile
-# TODO: this doesn't work for un signed in users :(
-
+    return redirect('catalog:book_list')
 
 def collections(request):
     user = request.user
@@ -153,16 +283,20 @@ def collections(request):
         user_profile = user.userprofile
         is_librarian = user_profile.is_librarian()
 
-    if not is_librarian:
-        collections_qs = Collection.objects.filter(is_private=False)
-    else:
+    if is_authenticated:
         collections_qs = Collection.objects.all()
+
+    else:
+        collections_qs = Collection.objects.filter(is_private=False)
+
+
+   
 
     collections = []
     for collection in collections_qs:
         collection.can_delete = (collection.creator == user) or is_librarian
         collections.append(collection)
-
+    print(is_librarian)
     context = {
         'collections': collections,
         'is_librarian': is_librarian,
@@ -170,7 +304,6 @@ def collections(request):
     }
 
     return render(request, 'catalog/collections.html', context)
-
 
 def add_books_to_collection(request, collection_id):
     # Fetch the collection
@@ -184,8 +317,10 @@ def add_books_to_collection(request, collection_id):
     if request.method == 'POST':
         form = AddBooksToCollectionForm(request.POST, instance=collection)
         if form.is_valid():
-            form.save()  # Save the form and update the books in the collection
-            return redirect('catalog:collections')  # Redirect to the collection list after adding books
+            instance = form.save(commit=False)
+            books = form.cleaned_data['books']
+            instance.books.set(books)
+            instance.save()
     else:
         form = AddBooksToCollectionForm(instance=collection)
 
@@ -193,10 +328,10 @@ def add_books_to_collection(request, collection_id):
     return render(request, 'catalog/add_books_to_collection.html', {'form': form, 'collection': collection})
 
 
-@login_required
+@login_required  
 def create_collection(request):
     if request.method == 'POST':
-        form = CreateCollectionForm(request.POST, request=request)
+        form = CreateCollectionForm(request.POST,request.FILES, request=request)
         if form.is_valid():
             collection = form.save()
             return redirect('catalog:collections')
@@ -206,26 +341,70 @@ def create_collection(request):
 
     return render(request, 'catalog/create_collection.html', {'form': form})
 
+def filter_collection(request, filterCategory):
+    user = request.user
+    is_authenticated = user.is_authenticated
+    if is_authenticated:
+        user_profile = user.userprofile
+        is_librarian = user.is_authenticated and user_profile.is_librarian()
+    if filterCategory == "private" and is_librarian:
+        filter_collections = Collection.objects.filter(is_private = True)
+    else:
+        filter_collections = Collection.objects.filter(is_private = False)
 
-@login_required
+    collections = []
+    for collection in filter_collections:
+        collection.can_delete = (collection.creator == user) or is_librarian
+        collections.append(collection)
+
+
+    return render(request, "catalog/collections.html"
+                  , {
+                      "collections": collections,
+    })
+
+def search_collection(request):
+    user = request.user
+    is_authenticated = user.is_authenticated
+    if is_authenticated:
+        user_profile = user.userprofile
+        is_librarian = user.is_authenticated and user_profile.is_librarian()
+    else:
+        is_librarian = False
+    query = request.GET.get('query', '')
+    if not is_librarian:
+        collection_to_query = Collection.objects.filter(title__icontains = query, is_private = False)
+    else:
+        collection_to_query = Collection.objects.filter(title__icontains = query)
+
+    collections = []
+    for collection in collection_to_query:
+        collection.can_delete = (collection.creator == user) or is_librarian
+        collections.append(collection)
+
+
+    return render(request, "catalog/collections.html"
+                  , {
+                      "collections": collections,
+                  })
 def delete_collection(request, collection_id):
     # Fetch the collection by ID
     collection = get_object_or_404(Collection, id=collection_id)
     is_librarian = request.user.userprofile.is_librarian()
+    is_authenticated = request.user.is_authenticated
+
 
     # Authorization check: Only creator or librarian can delete
-    if not (collection.creator == request.user or is_librarian):
+    if not is_authenticated or collection.creator != request.user or not is_librarian:
         raise ValueError("You do not have permission to delete this collection.")
 
-    if collection.is_private:
-        for book in collection.books.all():
-            book.is_private = False
-            book.save()
+    # Release all books
+    collection.books.all().update(is_private=False)
+    
 
     # Delete the collection
     collection.delete()
     return redirect('catalog:collections')
-
 
 @login_required
 def edit_collection(request, collection_id):
@@ -249,7 +428,6 @@ def edit_collection(request, collection_id):
         'form': form,
         'collection': collection
     })
-
 
 def collection_books_view(request, collection_id):
     # Get the collection by ID
