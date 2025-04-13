@@ -1,5 +1,6 @@
 from django import forms
 from .models import Book, Collection, Comments
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 
@@ -68,7 +69,7 @@ class AddBooksToCollectionForm(forms.ModelForm):
 
 class CreateCollectionForm(forms.ModelForm):
     books = forms.ModelMultipleChoiceField(
-        queryset=Book.objects.filter(is_private = False),
+        queryset=Book.objects.filter(is_private=False),
         widget=forms.CheckboxSelectMultiple,
         required=False
     )
@@ -78,10 +79,17 @@ class CreateCollectionForm(forms.ModelForm):
         widget=forms.RadioSelect,
         required=True
     )
+    
+    allowed_users = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Select users who can access this collection"
+    )
 
     class Meta:
         model = Collection
-        fields = ['title', 'description', 'books', 'cover_image']
+        fields = ['title', 'description', 'books', 'cover_image', 'allowed_users']
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)  
@@ -91,8 +99,15 @@ class CreateCollectionForm(forms.ModelForm):
             user = self.request.user
             if not user.userprofile.is_librarian():
                 self.fields['collection_type'].choices = [('public', 'Public')]
+            
+            # Exclude current user from allowed_users list since they're already the creator, also other librarians
+            self.fields['allowed_users'].queryset = User.objects.exclude(
+                    Q(id=user.id) | Q(userprofile__role='librarian')
+    )            
         self.fields['cover_image'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Upload a Cover Image'})
-        #nicely render all forms fields
+        
+        
+        # Nicely render all form fields
         for field_name, field in self.fields.items():
             if not isinstance(field.widget, (forms.CheckboxSelectMultiple, forms.RadioSelect)):
                 field.widget.attrs.update({'class': 'form-control'})
@@ -103,28 +118,40 @@ class CreateCollectionForm(forms.ModelForm):
 
         user = self.request.user
         collection_type = self.cleaned_data.get('collection_type')
+        is_private = (collection_type == 'private')
 
         instance = Collection(
             title=self.cleaned_data['title'],
             description=self.cleaned_data['description'],
             creator=user,
-            is_private=(collection_type == 'private'),
-            cover_image = self.cleaned_data['cover_image'],
+            is_private=is_private,
+            cover_image=self.cleaned_data['cover_image'],
         )
 
         if commit:
             instance.save()
+            
+            # Handle allowed users if the collection is private
+            if is_private:
+                allowed_users = self.cleaned_data.get('allowed_users')
+                if allowed_users:
+                    instance.allowed_users.set(allowed_users)
+                    
+            # Handle books
+            selected_books = self.cleaned_data.get('books')
+            if selected_books:
+                instance.books.set(selected_books)
 
-            books = self.cleaned_data.get('books')
-            if books:
-                instance.books.set(list(books))
+                if instance.is_private:
+                    for book in selected_books:
+                        # Remove the book from all collections
+                        book.collections.set([])
 
-            # Manually trigger privacy logic
-            if instance.is_private:
-                for book in instance.books.all():
-                    book.collections.remove(*book.collections.all())  # Remove from other collections
-                    book.collections.add(instance)
-                    book.is_private = True
-                    book.save()
+                        # Add it only to this private collection
+                        book.collections.add(instance)
+
+                        # Set the book as private
+                        book.is_private = True
+                        book.save()
 
         return instance
