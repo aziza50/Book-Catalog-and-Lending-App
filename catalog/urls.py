@@ -20,4 +20,5 @@ urlpatterns = [
     path('collections/<int:collection_id>/add_books/', views.add_books_to_collection, name='add_books_to_collection'),
     path('collections/<int:collection_id>edit/', views.edit_collection, name='edit_collection'),
     path('collections/<int:collection_id>/delete/', views.delete_collection, name='delete_collection'),
+    path('delete-book-image/<int:image_id>/', views.delete_book_image, name='delete_book_image'),
 ]
