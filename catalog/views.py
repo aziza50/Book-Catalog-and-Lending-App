@@ -88,7 +88,6 @@ def browse_all_books(request):
 
 def item(request, book_id):
     book = get_object_or_404(Book, id=book_id)
-
     active_request_obj = None
     if request.user.is_authenticated:
         active_request_obj = BookRequest.objects.filter(
@@ -263,7 +262,9 @@ def search(request):
                       "books": book_to_query,
                   })
 
+
 def delete_book(request, book_id):
+
     book_to_delete = get_object_or_404(Book, id=book_id)
     print(f"Request to delete book ID: {book_id} — {book_to_delete.title}")
 
@@ -400,6 +401,7 @@ def delete_collection(request, collection_id):
     # Release all books
     collection.books.all().update(is_private=False)
     
+
     # Delete the collection
     collection.delete()
     return redirect('catalog:collections')

@@ -9,12 +9,10 @@
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <!-- Title Field -->
-            <div class="form-group">
+            <!-- Title Field -->div class="form-group">
                 <label for="{{ form.title.id_for_label }}">Title</label>
                 {{ form.title }}
             </div>
-
             <!-- ISBN Field -->
             <div class="form-group">
                 <label for="{{ form.isbn.id_for_label }}">ISBN</label>
@@ -36,11 +34,13 @@
                 {{ form.status }}
             </div>
 
+
             <!-- Condition Field -->
             <div class="form-group">
                 <label for="{{ form.condition.id_for_label }}">Condition</label>
                 {{ form.condition }}
             </div>
+
 
             <!-- Genre Field -->
             <div class="form-group">
@@ -48,13 +48,16 @@
                 {{ form.genre }}
             </div>
 
+
             <!-- Location Field -->
+
             <div class="form-group">
                 <label for="{{ form.location.id_for_label }}">Location</label>
                 {{ form.location }}
             </div>
 
             <!-- Description Field -->
+
             <div class="form-group">
                 <label for="{{ form.description.id_for_label }}">Description</label>
                 {{ form.description }}
