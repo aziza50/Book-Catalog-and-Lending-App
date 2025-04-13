@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseForbidden
 from .models import Book, Collection
 from django.contrib.auth.decorators import login_required
 from .forms import BooksForm, AddBooksToCollectionForm, CreateCollectionForm
+from users.decorators import librarian_required
 
 
 def lend_book(request):
@@ -9,7 +11,7 @@ def lend_book(request):
     if request.method == 'POST':
         form = BooksForm(request.POST, request.FILES)
         if form.is_valid():
-            book = form.save(commit = False)
+            book = form.save(commit=False)
             book.lender = user
             book.save()
             return redirect('users:dashboard')
@@ -17,10 +19,11 @@ def lend_book(request):
             print(form.errors)
     else:
         form = BooksForm()
-    return render(request, 'catalog/add_book.html', {'form':form})
+    return render(request, 'catalog/add_book.html', {'form': form})
+
 
 def browse_all_books(request):
-    #get all the books from the model
+    # get all the books from the model
     user = request.user
     if user.is_authenticated:
         user_profile = user.userprofile
@@ -32,18 +35,21 @@ def browse_all_books(request):
         books = Book.objects.filter(is_private=False).order_by('-title')
 
     return render(request, "catalog/books.html"
-    ,{
-        "books": books,
-    })
+                  , {
+                      "books": books,
+                  })
+
 
 def item(request, book_id):
     book = get_object_or_404(Book, id=book_id)
-    return render(request, "catalog/item.html", {'book':book})
+    return render(request, "catalog/item.html", {'book': book})
 
+
+@librarian_required
 def edit(request, book_id):
-    book_to_edit = Book.objects.get(id = book_id)
+    book_to_edit = get_object_or_404(Book, id=book_id)
     if request.method == 'POST':
-        form = BooksForm(request.POST, request.FILES, instance = book_to_edit)
+        form = BooksForm(request.POST, request.FILES, instance=book_to_edit)
         if form.is_valid():
             form.save()
             return redirect('users:dashboard')
@@ -51,52 +57,61 @@ def edit(request, book_id):
             print(form.errors)
     else:
         form = BooksForm(instance=book_to_edit)
-    return render(request, 'catalog/edit_item.html', {'form': form, 'book':book_to_edit})
+    return render(request, 'catalog/edit_item.html', {'form': form, 'book': book_to_edit})
+
 
 def filter_book(request, filterCategory):
     CATEGORY_MAP = {
         "genre":
             ["Fantasy",
-            "Adventure",
-            "Mystery",
-            "Non-Fiction",
-            "Romance"]
+             "Adventure",
+             "Mystery",
+             "Non-Fiction",
+             "Romance"]
         ,
         "status":
             ["Available",
-            "Checked out"]
+             "Checked out"]
         ,
         "condition":
             ["LikeNew",
-            "Good",
-            "Acceptable",
+             "Good",
+             "Acceptable",
              "Poor"]
         ,
     }
     for categories, items in CATEGORY_MAP.items():
         if filterCategory in items:
-            filter_books = Book.objects.filter(**{categories : filterCategory})
+            filter_books = Book.objects.filter(**{categories: filterCategory})
             return render(request, "catalog/books.html"
-                  , {
-                      "books": filter_books,
-    })
+                          , {
+                              "books": filter_books,
+                          })
+
 
 def search(request):
     query = request.GET.get('query', '')
-    book_to_query = Book.objects.filter(title__icontains = query)
+    book_to_query = Book.objects.filter(title__icontains=query)
     return render(request, "catalog/books.html"
                   , {
                       "books": book_to_query,
                   })
 
+
+@librarian_required
 def delete(request, book_id):
-    book_to_delete = get_object_or_404(Book, id = book_id)
-    book_to_delete.delete()
-    return redirect('users:dashboard')
+    book_to_delete = get_object_or_404(Book, id=book_id)
+    if request.method == 'POST':
+        book_to_delete.delete()
+        return redirect('users:dashboard')
+
+    return render(request, 'catalog/confirm_delete.html', {'book': book_to_delete})
 
 # More TODO: collections/user shows their collections...
 # TODO: collections appear in user profile
 # TODO: this doesn't work for un signed in users :(
+
+
 def collections(request):
     user = request.user
     is_authenticated = user.is_authenticated
@@ -106,7 +121,10 @@ def collections(request):
         user_profile = user.userprofile
         is_librarian = user_profile.is_librarian()
 
-    collections_qs = Collection.objects.all()
+    if not is_librarian:
+        collections_qs = Collection.objects.filter(is_private=False)
+    else:
+        collections_qs = Collection.objects.all()
 
     collections = []
     for collection in collections_qs:
@@ -120,6 +138,7 @@ def collections(request):
     }
 
     return render(request, 'catalog/collections.html', context)
+
 
 def add_books_to_collection(request, collection_id):
     # Fetch the collection
@@ -142,18 +161,19 @@ def add_books_to_collection(request, collection_id):
     return render(request, 'catalog/add_books_to_collection.html', {'form': form, 'collection': collection})
 
 
-@login_required  
+@login_required
 def create_collection(request):
     if request.method == 'POST':
-        form = CreateCollectionForm(request.POST, request=request)  
+        form = CreateCollectionForm(request.POST, request=request)
         if form.is_valid():
             collection = form.save()
             return redirect('catalog:collections')
             # return redirect('catalog:collections', collection_id=collection.id)
     else:
-        form = CreateCollectionForm(request=request)  
+        form = CreateCollectionForm(request=request)
 
     return render(request, 'catalog/create_collection.html', {'form': form})
+
 
 @login_required
 def delete_collection(request, collection_id):
@@ -168,6 +188,7 @@ def delete_collection(request, collection_id):
     # Delete the collection
     collection.delete()
     return redirect('catalog:collections')
+
 
 @login_required
 def edit_collection(request, collection_id):
@@ -191,6 +212,7 @@ def edit_collection(request, collection_id):
         'form': form,
         'collection': collection
     })
+
 
 def collection_books_view(request, collection_id):
     # Get the collection by ID

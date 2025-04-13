@@ -5,11 +5,13 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models.signals import m2m_changed, pre_delete, post_save, post_delete
 from django.dispatch import receiver
 
+
 class Lender(models.Model):
     name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
+
 
 class Book(models.Model):
     class Status(models.TextChoices):

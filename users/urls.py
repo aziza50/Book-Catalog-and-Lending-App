@@ -2,6 +2,7 @@ from django.urls import path
 
 from . import views
 from .views import dashboard
+
 app_name = "users"
 
 urlpatterns = [
@@ -10,6 +11,6 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path("profile/", views.profile, name="profile"),
     path("resources/", views.resources, name="resources"),
-    path("browseGuest/", views.browseGuest, name = "browseGuest"),
-    path("help_page/", views.helpPage, name = "help_page"),
+    path("browseGuest/", views.browseGuest, name="browseGuest"),
+    path("help_page/", views.helpPage, name="help_page"),
 ]
