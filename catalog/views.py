@@ -264,7 +264,7 @@ def delete_book(request, book_id):
     print(f"Request to delete book ID: {book_id} — {book_to_delete.title}")
 
     if not request.user.is_authenticated or not request.user.userprofile.is_librarian():
-        raise ValueError("You do not have permission to delete this collection.")
+        raise ValueError("You do not have permission to delete this book.")
     book_to_delete.delete()
 
     return redirect('catalog:book_list')
@@ -393,6 +393,9 @@ def delete_collection(request, collection_id):
     if not is_authenticated or collection.creator != request.user or not is_librarian:
         raise ValueError("You do not have permission to delete this collection.")
 
+    # Release all books
+    collection.books.all().update(is_private=False)
+    
     # Delete the collection
     collection.delete()
     return redirect('catalog:collections')
