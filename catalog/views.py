@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
+
+import users.views
 from .models import Book, Collection, Comments
 from django.contrib.auth.decorators import login_required
 from users.forms import BookRequestForm
@@ -130,8 +132,9 @@ def filter_book(request, filterCategory):
     is_authenticated = user.is_authenticated
     if is_authenticated:
         user_profile = user.userprofile
-        is_librarian = user.is_authenticated and user_profile.is_librarian()
         is_patron = user.is_authenticated and user_profile.is_patron()
+    else:
+        is_patron = False
     CATEGORY_MAP = {
         "genre":
             ["Fantasy",
@@ -245,7 +248,6 @@ def create_collection(request):
 
     return render(request, 'catalog/create_collection.html', {'form': form})
 
-@login_required
 def filter_collection(request, filterCategory):
     user = request.user
     is_authenticated = user.is_authenticated
@@ -274,8 +276,10 @@ def search_collection(request):
     if is_authenticated:
         user_profile = user.userprofile
         is_librarian = user.is_authenticated and user_profile.is_librarian()
+    else:
+        is_librarian = False
     query = request.GET.get('query', '')
-    if not request.user.userprofile.is_librarian():
+    if not is_librarian:
         collection_to_query = Collection.objects.filter(title__icontains = query, is_private = False)
     else:
         collection_to_query = Collection.objects.filter(title__icontains = query)
@@ -294,9 +298,11 @@ def delete_collection(request, collection_id):
     # Fetch the collection by ID
     collection = get_object_or_404(Collection, id=collection_id)
     is_librarian = request.user.userprofile.is_librarian()
+    is_authenticated = request.user.is_authenticated
+
 
     # Authorization check: Only creator or librarian can delete
-    if not (collection.creator == request.user or is_librarian):
+    if not is_authenticated or collection.creator != request.user or not is_librarian:
         raise ValueError("You do not have permission to delete this collection.")
 
     # Delete the collection

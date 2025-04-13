@@ -50,7 +50,7 @@ class CommentsForm(forms.ModelForm):
 
 
 class AddBooksToCollectionForm(forms.ModelForm):
-    books = forms.ModelMultipleChoiceField(queryset=Book.objects.none(), widget=forms.CheckboxSelectMultiple)
+    books = forms.ModelMultipleChoiceField(queryset=Book.objects.none(), widget=forms.CheckboxSelectMultiple, required = False)
 
     class Meta:
         model = Collection
