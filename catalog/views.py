@@ -343,6 +343,7 @@ def search_collection(request):
                   , {
                       "collections": collections,
                   })
+
 def delete_collection(request, collection_id):
     # Fetch the collection by ID
     collection = get_object_or_404(Collection, id=collection_id)
@@ -354,6 +355,11 @@ def delete_collection(request, collection_id):
     if not is_authenticated or collection.creator != request.user or not is_librarian:
         raise ValueError("You do not have permission to delete this collection.")
 
+    if collection.is_private:
+        for book in collection.books.all():
+            book.is_private = False
+            book.save()
+            
     # Delete the collection
     collection.delete()
     return redirect('catalog:collections')
