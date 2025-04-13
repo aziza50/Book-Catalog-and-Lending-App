@@ -8,6 +8,10 @@ from users.models import BookRequest
 from users.forms import BookRequestForm
 from .forms import BooksForm, CommentsForm, AddBooksToCollectionForm, CreateCollectionForm
 from django.db.models import Avg
+from .forms import BooksForm, AddBooksToCollectionForm, CreateCollectionForm
+from users.decorators import librarian_required
+
+from django.http import HttpResponseForbidden
 
 def lend_book(request):
     user = request.user
@@ -106,6 +110,7 @@ def item(request, book_id):
         'active_request': active_request_obj is not None,
         'active_request_obj': active_request_obj,
     })
+    return render(request, "catalog/item.html", {'book': book})
 
 def edit(request, book_id):
     book_to_edit = get_object_or_404(Book, id=book_id)
@@ -198,6 +203,8 @@ def collections(request):
 
     context = {
         'collections': collections,
+        'is_librarian': is_librarian,
+        'can_create': is_authenticated,  # Show create button to logged-in users
     }
 
     return render(request, 'catalog/collections.html', context)
