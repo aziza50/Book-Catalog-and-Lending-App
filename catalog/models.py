@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from app.storage_backend import MediaStorage
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.db.models.signals import m2m_changed, pre_delete, post_save
+from django.db.models.signals import m2m_changed, pre_delete, post_save, post_delete
 from django.dispatch import receiver
 
 class Lender(models.Model):
@@ -101,3 +101,8 @@ def mark_books_public_on_delete(sender, instance, **kwargs):
             book.collections.remove(instance)  # Remove book from this collection
             book.is_private = False  # Mark as public if it's not in any private collections
             book.save()
+
+@receiver(post_delete, sender=Book)
+def delete_book_files_from_s3(sender,instance, **kwargs):
+    if instance.cover_image:
+        instance.cover_image.delete(save=False)

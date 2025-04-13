@@ -90,7 +90,7 @@ def search(request):
                   })
 
 def delete(request, book_id):
-    book_to_delete = Book.objects.get(id = book_id)
+    book_to_delete = get_object_or_404(Book, id = book_id)
     book_to_delete.delete()
     return redirect('users:dashboard')
 
