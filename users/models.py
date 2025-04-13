@@ -16,7 +16,7 @@ class UserProfile(models.Model):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='patron')
 
     full_name = models.CharField(max_length=255, blank=True, null=True)
-    join_date = models.DateTimeField(auto_now_add = true)  # Automatically set join date
+    join_date = models.DateTimeField(auto_now_add = True)  # Automatically set join date
 
     groups = models.ManyToManyField(
         'auth.Group',
