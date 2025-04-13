@@ -24,15 +24,7 @@
     <!-- Left Side: Profile and Upload Form -->
     <div class="col-md-3">
       <div class="leftSide">
-          {% if user.userprofile.full_name %}
-            <p>You are logged in as {{user.userprofile.full_name}} </p>
-        {% endif %}
-        {% if user.userprofile.join_date %}
-            <p>You joined on {{user.userprofile.join_date}} </p>
-        {% endif %}
-        {% if user.email %}
-            <p>Email: {{user.email}} </p>
-        {% endif %}
+
         {% if user.userprofile.profile_pic %}
           <img src="{{ user.userprofile.profile_pic.url }}" alt="Profile Picture" class="img-fluid rounded" style="width:200px;height:auto;">
         {% else %}
@@ -44,11 +36,20 @@
         {% elif is_patron %}
           <p>You are a Patron!</p>
         {% endif %}
+        {% if user.userprofile.full_name %}
+            <p>You are logged in as {{user.userprofile.full_name}} </p>
+        {% endif %}
+        {% if user.userprofile.join_date %}
+            <p>You joined on {{user.userprofile.join_date}} </p>
+        {% endif %}
+        {% if user.email %}
+            <p>Email: {{user.email}} </p>
+        {% endif %}
 
         <form method="post" enctype="multipart/form-data">
           {% csrf_token %}
           {{ form.as_p }}
-          <button type="submit" class="btn btn-primary">Upload Profile Picture</button>
+          <button type="submit" class="btn btn-custom active text-white">Upload Profile Picture</button>
         </form>
       </div>
     </div>
@@ -173,7 +174,7 @@
                   <div>
                     {{ collection.title }}
                   </div>
-                  <a href="{% url 'catalog:edit_collection' collection.id %}" class="btn btn-outline-primary btn-sm">
+                  <a href="{% url 'catalog:edit_collection' collection.id %}" class="btn btn-custom active text-white">
                     Edit
                   </a>
                 </li>
@@ -195,7 +196,7 @@
                     <div>
                       {{ book.title }}
                     </div>
-                    <a href="{% url 'catalog:edit_book' book.id %}" class="btn btn-outline-primary btn-sm">
+                    <a href="{% url 'catalog:edit_book' book.id %}" class="btn btn-custom active text-white">
                       Edit
                     </a>
                   </li>
