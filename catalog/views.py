@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-
+from .models import Book, Collection, Comments, BookImage
 import users.views
-from .models import Book, Collection, Comments
+from .models import Book, Collection, Comments, BookImage
 from django.contrib.auth.decorators import login_required
 from users.forms import BookRequestForm
 from django.core.exceptions import ValidationError
@@ -23,6 +23,13 @@ def lend_book(request):
             book = form.save(commit = False)
             book.lender = user
             book.save()
+            additional_images = request.FILES.getlist('additional_images')
+            for i, image_file in enumerate(additional_images):
+                BookImage.objects.create(
+                    book=book,
+                    image=image_file,
+                    order=i
+                )
             return redirect('users:dashboard')
         else:
             print(form.errors)
@@ -119,13 +126,35 @@ def edit(request, book_id):
     if request.method == 'POST':
         form = BooksForm(request.POST, request.FILES, instance = book_to_edit)
         if form.is_valid():
-            form.save()
+            book = form.save()
+            files = form.cleaned_data.get('additional_images')
+            if files:
+                for i, f in enumerate(files):
+                    BookImage.objects.create(
+                        book=book,
+                        image=f,
+                        order=book.images.count() + i
+                    )
             return redirect('catalog:book_list')
         else:
             print(form.errors)
     else:
         form = BooksForm(instance=book_to_edit)
-    return render(request, 'catalog/edit_book.html', {'form': form, 'book':book_to_edit})
+
+    return render(request, 'catalog/edit_book.html', {
+        'form': form,
+        'book': book_to_edit,
+        'additional_images': book_to_edit.images.all()
+    })
+
+@login_required
+def delete_book_image(request, image_id):
+    image = get_object_or_404(BookImage, id=image_id)
+    
+    # Delete the image from the database (and S3 if applicable)
+    image.delete()
+    
+    return redirect('catalog:edit_book', book_id=image.book.id)
 
 def filter_book(request, filterCategory):
     user = request.user

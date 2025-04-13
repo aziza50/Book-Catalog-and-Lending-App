@@ -1,14 +1,35 @@
 from django import forms
-from .models import Book, Collection, Comments
+from .models import Book, Collection, Comments, BookImage
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
 
+# Custom field for handling multiple files
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = [single_file_clean(data, initial)]
+        return result
 
 class BooksForm(forms.ModelForm):
     cover_image = forms.ImageField(required=False)  # Allow optional image upload
 
+    additional_images = MultipleFileField(
+        required=False,
+        label="Additional Images",
+        help_text="Select multiple images to upload (hold Ctrl to select multiple files)"
+    )
+    
     class Meta:
         model = Book
         fields = ['title', 'isbn', 'author', 'status', 'condition', 'genre', 'location', 'description', 'cover_image']
@@ -66,6 +87,24 @@ class AddBooksToCollectionForm(forms.ModelForm):
             self.fields['books'].queryset = Book.objects.filter(
                 Q(is_private=False) | Q(collections=instance)
             ).distinct()
+
+class BookImageForm(forms.ModelForm):
+    class Meta:
+        model = BookImage
+        fields = ['image', 'caption']
+        widgets = {
+            'image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'caption': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Image caption (optional)'})
+        }
+
+    def save(self, commit=True):
+        # Handle deleting old cover image if it's being replaced
+        if self.instance.pk:
+            old_instance = Book.objects.get(pk=self.instance.pk)
+            if old_instance.cover_image and self.cleaned_data.get('cover_image') != old_instance.cover_image:
+                old_instance.cover_image.delete(save=False)
+        
+        return super().save(commit)
 
 class CreateCollectionForm(forms.ModelForm):
     books = forms.ModelMultipleChoiceField(
