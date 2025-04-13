@@ -5,6 +5,10 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Q
 from datetime import datetime, timedelta, time
+from django.dispatch import receiver
+from django.db.models.signals import post_delete
+from django.utils import timezone
+
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="userprofile")
@@ -41,6 +45,11 @@ class UserProfile(models.Model):
     def is_patron(self):
         return self.role == 'patron'
 
+@receiver(post_delete, sender=UserProfile)
+def delete_profile_pic_from_s3(sender, instance, **kwargs):
+    if instance.profile_pic:
+        instance.profile_pic.delete(save=False)
+
 def default_time():
     # default to next wednesday at noon
     now = datetime.now()
@@ -48,7 +57,7 @@ def default_time():
     if days_ahead == 0 and now.time() >= time(12, 0):
         days_ahead = 7
     next_wed = now + timedelta(days=days_ahead)
-    return datetime.combine(next_wed.date(), time(12, 0)) 
+    return datetime.combine(next_wed.date(), time(12, 0))
 
 class BookRequest(models.Model):
     book = models.ForeignKey('catalog.Book', on_delete=models.CASCADE, related_name='requests')

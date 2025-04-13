@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Book, Collection, Comments, BookImage
+import users.views
+from .models import Book, Collection, Comments, BookImage
 from django.contrib.auth.decorators import login_required
 from users.forms import BookRequestForm
 from django.core.exceptions import ValidationError
@@ -8,6 +10,10 @@ from users.models import BookRequest
 from users.forms import BookRequestForm
 from .forms import BooksForm, CommentsForm, AddBooksToCollectionForm, CreateCollectionForm
 from django.db.models import Avg
+from .forms import BooksForm, AddBooksToCollectionForm, CreateCollectionForm
+from users.decorators import librarian_required
+
+from django.http import HttpResponseForbidden
 
 def lend_book(request):
     user = request.user
@@ -42,8 +48,8 @@ def add_comment(request, book_id):
             comment.user = user
             comment.book = book
             comment.rating = form.cleaned_data['rating']
-            book.rating = book.comms.aggregate(avg=Avg('rating'))['avg']
             comment.save()
+            book.rating = book.comms.aggregate(avg=Avg('rating'))['avg']
             book.save()
             return redirect('catalog:item', book_id = book.id)
     else:
@@ -113,6 +119,7 @@ def item(request, book_id):
         'active_request': active_request_obj is not None,
         'active_request_obj': active_request_obj,
     })
+    return render(request, "catalog/item.html", {'book': book})
 
 def edit(request, book_id):
     book_to_edit = get_object_or_404(Book, id=book_id)
@@ -154,8 +161,9 @@ def filter_book(request, filterCategory):
     is_authenticated = user.is_authenticated
     if is_authenticated:
         user_profile = user.userprofile
-        is_librarian = user.is_authenticated and user_profile.is_librarian()
         is_patron = user.is_authenticated and user_profile.is_patron()
+    else:
+        is_patron = False
     CATEGORY_MAP = {
         "genre":
             ["Fantasy",
@@ -190,6 +198,55 @@ def filter_book(request, filterCategory):
                                   "books": filter_books,
                               })
 
+def filter_book_collection(request, collection_id, filterCategory):
+    user = request.user
+    is_authenticated = user.is_authenticated
+    if is_authenticated:
+        user_profile = user.userprofile
+        is_patron = user.is_authenticated and user_profile.is_patron()
+    else:
+        is_patron = False
+    CATEGORY_MAP = {
+        "genre":
+            ["Fantasy",
+            "Adventure",
+            "Mystery",
+            "Non-Fiction",
+            "Romance"]
+        ,
+        "status":
+            ["Available",
+            "Checked out"]
+        ,
+        "condition":
+            ["LikeNew",
+            "Good",
+            "Acceptable",
+             "Poor"]
+        ,
+    }
+    collection = get_object_or_404(Collection, id=collection_id)
+    books_in_collection = collection.books.all()
+    filter_books = books_in_collection.none()
+
+    for categories, items in CATEGORY_MAP.items():
+        if filterCategory in items:
+            filter_books = books_in_collection.filter(**{categories : filterCategory})
+
+    return render(request, "catalog/view_collection.html", {
+        "collection": collection,
+        "books": filter_books,
+    })
+
+def search_books_collection(request, collection_id):
+    collection = get_object_or_404(Collection, id=collection_id)
+    books_in_collection = collection.books.all()
+    query = request.GET.get('query', '')
+    book_to_query = books_in_collection.filter(title__icontains = query)
+    return render(request, "catalog/view_collection.html", {
+        "collection": collection,
+        "books": book_to_query,
+    })
 
 def search(request):
     query = request.GET.get('query', '')
@@ -231,9 +288,11 @@ def collections(request):
     for collection in collections_qs:
         collection.can_delete = (collection.creator == user) or is_librarian
         collections.append(collection)
-
+    print(is_librarian)
     context = {
         'collections': collections,
+        'is_librarian': is_librarian,
+        'can_create': is_authenticated,  # Show create button to logged-in users
     }
 
     return render(request, 'catalog/collections.html', context)
@@ -274,7 +333,6 @@ def create_collection(request):
 
     return render(request, 'catalog/create_collection.html', {'form': form})
 
-@login_required
 def filter_collection(request, filterCategory):
     user = request.user
     is_authenticated = user.is_authenticated
@@ -303,8 +361,10 @@ def search_collection(request):
     if is_authenticated:
         user_profile = user.userprofile
         is_librarian = user.is_authenticated and user_profile.is_librarian()
+    else:
+        is_librarian = False
     query = request.GET.get('query', '')
-    if not request.user.userprofile.is_librarian():
+    if not is_librarian:
         collection_to_query = Collection.objects.filter(title__icontains = query, is_private = False)
     else:
         collection_to_query = Collection.objects.filter(title__icontains = query)
@@ -323,9 +383,11 @@ def delete_collection(request, collection_id):
     # Fetch the collection by ID
     collection = get_object_or_404(Collection, id=collection_id)
     is_librarian = request.user.userprofile.is_librarian()
+    is_authenticated = request.user.is_authenticated
+
 
     # Authorization check: Only creator or librarian can delete
-    if not (collection.creator == request.user or is_librarian):
+    if not is_authenticated or collection.creator != request.user or not is_librarian:
         raise ValueError("You do not have permission to delete this collection.")
 
     # Delete the collection

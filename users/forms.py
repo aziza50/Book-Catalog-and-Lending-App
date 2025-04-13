@@ -2,6 +2,8 @@ from django import forms
 from .models import UserProfile, BookRequest
 from django.forms import DateTimeInput
 from datetime import datetime, date, time, timedelta
+from django.forms.widgets import FileInput
+
 
 class ProfilePictureForm(forms.ModelForm):
     class Meta:
@@ -10,6 +12,18 @@ class ProfilePictureForm(forms.ModelForm):
         labels = {
             'profile_pic': 'Profile Picture',
         }
+        widget = {
+            'profile_pic': FileInput(attrs={'class': 'custom-file-input'}),
+        }
+
+    def save(self, commit=True):
+        try:
+            old_profile = UserProfile.objects.get(id=self.instance.id)
+            if old_profile.profile_pic != self.cleaned_data.get('profile_pic'):
+                old_profile.profile_pic.delete(save=False)
+        except UserProfile.DoesNotExist:
+            pass
+        return super().save(commit=commit)
 
 class BookRequestForm(forms.ModelForm):
     pickup_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
