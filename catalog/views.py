@@ -119,15 +119,18 @@ def item(request, book_id):
         'active_request': active_request_obj is not None,
         'active_request_obj': active_request_obj,
     })
-    return render(request, "catalog/item.html", {'book': book})
 
 def edit(request, book_id):
     book_to_edit = get_object_or_404(Book, id=book_id)
+
     if request.method == 'POST':
-        form = BooksForm(request.POST, request.FILES, instance = book_to_edit)
+        form = BooksForm(request.POST, request.FILES, instance=book_to_edit)
+        
         if form.is_valid():
             book = form.save()
-            files = form.cleaned_data.get('additional_images')
+
+            # Handle additional images only if new ones are uploaded
+            files = request.FILES.getlist('additional_images')
             if files:
                 for i, f in enumerate(files):
                     BookImage.objects.create(

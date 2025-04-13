@@ -33,6 +33,13 @@ class BooksForm(forms.ModelForm):
     class Meta:
         model = Book
         fields = ['title', 'isbn', 'author', 'status', 'condition', 'genre', 'location', 'description', 'cover_image']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make sure all file fields are optional
+        for field_name, field in self.fields.items():
+            if isinstance(field, forms.FileField) or isinstance(field, forms.ImageField):
+                field.required = False
 
     def __init__(self, *args, **kwargs):
         super(BooksForm, self).__init__(*args, **kwargs)
