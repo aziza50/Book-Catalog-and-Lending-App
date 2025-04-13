@@ -12,11 +12,13 @@ isbn_requirement = RegexValidator(
     message = 'ISBN must be exactly 13 digits!'
 )
 
+
 class Lender(models.Model):
     name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
+
 
 class Book(models.Model):
     class Status(models.TextChoices):
@@ -71,6 +73,17 @@ class Comments(models.Model):
     rating = models.IntegerField()
 
 
+class BookImage(models.Model):
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='book_images/')
+    caption = models.CharField(max_length=255, blank=True)
+    order = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['order']
+        
+    def __str__(self):
+        return f"Image for {self.book.title}"
 
 class Collection(models.Model):
     title = models.CharField(max_length=255)

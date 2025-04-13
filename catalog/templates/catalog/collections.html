@@ -9,6 +9,7 @@
      Filter
    </button>
        {% if is_authenticated %}
+       {% if is_librarian or is_patron%}
      <a class="btn btn-custom active text-white" href="{% url 'catalog:create_collection' %}">Create a New Collection</a>
        {% endif %}
    </div>
