@@ -7,8 +7,8 @@ from allauth.account.signals import user_signed_up
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
-    """Create a UserProfile for new users."""
-    if created:
+    """Create a UserProfile for new users who are not staff or superusers."""
+    if created and not instance.is_staff and not instance.is_superuser:
         UserProfile.objects.create(user=instance)
 
 

@@ -189,7 +189,14 @@ def collections(request):
         user_profile = user.userprofile
         is_librarian = user_profile.is_librarian()
 
-    collections_qs = Collection.objects.all()
+    if is_authenticated:
+        collections_qs = Collection.objects.all()
+
+    else:
+        collections_qs = Collection.objects.filter(is_private=False)
+
+
+   
 
     collections = []
     for collection in collections_qs:
