@@ -138,3 +138,13 @@ def mark_books_public_on_delete(sender, instance, **kwargs):
 def delete_book_files_from_s3(sender,instance, **kwargs):
     if instance.cover_image:
         instance.cover_image.delete(save=False)
+
+@receiver(post_delete, sender=BookImage)
+def delete_book_image_from_s3(sender, instance, **kwargs):
+    if instance.image:
+        instance.image.delete(save=False)
+        
+@receiver(post_delete, sender=Collection)
+def delete_collection_cover_from_s3(sender, instance, **kwargs):
+    if instance.cover_image:
+        instance.cover_image.delete(save=False)
