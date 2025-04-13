@@ -3,7 +3,8 @@ from email.policy import default
 from django.contrib.auth.models import User
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.utils import timezone
+from django.dispatch import receiver
+from django.db.models.signals import post_delete
 
 
 class UserProfile(models.Model):
@@ -15,7 +16,7 @@ class UserProfile(models.Model):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='patron')
 
     full_name = models.CharField(max_length=255, blank=True, null=True)
-    join_date = models.DateTimeField(default = timezone.now)  # Automatically set join date
+    join_date = models.DateTimeField(auto_now_add = True)  # Automatically set join date
 
     groups = models.ManyToManyField(
         'auth.Group',
@@ -40,3 +41,8 @@ class UserProfile(models.Model):
 
     def is_patron(self):
         return self.role == 'patron'
+    
+@receiver(post_delete, sender=UserProfile)
+def delete_profile_pic_from_s3(sender, instance, **kwargs):
+    if instance.profile_pic:
+        instance.profile_pic.delete(save=False)

@@ -8,3 +8,12 @@ class ProfilePictureForm(forms.ModelForm):
         labels = {
             'profile_pic': 'Profile Picture',
         }
+
+    def save(self, commit=True):
+        try:
+            old_profile = UserProfile.objects.get(id=self.instance.id)
+            if old_profile.profile_pic != self.cleaned_data.get('profile_pic'):
+                old_profile.profile_pic.delete(save=False)
+        except UserProfile.DoesNotExist:
+            pass
+        return super().save(commit=commit)

@@ -107,7 +107,6 @@ def delete(request, book_id):
 
     return render(request, 'catalog/confirm_delete.html', {'book': book_to_delete})
 
-
 # More TODO: collections/user shows their collections...
 # TODO: collections appear in user profile
 # TODO: this doesn't work for un signed in users :(
