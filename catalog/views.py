@@ -169,6 +169,55 @@ def filter_book(request, filterCategory):
                                   "books": filter_books,
                               })
 
+def filter_book_collection(request, collection_id, filterCategory):
+    user = request.user
+    is_authenticated = user.is_authenticated
+    if is_authenticated:
+        user_profile = user.userprofile
+        is_patron = user.is_authenticated and user_profile.is_patron()
+    else:
+        is_patron = False
+    CATEGORY_MAP = {
+        "genre":
+            ["Fantasy",
+            "Adventure",
+            "Mystery",
+            "Non-Fiction",
+            "Romance"]
+        ,
+        "status":
+            ["Available",
+            "Checked out"]
+        ,
+        "condition":
+            ["LikeNew",
+            "Good",
+            "Acceptable",
+             "Poor"]
+        ,
+    }
+    collection = get_object_or_404(Collection, id=collection_id)
+    books_in_collection = collection.books.all()
+    filter_books = books_in_collection.none()
+
+    for categories, items in CATEGORY_MAP.items():
+        if filterCategory in items:
+            filter_books = books_in_collection.filter(**{categories : filterCategory})
+
+    return render(request, "catalog/view_collection.html", {
+        "collection": collection,
+        "books": filter_books,
+    })
+
+def search_books_collection(request, collection_id):
+    collection = get_object_or_404(Collection, id=collection_id)
+    books_in_collection = collection.books.all()
+    query = request.GET.get('query', '')
+    book_to_query = books_in_collection.filter(title__icontains = query)
+    return render(request, "catalog/view_collection.html", {
+        "collection": collection,
+        "books": book_to_query,
+    })
 
 def search(request):
     query = request.GET.get('query', '')
@@ -203,7 +252,7 @@ def collections(request):
     for collection in collections_qs:
         collection.can_delete = (collection.creator == user) or is_librarian
         collections.append(collection)
-
+    print(is_librarian)
     context = {
         'collections': collections,
         'is_librarian': is_librarian,

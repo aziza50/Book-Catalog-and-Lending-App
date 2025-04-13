@@ -68,10 +68,8 @@
 
 
                     <!-- Edit and Delete Buttons -->
-            <div class = "d-flex align-items-center">
-                {% if not collection.is_private %}
-                <a href = "{% url 'catalog:book_list' %}?collection_title={{ collection.title }}" class="btn btn-custom active text-white" role="button">View</a>
-                {% endif %}
+<div class="d-flex justify-content-between align-items-center">
+
                 {% if collection.can_delete %}
                 <a href="{% url 'catalog:edit_collection' collection.id %}" class="btn btn-custom active text-white">Edit Books</a>
             <form action="{% url 'catalog:delete_collection' collection.id %}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this collection?');">
