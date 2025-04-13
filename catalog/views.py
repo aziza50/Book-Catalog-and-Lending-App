@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden
-from .models import Book, Collection
+from .models import Book, Collection, BookImage
 from django.contrib.auth.decorators import login_required
 from .forms import BooksForm, AddBooksToCollectionForm, CreateCollectionForm
 from users.decorators import librarian_required
@@ -14,6 +14,13 @@ def lend_book(request):
             book = form.save(commit=False)
             book.lender = user
             book.save()
+            additional_images = request.FILES.getlist('additional_images')
+            for i, image_file in enumerate(additional_images):
+                BookImage.objects.create(
+                    book=book,
+                    image=image_file,
+                    order=i
+                )
             return redirect('users:dashboard')
         else:
             print(form.errors)
@@ -42,7 +49,11 @@ def browse_all_books(request):
 
 def item(request, book_id):
     book = get_object_or_404(Book, id=book_id)
-    return render(request, "catalog/item.html", {'book': book})
+    additional_images = book.images.all().order_by('order')
+    return render(request, "catalog/item.html", {
+        'book': book,
+        'additional_images': additional_images
+    })
 
 
 @librarian_required
@@ -51,14 +62,24 @@ def edit(request, book_id):
     if request.method == 'POST':
         form = BooksForm(request.POST, request.FILES, instance=book_to_edit)
         if form.is_valid():
-            form.save()
+            book = form.save()
+            additional_images = request.FILES.getlist('additional_images')
+            for i, image_file in enumerate(additional_images):
+                BookImage.objects.create(
+                    book=book,
+                    image=image_file,
+                    order=book.images.count() + i  # Add to end of existing images
+                )
             return redirect('users:dashboard')
         else:
             print(form.errors)
     else:
         form = BooksForm(instance=book_to_edit)
-    return render(request, 'catalog/edit_item.html', {'form': form, 'book': book_to_edit})
-
+    return render(request, 'catalog/edit_item.html', {
+        'form': form, 
+        'book': book_to_edit,
+        'additional_images': book_to_edit.images.all()  # Get all additional images
+    })
 
 def filter_book(request, filterCategory):
     CATEGORY_MAP = {
@@ -97,6 +118,17 @@ def search(request):
                       "books": book_to_query,
                   })
 
+
+@librarian_required
+def delete_book_image(request, image_id):
+    """Delete a specific additional image"""
+    image = get_object_or_404(BookImage, id=image_id)
+    book_id = image.book.id
+
+    image.delete()  # This will trigger the signal to delete from S3
+    
+    # Redirect back to the edit page
+    return redirect('catalog:edit', book_id=book_id)
 
 @librarian_required
 def delete(request, book_id):

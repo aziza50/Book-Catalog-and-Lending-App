@@ -54,6 +54,18 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
+    
+class BookImage(models.Model):
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='book_images/')
+    caption = models.CharField(max_length=255, blank=True)
+    order = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['order']
+        
+    def __str__(self):
+        return f"Image for {self.book.title}"
 
 class Collection(models.Model):
     title = models.CharField(max_length=255)
@@ -108,3 +120,8 @@ def mark_books_public_on_delete(sender, instance, **kwargs):
 def delete_book_files_from_s3(sender,instance, **kwargs):
     if instance.cover_image:
         instance.cover_image.delete(save=False)
+
+@receiver(post_delete, sender=BookImage)
+def delete_book_image_from_s3(sender, instance, **kwargs):
+    if instance.image:
+        instance.image.delete(save=False)
