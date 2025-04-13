@@ -24,24 +24,33 @@
     <!-- Left Side: Profile and Upload Form -->
     <div class="col-md-3">
       <div class="leftSide">
-        {% if user.userprofile.profile_pic %}
-          <img src="{{ user.userprofile.profile_pic.url }}" alt="Profile Picture" class="img-fluid rounded" style="width:200px;height:auto;">
-        {% else %}
-          <img src="{% static 'users/images/profile.png' %}" alt="Default Profile Picture" class="img-fluid rounded" style="width:200px;height:auto;">
-        {% endif %}
+          {% if user.userprofile.profile_pic %}
+            <img src="{{ user.userprofile.profile_pic.url }}" alt="Profile Picture" class="img-fluid rounded" style="width:200px;height:auto;">
+          {% else %}
+            <img src="{% static 'users/images/profile.png' %}" alt="Default Profile Picture" class="img-fluid rounded" style="width:200px;height:auto;">
+          {% endif %}
 
-        {% if is_librarian %}
-          <p>You are a Librarian!</p>
-        {% elif is_patron %}
-          <p>You are a Patron!</p>
-        {% endif %}
+          {% if is_librarian %}
+            <p>You are a Librarian!</p>
+          {% elif is_patron %}
+            <p>You are a Patron!</p>
+          {% endif %}
+          {% if user.userprofile.full_name %}
+              <p>You are logged in as {{user.userprofile.full_name}} </p>
+          {% endif %}
+          {% if user.userprofile.join_date %}
+              <p>You joined on {{user.userprofile.join_date}} </p>
+          {% endif %}
+          {% if user.email %}
+              <p>Email: {{user.email}} </p>
+          {% endif %}
 
-        <form method="post" enctype="multipart/form-data">
-          {% csrf_token %}
-          {{ form.as_p }}
-          <button type="submit" class="btn btn-primary">Upload Profile Picture</button>
-        </form>
-      </div>
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Upload Profile Picture</button>
+          </form>
+        </div>
     </div>
 
     <!-- Right Side: Requests and Collections -->

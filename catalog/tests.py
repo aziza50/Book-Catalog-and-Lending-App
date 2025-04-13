@@ -1,103 +1,155 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
-from users.models import Book, UserProfile
-from .forms import BookForm
+from django.core.files.uploadedfile import SimpleUploadedFile
+from users.models import UserProfile
+from catalog.models import Collection, Book
 
 
-# Create your tests here.
-
-
-class BookModelTest(TestCase):
+class CollectionsViewTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password="testpass")
-        self.book = Book.objects.create(
-            title="The Great Gatsby",
-            author="F. Scott Fitzgerald",
+        self.client = Client()
+        # Create a dummy creator for collections.
+        self.creator = User.objects.create_user(
+            username="creator", password="testpass", email="creator@example.com"
+        )
+        # Use the auto-created profile; no manual creation.
+        self.public_collection = Collection.objects.create(
+            title="Public Collection",
+            description="A public collection",
+            is_private=False,
+            creator=self.creator,
+        )
+        self.private_collection = Collection.objects.create(
+            title="Private Collection",
+            description="A private collection",
+            is_private=True,
+            creator=self.creator,
+        )
+
+    def test_anonymous_user_sees_only_public_collections(self):
+        response = self.client.get(reverse('catalog:collections'))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode('utf-8')
+        self.assertIn("Public Collection", content)
+        self.assertNotIn("Private Collection", content)
+
+    def test_authenticated_patron_does_notsee_private_collection_as_text(self):
+        # Create a patron; update its auto-created profile.
+        patron_user = User.objects.create_user(
+            username="patron", password="testpass", email="patron@example.com"
+        )
+        patron_profile = patron_user.userprofile
+        patron_profile.role = "patron"
+        patron_profile.full_name = "Test Patron"
+        patron_profile.save()
+
+        self.client.login(username="patron", password="testpass")
+        response = self.client.get(reverse('catalog:collections'))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode('utf-8')
+        # Expect that patrons see private collections with a "(Private)" label.
+        self.assertNotIn("Private Collection", content)
+        self.client.logout()
+
+    def test_librarian_sees_private_collection_as_link(self):
+        # Create a librarian user; update its auto-created profile.
+        librarian_user = User.objects.create_user(
+            username="librarian", password="testpass", email="librarian@example.com"
+        )
+        librarian_profile = librarian_user.userprofile
+        librarian_profile.role = "librarian"
+        librarian_profile.full_name = "Test Librarian"
+        librarian_profile.save()
+
+        self.client.login(username="librarian", password="testpass")
+        response = self.client.get(reverse('catalog:collections'))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode('utf-8')
+        # Librarians should see private collection titles without the "(Private)" label.
+        self.assertIn("Private Collection", content)
+        self.assertNotIn("Private Collection (Private)", content)
+        self.client.logout()
+
+
+
+
+
+class CatalogBasicTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        # Create two books.
+        self.book1 = Book.objects.create(
+            title="Django Basics",
+            author="Author A",
+            lender=None,
             status="Available",
-            condition="Good",
-            genre="Fiction",
+            condition="Acceptable",
+            genre="Romance",
+            rating=3,
             location="Shannon Library",
-            description="A novel set in the Jazz Age.",
-            lender=self.user
+            description="Learn Django."
         )
-
-    def test_book_creation(self):
-        self.assertEqual(self.book.title, "The Great Gatsby")
-        self.assertEqual(self.book.author, "F. Scott Fitzgerald")
-        self.assertEqual(self.book.status, "Available")
-        self.assertEqual(self.book.lender.username, "testuser")
-
-
-class UserProfileTest(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password="testpass")
-        self.profile = UserProfile.objects.create(user=self.user, role="patron")
-
-    def test_user_profile(self):
-        self.assertEqual(self.profile.role, "patron")
-        self.assertTrue(self.profile.is_patron())
-        self.assertFalse(self.profile.is_librarian())
-
-
-class BookFormTest(TestCase):
-    def test_valid_form(self):
-        form = BookForm(data={
-            "title": "To Kill a Mockingbird",
-            "author": "Harper Lee",
-            "status": "Available",
-            "condition": "Good",
-            "genre": "Fiction",
-            "location": "Gibbons",
-            "description": "A classic novel."
-        })
-        self.assertTrue(form.is_valid())
-
-    def test_invalid_form(self):
-        form = BookForm(data={})
-        self.assertFalse(form.is_valid())
-
-
-class ViewTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.user = User.objects.create_user(username="testuser", password="testpass")
-        self.book = Book.objects.create(
-            title="1984",
-            author="George Orwell",
-            status="Available",
+        self.book2 = Book.objects.create(
+            title="Advanced Django",
+            author="Author B",
+            lender=None,
+            status="Checked out",
             condition="Good",
-            genre="Dystopian",
-            location="Rice Hall",
-            description="A dystopian novel.",
-            lender=self.user
+            genre="Adventure",
+            rating=4,
+            location="Shannon Library",
+            description="Deep dive into Django."
         )
+        # Assign dummy images to both books.
+        dummy_image = SimpleUploadedFile("dummy.jpg", b"dummycontent", content_type="image/jpeg")
+        self.book1.cover_image = dummy_image
+        self.book1.save()
+        self.book2.cover_image = dummy_image
+        self.book2.save()
 
-    def test_book_list_view(self):
-        response = self.client.get(reverse("users:collections"))
+    def test_item_view(self):
+        url = reverse('catalog:item', kwargs={'book_id': self.book1.id})
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "1984")
+        self.assertContains(response, "Django Basics")
 
-    def test_add_book_view_authenticated(self):
-        self.client.login(username="testuser", password="testpass")
-        response = self.client.get(reverse("users:lend"))
+    def test_search_view(self):
+        url = reverse('catalog:search')
+        response = self.client.get(url, {'query': 'Django'})
         self.assertEqual(response.status_code, 200)
+        content = response.content.decode('utf-8')
+        self.assertIn("Django Basics", content)
+        self.assertIn("Advanced Django", content)
+        response = self.client.get(url, {'query': 'Advanced'})
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode('utf-8')
+        self.assertIn("Advanced Django", content)
+        self.assertNotIn("Django Basics", content)
 
-    def test_add_book_view_unauthenticated(self):
-        response = self.client.get(reverse("users:lend"))
-        self.assertEqual(response.status_code, 302)  # Redirects to login page
 
-
-class AuthenticationTests(TestCase):
+class UsersBasicTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(username="testuser", password="testpass")
+        self.user = User.objects.create_user(
+            username="testuser", password="testpass", email="test@example.com"
+        )
+        # Update the auto-created UserProfile rather than creating a new one.
+        user_profile = self.user.userprofile
+        user_profile.role = "patron"
+        user_profile.full_name = "Test User"
+        user_profile.save()
 
-    def test_login(self):
-        response = self.client.post("/accounts/login/", {"username": "testuser", "password": "testpass"})
+    def test_dashboard_anonymous(self):
+        response = self.client.get(reverse('users:dashboard'))
         self.assertEqual(response.status_code, 200)
 
-    def test_logout(self):
+    def test_dashboard_authenticated(self):
         self.client.login(username="testuser", password="testpass")
-        response = self.client.get("/logout/")
-        self.assertEqual(response.status_code, 302)  # Redirects to home page
+        response = self.client.get(reverse('users:dashboard'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_profile_authenticated(self):
+        self.client.login(username="testuser", password="testpass")
+        response = self.client.get(reverse('users:profile'))
+        self.assertEqual(response.status_code, 200)

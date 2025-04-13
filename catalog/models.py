@@ -9,11 +9,13 @@ isbn_requirement = RegexValidator(
     message = 'ISBN must be exactly 13 digits!'
 )
 
+
 class Lender(models.Model):
     name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
+
 
 class Book(models.Model):
     class Status(models.TextChoices):
