@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-
+from .models import Book, Collection, Comments, BookImage
 import users.views
-from .models import Book, Collection, Comments
+from .models import Book, Collection, Comments, BookImage
 from django.contrib.auth.decorators import login_required
 from users.forms import BookRequestForm
 from django.core.exceptions import ValidationError
@@ -23,6 +23,13 @@ def lend_book(request):
             book = form.save(commit = False)
             book.lender = user
             book.save()
+            additional_images = request.FILES.getlist('additional_images')
+            for i, image_file in enumerate(additional_images):
+                BookImage.objects.create(
+                    book=book,
+                    image=image_file,
+                    order=i
+                )
             return redirect('users:dashboard')
         else:
             print(form.errors)
@@ -112,20 +119,49 @@ def item(request, book_id):
         'active_request': active_request_obj is not None,
         'active_request_obj': active_request_obj,
     })
-    return render(request, "catalog/item.html", {'book': book})
 
 def edit(request, book_id):
     book_to_edit = get_object_or_404(Book, id=book_id)
+    old_cover_image = book_to_edit.cover_image if book_to_edit.cover_image else None
+
     if request.method == 'POST':
-        form = BooksForm(request.POST, request.FILES, instance = book_to_edit)
+        form = BooksForm(request.POST, request.FILES, instance=book_to_edit)
         if form.is_valid():
-            form.save()
+            book = form.save()
+
+            # Delete old cover image if it was replaced
+            if old_cover_image and book.cover_image and old_cover_image != book.cover_image:
+                old_cover_image.delete(save=False)
+
+            # Handle additional images only if new ones are uploaded
+            files = request.FILES.getlist('additional_images')
+            if files:
+                for i, f in enumerate(files):
+                    BookImage.objects.create(
+                        book=book,
+                        image=f,
+                        order=book.images.count() + i
+                    )
             return redirect('catalog:book_list')
         else:
             print(form.errors)
     else:
         form = BooksForm(instance=book_to_edit)
-    return render(request, 'catalog/edit_book.html', {'form': form, 'book':book_to_edit})
+
+    return render(request, 'catalog/edit_book.html', {
+        'form': form,
+        'book': book_to_edit,
+        'additional_images': book_to_edit.images.all()
+    })
+
+@login_required
+def delete_book_image(request, image_id):
+    image = get_object_or_404(BookImage, id=image_id)
+
+    # Delete the image from the database (and S3 if applicable)
+    image.delete()
+
+    return redirect('catalog:edit_book', book_id=image.book.id)
 
 def filter_book(request, filterCategory):
     user = request.user
@@ -232,7 +268,7 @@ def delete_book(request, book_id):
     print(f"Request to delete book ID: {book_id} — {book_to_delete.title}")
 
     if not request.user.is_authenticated or not request.user.userprofile.is_librarian():
-        raise ValueError("You do not have permission to delete this collection.")
+        raise ValueError("You do not have permission to delete this book.")
     book_to_delete.delete()
 
     return redirect('catalog:book_list')
@@ -246,7 +282,14 @@ def collections(request):
         user_profile = user.userprofile
         is_librarian = user_profile.is_librarian()
 
-    collections_qs = Collection.objects.all()
+    if is_authenticated:
+        collections_qs = Collection.objects.all()
+
+    else:
+        collections_qs = Collection.objects.filter(is_private=False)
+
+
+
 
     collections = []
     for collection in collections_qs:
@@ -359,7 +402,7 @@ def delete_collection(request, collection_id):
         for book in collection.books.all():
             book.is_private = False
             book.save()
-            
+
     # Delete the collection
     collection.delete()
     return redirect('catalog:collections')
