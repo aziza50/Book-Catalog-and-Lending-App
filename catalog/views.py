@@ -333,6 +333,8 @@ def create_collection(request):
     if request.method == 'POST':
         form = CreateCollectionForm(request.POST,request.FILES, request=request)
         if form.is_valid():
+            collection = form.save(commit=False)
+            collection.creator = request.user
             collection = form.save()
             return redirect('catalog:collections')
             # return redirect('catalog:collections', collection_id=collection.id)
