@@ -39,23 +39,24 @@ class MultipleFileField(forms.FileField):
         return result
 
 class BooksForm(forms.ModelForm):
-    cover_image = forms.ImageField(required=False)  # Allow optional image upload
+    cover_image = forms.ImageField(
+        required=True,
+        error_messages={'required': 'A cover image is required.'},
+        widget=forms.ClearableFileInput(attrs={
+            'class': 'form-control-file',
+            'required': 'required',
+        }),
+    )  
 
     additional_images = MultipleFileField(
         required=False,
         label="Additional Images",
         help_text="Select multiple images to upload (hold Ctrl to select multiple files)"
     )
+
     class Meta:
         model = Book
         fields = ['title', 'isbn', 'author', 'status', 'condition', 'genre', 'location', 'description', 'cover_image']
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Make sure all file fields are optional
-        for field_name, field in self.fields.items():
-            if isinstance(field, forms.FileField) or isinstance(field, forms.ImageField):
-                field.required = False
 
     def __init__(self, *args, **kwargs):
         super(BooksForm, self).__init__(*args, **kwargs)
@@ -74,7 +75,7 @@ class BooksForm(forms.ModelForm):
         self.fields['cover_image'].widget.attrs.update({'class': 'form-control'})
 
         for field_name, field in self.fields.items():
-            if field_name not in ['cover_image', 'additional_images']:
+            if field_name not in ['additional_images']:
                 field.required = True
 
 class CommentsForm(forms.ModelForm):

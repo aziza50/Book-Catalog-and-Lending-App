@@ -19,6 +19,8 @@ def lend_book(request):
     user = request.user
     if request.method == 'POST':
         form = BooksForm(request.POST, request.FILES)
+        if not request.FILES.get('cover_image'):
+            form.add_error('cover_image', 'A cover image is required.')
         if form.is_valid():
             book = form.save(commit = False)
             book.lender = user
