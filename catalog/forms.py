@@ -129,6 +129,16 @@ class BookImageForm(forms.ModelForm):
         return super().save(commit)
 
 class CreateCollectionForm(forms.ModelForm):
+    cover_image = forms.ImageField(
+        required=True,
+        error_messages={'required': 'Please upload a cover image.'},
+        widget=forms.ClearableFileInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Upload a Cover Image',
+            'required': 'required',
+        })
+    )
+
     books = forms.ModelMultipleChoiceField(
         queryset=Book.objects.filter(is_private=False),
         widget=forms.CheckboxSelectMultiple,
@@ -172,6 +182,12 @@ class CreateCollectionForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             if not isinstance(field.widget, (forms.CheckboxSelectMultiple, forms.RadioSelect)):
                 field.widget.attrs.update({'class': 'form-control'})
+
+    def clean_cover_image(self):
+        img = self.cleaned_data.get('cover_image')
+        if not img:
+            raise forms.ValidationError("Please upload a cover image.")
+        return img
 
 class BookImageForm(forms.ModelForm):
     class Meta:
