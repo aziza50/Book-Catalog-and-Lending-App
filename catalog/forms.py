@@ -116,8 +116,8 @@ class BookImageForm(forms.ModelForm):
 class CreateCollectionForm(forms.ModelForm):
     books = forms.ModelMultipleChoiceField(
         queryset=Book.objects.filter(is_private=False),
-        widget=forms.CheckboxSelectMultiple,
-        required=False
+        widget=forms.SelectMultiple(attrs={'class': 'select2'}),
+        required=False,
     )
 
     collection_type = forms.ChoiceField(
@@ -128,7 +128,7 @@ class CreateCollectionForm(forms.ModelForm):
     
     allowed_users = forms.ModelMultipleChoiceField(
         queryset=User.objects.all(),
-        widget=forms.CheckboxSelectMultiple,
+        widget=forms.SelectMultiple(attrs={'class': 'select2'}),
         required=False,
         label="Select users who can access this collection"
     )
@@ -157,6 +157,10 @@ class CreateCollectionForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             if not isinstance(field.widget, (forms.CheckboxSelectMultiple, forms.RadioSelect)):
                 field.widget.attrs.update({'class': 'form-control'})
+
+        # Make all fields required
+        for field_name, field in self.fields.items():
+            field.required = True
 
     def save(self, commit=True):
         if not self.request or not self.request.user.is_authenticated:

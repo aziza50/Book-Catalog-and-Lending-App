@@ -46,8 +46,21 @@ body {
 
 .image-item {
     width: 500px;
-    height: auto;
+    height: 700px;
+    object-fit: cover;
     border-radius: 25px;
+}
+
+
+.carousel-inner {
+    width: 500px;
+    height: 700px;
+}
+.custom-carousel .carousel-item img {
+  width: 80%;
+  max-height: 250px;
+  object-fit: cover;
+  margin: 0px 0px;
 }
 
 .text-content {
@@ -395,7 +408,7 @@ a {
 
 .card {
     max-width: 250px;
-    max-height: 500px;
+    max-height: 350px;
     border: none !important;
     border-radius: 20px;
     transition: transform 0.3s ease-in-out;
@@ -585,6 +598,23 @@ container {
 
 .collection-controls {
     display: none;
+}
+
+.carousel-indicators {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+}
+
+.select2-selection {
+    border: .8px solid #CED3DC !important;
+    border-radius: 5px !important;
+    padding: 5px 10px;
+    font-size: 14px;
+}
+
+.select2-container--default .select2-results__option--highlighted {
+    background-color: #426B1F !important;
 }
 
 

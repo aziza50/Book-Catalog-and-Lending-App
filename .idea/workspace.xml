@@ -6,6 +6,15 @@
   <component name="ChangeListManager">
     <list default="true" id="34699367-aa68-480d-a833-4439be2ae9e2" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/catalog/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/catalog/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/catalog/templates/catalog/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/catalog/templates/catalog/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/catalog/templates/catalog/book_list.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/catalog/templates/catalog/books.html" beforeDir="false" afterPath="$PROJECT_DIR$/catalog/templates/catalog/books.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/catalog/templates/catalog/create_collection.html" beforeDir="false" afterPath="$PROJECT_DIR$/catalog/templates/catalog/create_collection.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/catalog/templates/catalog/item.html" beforeDir="false" afterPath="$PROJECT_DIR$/catalog/templates/catalog/item.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/catalog/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/catalog/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/users/static/users/script.js" beforeDir="false" afterPath="$PROJECT_DIR$/users/static/users/script.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/users/static/users/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/users/static/users/style.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,7 +49,7 @@
   "keyToString": {
     "DefaultHtmlFileTemplate": "HTML File",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "sprint5AzizaCopy",
+    "git-widget-placeholder": "sprint5Aziza",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>

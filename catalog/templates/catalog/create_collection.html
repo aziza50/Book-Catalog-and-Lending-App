@@ -1,6 +1,7 @@
 {% extends "catalog/base.html" %}
 {% block content %}
 {% load static %}
+{% load widget_tweaks %}
 
 <div class="container">
     <h1>Create A New Collection</h1>
@@ -19,20 +20,21 @@
 
         <div class="form-group">
             <label for="{{ form.books.id_for_label }}">Books</label>
-            {{ form.books }}
+            {{ form.books|add_class:"select2" }}
         </div>
-        
+
         <div class="form-group">
             <label for="{{ form.collection_type.id_for_label }}">Type</label>
             {{ form.collection_type }}
         </div>
-        
+
+
         <div class="form-group allowed-users-container" style="display: none;">
             <label for="{{ form.allowed_users.id_for_label }}">Select Users</label>
-            {{ form.allowed_users }}
-            <small class="form-text text-muted">Select users who will have access to this private collection</small>
+            {{ form.allowed_users|add_class:"select2" }}
         </div>
-        
+
+
         <div class="form-group">
             <label for="{{ form.cover_image.id_for_label }}">Image Upload</label>
             {{ form.cover_image }}
@@ -69,5 +71,25 @@
             });
         });
     });
+
+
 </script>
+
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: 'Search and select',
+            width: '100%',
+            allowClear: true
+        });
+    });
+</script>
+
 {% endblock content %}
