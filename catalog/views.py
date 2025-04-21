@@ -299,9 +299,10 @@ def collections(request):
 
     can_view = None
     if is_authenticated and not is_librarian:
-        user.allowed_collections.all()
+        can_view = user.allowed_collections.all()
     
     print(is_librarian)
+    
     context = {
         'collections': collections,
         'can_view': can_view,
