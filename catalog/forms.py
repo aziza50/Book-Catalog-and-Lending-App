@@ -161,7 +161,7 @@ class CreateCollectionForm(forms.ModelForm):
 
     class Meta:
         model = Collection
-        fields = ['title', 'description', 'books', 'cover_image', 'allowed_users']
+        fields = ['title', 'description', 'books', 'cover_image', 'collection_type', 'allowed_users']
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)  
@@ -189,6 +189,22 @@ class CreateCollectionForm(forms.ModelForm):
         if not img:
             raise forms.ValidationError("Please upload a cover image.")
         return img
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+
+        instance.is_private = (self.cleaned_data['collection_type'] == 'private')
+
+        if commit:
+            instance.save()
+            self.save_m2m()
+
+            if instance.is_private:
+                instance.allowed_users.set(self.cleaned_data['allowed_users'])
+            else:
+                instance.allowed_users.clear()
+
+        return instance
 
 class BookImageForm(forms.ModelForm):
     class Meta:

@@ -23,5 +23,5 @@ urlpatterns = [
     path('delete-book-image/<int:image_id>/', views.delete_book_image, name='delete_book_image'),
     path('collections/<int:collection_id>/<str:filterCategory>/filter_book/', views.filter_book_collection, name='filter_book_collection'),
     path('collections/<int:collection_id>/search/', views.search_books_collection, name = 'search_books_collection'),
-
+    path("collections/<int:pk>/request/", views.request_collection_access, name="request_collection_access"),
 ]

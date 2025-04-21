@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from catalog.models import Book
-from .models import UserProfile, BookRequest
+from .models import UserProfile, BookRequest, CollectionsRequest
 from .forms import ProfilePictureForm
 
 def home(request):
@@ -64,50 +64,56 @@ def profile(request):
 
     if request.method == 'POST':
         if 'approve_request_id' in request.POST:
-            req_id = request.POST.get('approve_request_id')
-            try:
-                book_request = BookRequest.objects.get(id=req_id, book__lender=user)
-                book_request.status = 'approved'
-                book_request.book.status = "Checked out"
-                book_request.book.save() 
-                book_request.save()
-            except BookRequest.DoesNotExist:
-                pass
-        elif 'deny_request_id' in request.POST:
-            req_id = request.POST.get('deny_request_id')
-            try:
-                book_request = BookRequest.objects.get(id=req_id, book__lender=user)
-                book_request.status = 'denied'
-                book_request.save()
-            except BookRequest.DoesNotExist:
-                pass
-        elif 'mark_returned_id' in request.POST:
-            req_id = request.POST.get('mark_returned_id')
-            try:
-                book_request = BookRequest.objects.get(id=req_id, book__lender=user)
-                if book_request.status == 'approved':
-                    book_request.status = 'expired'
-                    book_request.book.status = "Available"
-                    book_request.book.save() 
-                    book_request.save()
-            except BookRequest.DoesNotExist:
-                pass
-        elif 'delete_request_id' in request.POST:
-            req_id = request.POST.get('delete_request_id')
-            try:
-                book_request = BookRequest.objects.get(id=req_id)
-                book_request.delete()
-            except BookRequest.DoesNotExist:
-                pass
-        else:
-            form = ProfilePictureForm(request.POST, request.FILES, instance=user_profile)
-            if form.is_valid():
-                form.save()
+            BookRequest.objects.filter(
+                id=request.POST['approve_request_id'],
+                book__lender=user
+            ).update(status='approved', 
+                     book__status='Checked out')
+            return redirect('users:profile')
 
-    if request.method != 'POST' or ('approve_request_id' in request.POST 
-                                or 'deny_request_id' in request.POST 
-                                or 'mark_returned_id' in request.POST
-                                or 'delete_request_id' in request.POST):
+        if 'deny_request_id' in request.POST:
+            BookRequest.objects.filter(
+                id=request.POST['deny_request_id'],
+                book__lender=user
+            ).update(status='denied')
+            return redirect('users:profile')
+
+        if 'mark_returned_id' in request.POST:
+            BookRequest.objects.filter(
+                id=request.POST['mark_returned_id'],
+                book__lender=user,
+                status='approved'
+            ).update(status='expired',
+                     book__status='Available')
+            return redirect('users:profile')
+
+        if 'delete_request_id' in request.POST:
+            BookRequest.objects.filter(
+                id=request.POST['delete_request_id']
+            ).delete()
+            return redirect('users:profile')
+        
+        if 'approve_col_req_id' in request.POST:
+            CollectionsRequest.objects.filter(
+                id=request.POST['approve_col_req_id'],
+                librarian=user
+            ).update(status='approved')
+            return redirect('users:profile')
+
+        if 'deny_col_req_id' in request.POST:
+            CollectionsRequest.objects.filter(
+                id=request.POST['deny_col_req_id'],
+                librarian=user
+            ).update(status='denied')
+            return redirect('users:profile')
+        
+        form = ProfilePictureForm(request.POST,
+                                  request.FILES,
+                                  instance=user_profile)
+        if form.is_valid():
+            form.save()
+            return redirect('users:profile')
+    else:
         form = ProfilePictureForm(instance=user_profile)
 
 
@@ -116,7 +122,11 @@ def profile(request):
     pending_requests = None
     incoming_requests = None
     notifications = None
+    pending_col_requests = None
+    incoming_col_requests = None
+    col_notifications = None
     books = None
+
     if is_patron:
         pending_requests = user.outgoing_requests.order_by('-created_at')
         notifications_qs = user.outgoing_requests.filter(
@@ -126,8 +136,18 @@ def profile(request):
         notifications = list(notifications_qs)
         if notifications:
             notifications_qs.update(notified=True)
+
+        pending_col_requests = user.collection_view_requests.order_by('-created_at')
+        col_notifications_qs = pending_col_requests.filter(
+                                status__in=['approved','denied'],
+                                notified=False)
+        col_notifications = list(col_notifications_qs)
+        if col_notifications:
+            col_notifications_qs.update(notified=True)
+
     elif is_librarian:
         incoming_requests = user.incoming_requests.order_by('-created_at')
+        incoming_col_requests = user.collection_permission_requests.order_by('-created_at')
         books = user.listed_books.all()
 
     # Retrieve collections for the user (assuming a Collection model exists)
@@ -141,8 +161,11 @@ def profile(request):
         "form": form,
         "pending_requests": pending_requests,
         "incoming_requests": incoming_requests,
+        "pending_col_requests": pending_col_requests,
+        "incoming_col_requests": incoming_col_requests,
         "collections": collections,
         "notifications": notifications,
+        "col_notifications": col_notifications,
         "books": books
     })
     
