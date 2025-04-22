@@ -52,9 +52,17 @@
                 {{ form.description }}
             </div>
 
-          <div class="image-group">
-                <label for="{{ form.description.id_for_label }}">Image Upload</label>
+            <div class="image-group">
+                <label for="{{ form.description.id_for_label }}">Upload</label>
+                {{ form.cover_image.label_tag }}
                 {{ form.cover_image }}
+                {{ form.cover_image.errors }}
+            </div>
+
+            <div class="image-group mt-4">
+                <label for="{{ form.additional_images.id_for_label }}">Additional Images Upload: </label>
+                {{ form.additional_images }}
+                <small class="form-text text-muted">Hold Ctrl to select multiple files.</small>
             </div>
 
             <button type="submit" class="btn btn-custom active text-white" style = "margin-top: 20px">Add Book</button>

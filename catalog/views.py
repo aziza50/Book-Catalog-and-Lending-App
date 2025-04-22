@@ -19,6 +19,8 @@ def lend_book(request):
     user = request.user
     if request.method == 'POST':
         form = BooksForm(request.POST, request.FILES)
+        if not request.FILES.get('cover_image'):
+            form.add_error('cover_image', 'A cover image is required.')
         if form.is_valid():
             book = form.save(commit = False)
             book.lender = user
@@ -88,7 +90,6 @@ def browse_all_books(request):
 
 def item(request, book_id):
     book = get_object_or_404(Book, id=book_id)
-
     active_request_obj = None
     if request.user.is_authenticated:
         active_request_obj = BookRequest.objects.filter(
@@ -123,12 +124,12 @@ def item(request, book_id):
 def edit(request, book_id):
     book_to_edit = get_object_or_404(Book, id=book_id)
     old_cover_image = book_to_edit.cover_image if book_to_edit.cover_image else None
-
+    
     if request.method == 'POST':
         form = BooksForm(request.POST, request.FILES, instance=book_to_edit)
         if form.is_valid():
             book = form.save()
-
+            
             # Delete old cover image if it was replaced
             if old_cover_image and book.cover_image and old_cover_image != book.cover_image:
                 old_cover_image.delete(save=False)
@@ -157,10 +158,10 @@ def edit(request, book_id):
 @login_required
 def delete_book_image(request, image_id):
     image = get_object_or_404(BookImage, id=image_id)
-
+    
     # Delete the image from the database (and S3 if applicable)
     image.delete()
-
+    
     return redirect('catalog:edit_book', book_id=image.book.id)
 
 def filter_book(request, filterCategory):
@@ -289,7 +290,7 @@ def collections(request):
         collections_qs = Collection.objects.filter(is_private=False)
 
 
-
+   
 
     collections = []
     for collection in collections_qs:
@@ -333,12 +334,8 @@ def create_collection(request):
         form = CreateCollectionForm(request.POST,request.FILES, request=request)
         if form.is_valid():
             collection = form.save()
-
             return redirect('catalog:collections')
             # return redirect('catalog:collections', collection_id=collection.id)
-        else:
-            print(form.errors)  # Print form errors to the console for debugging
-
     else:
         form = CreateCollectionForm(request=request)
 
@@ -390,7 +387,6 @@ def search_collection(request):
                   , {
                       "collections": collections,
                   })
-
 def delete_collection(request, collection_id):
     # Fetch the collection by ID
     collection = get_object_or_404(Collection, id=collection_id)
@@ -402,10 +398,9 @@ def delete_collection(request, collection_id):
     if not is_authenticated or collection.creator != request.user or not is_librarian:
         raise ValueError("You do not have permission to delete this collection.")
 
-    if collection.is_private:
-        for book in collection.books.all():
-            book.is_private = False
-            book.save()
+    # Release all books
+    collection.books.all().update(is_private=False)
+
 
     # Delete the collection
     collection.delete()

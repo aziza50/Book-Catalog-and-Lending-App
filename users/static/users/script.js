@@ -311,3 +311,14 @@ function filterFunction() {
   }
 }
 
+   gsap.to("#text", {
+    duration: 5,
+    attr: { startOffset: "0%" },
+    ease: "linear",
+    repeat: -1
+  });
+
+   AOS.init({
+        duration: 3000,
+        once: false,
+    });

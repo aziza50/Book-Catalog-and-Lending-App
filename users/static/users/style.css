@@ -618,5 +618,17 @@ container {
 }
 
 
+* {
+    box-sizing: border-box;
+}
 
-
+svg {
+    width: 80vw;
+    height: auto;
+    font-family: "Newsreader";
+    font-size: 40px;
+    font-weight: 700;
+    z-index: 2;
+    margin: 0px;
+    padding: 0px;
+}

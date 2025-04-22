@@ -37,7 +37,9 @@
 
         <div class="form-group">
             <label for="{{ form.cover_image.id_for_label }}">Image Upload</label>
+            {{ form.cover_image.label_tag }}
             {{ form.cover_image }}
+            {{ form.cover_image.errors }}
         </div>
         
         <div class="d-flex justify-content-between align-items-center" style="margin-top: 20px;">

@@ -61,6 +61,18 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
+    
+class BookImage(models.Model):
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='book_images/')
+    caption = models.CharField(max_length=255, blank=True)
+    order = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['order']
+        
+    def __str__(self):
+        return f"Image for {self.book.title}"
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
