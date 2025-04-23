@@ -72,7 +72,33 @@
 
 <!-- Offcanvas with the BookRequestForm -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
-    <!-- Existing code for request form remains unchanged -->
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">
+            {% if active_request %}
+                Request Status
+            {% else %}
+                Request Book
+            {% endif %}
+        </h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form method="POST" action="">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            {{ form.non_field_errors }}
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+            {% endfor %}
+            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Confirm Request?');">Submit Request</button>
+        </form>
+        {% if request_sent %}
+            <p class="text-success">Request successfully sent!</p>
+        {% endif %}
+    </div>
 </div>
 
 <!-- Used a tutorial to create the comments - https://www.youtube.com/watch?v=O-QUBZuZlXM&ab_channel=Going-ToInternet -->
