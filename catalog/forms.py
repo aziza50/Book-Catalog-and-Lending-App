@@ -38,21 +38,9 @@ class MultipleFileField(forms.FileField):
             result = [single_file_clean(data, initial)]
         return result
 
-class BooksForm(forms.ModelForm):
-    cover_image = forms.ImageField(
-        required=True,
-        error_messages={'required': 'A cover image is required.'},
-        widget=forms.ClearableFileInput(attrs={
-            'class': 'form-control-file',
-            'required': 'required',
-        }),
-    )
 
-    additional_images = MultipleFileField(
-        required=False,
-        label="Additional Images",
-        help_text="Select multiple images to upload (hold Ctrl to select multiple files)"
-    )
+class BooksForm(forms.ModelForm):
+
 
     class Meta:
         model = Book
@@ -60,6 +48,7 @@ class BooksForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(BooksForm, self).__init__(*args, **kwargs)
+
         self.fields['title'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter title'})
         self.fields['author'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter author'})
         self.fields['isbn'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter isbn'})
@@ -72,11 +61,12 @@ class BooksForm(forms.ModelForm):
         self.fields['location'].widget.attrs.update({'class': 'form-select', 'placeholder': 'Select location'})
         self.fields['location'].choices = Book.Location.choices
         self.fields['description'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Provide description'})
-        self.fields['cover_image'].widget.attrs.update({'class': 'form-control'})
+        self.fields['cover_image'].widget.attrs.update({'class': 'form-control-file', 'required': 'required'})
 
         for field_name, field in self.fields.items():
             if field_name not in ['additional_images']:
                 field.required = True
+
 
 class CommentsForm(forms.ModelForm):
     rating = forms.ChoiceField(choices=[(str(i), str(i)) for i in range(1, 6)], widget=forms.RadioSelect)

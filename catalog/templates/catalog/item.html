@@ -46,10 +46,17 @@
     <!-- Book Details Section -->
     <div class="text-content">
         <h1>{{ book.title }}</h1>
+        <h3 style = "margin: 10px; margin-top: 0px; color: #9A9998;">By: {{book.author}}</h3>
         <div>
             <div class="rounded-box">
                 <p>Reviews:</p>
-                <h3 class="item-h3">{{ book.rating }}/5  <i class="fas fa-star" style="color: #BFA054;"></i></h3>
+                <h3 class="item-h3">
+                    {% if book.rating == 0 %}
+                    No ratings yet!
+                    {% endif %}
+                    {% if book.rating != 0 %}
+                    {{ book.rating }}/5  <i class="fas fa-star" style="color: #BFA054;"></i></h3>
+                    {% endif %}
             </div>
             <div class="rounded-box">
                 <p>Pick-up Location:</p>
@@ -63,10 +70,14 @@
                 <p>Status:</p>
                 <h3 class="item-h3">{{ book.status }}</h3>
             </div>
+            <div class="rounded-box">
+                <p>Lender:</p>
+                <h3 class="item-h3">{{ book.lender }}</h3>
+            </div>
 
             <div class="text-item">
-                <p>Description: {{ book.description }}</p>
-                <p>Lender username: {{ book.lender }}</p>
+                <p>Description: </p>
+                <p>{{ book.description }}</p>
             </div>
 
             {% if book.lender == request.user or not request.user.is_authenticated %}
@@ -111,6 +122,7 @@
 {% endif %}
 
     <section id = "comments">
+
         {% for comment in book.comms.all %}
         <div class = "comment-box-container">
             <div class = "comment-box">
@@ -144,6 +156,30 @@
         </div>
         {% endfor %}
             </section>
+
+        {% if book.cooms.all|length == 0 %}
+        <div class = center>
+        <div style="position: relative; width: 300px; height: 300px;">
+          <img src="/media/misc/Sloth-Reading.png" alt="No Comments" style="width: 100%; height: auto; display: block; ">
+
+          <svg viewBox="0 0 300 100" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 100px; pointer-events: none;">
+            <defs>
+              <path id="uCurve" fill="none" d="
+                M10,20
+                Q150,100 290,20" />
+            </defs>
+            <text fill="#000" font-size="16" font-family="sans-serif">
+              <textPath href="#uCurve" startOffset="50%" text-anchor="middle">
+                No comments yet!
+              </textPath>
+            </text>
+          </svg>
+        </div>
+            </div>
+        {% endif %}
+
+
+
 
 <div class="modal fade" id="commentModal" tabindex="-1" aria-labelledby="commentModalLabel" aria-hidden="true">
     <div class="modal-dialog">

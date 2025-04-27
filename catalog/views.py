@@ -124,7 +124,7 @@ def item(request, book_id):
 def edit(request, book_id):
     book_to_edit = get_object_or_404(Book, id=book_id)
     old_cover_image = book_to_edit.cover_image if book_to_edit.cover_image else None
-    
+
     if request.method == 'POST':
         form = BooksForm(request.POST, request.FILES, instance=book_to_edit)
         if form.is_valid():

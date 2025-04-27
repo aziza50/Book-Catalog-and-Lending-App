@@ -357,6 +357,27 @@ a {
 
 }
 
+.help-text h2 {
+    font-size: 30px;
+    transition: 0.3s color;
+    font-family: 'Newsreader';
+    line-height: 1.6;
+    padding: 10px;
+    width: 100%;
+    margin-top:100px;
+}
+
+.help-text h3 {
+    font-size: 18px;
+    transition: 0.3s color;
+    font-family: 'Newsreader';
+    padding: 10px;
+    width: 90%;
+    font-weight: normal;
+
+
+}
+
 /*
 * Ensures responds dynamically to varying screen sizes
 */
@@ -393,7 +414,11 @@ a {
 
 }
 
+.line-strip2{
+    border-top: 2px solid #C2C2C2;
+    margin-bottom:20px;
 
+}
 .card:hover {
     transform: scale(1.05);
 
@@ -548,6 +573,18 @@ a {
 .login-popup .box .form .btn:focus{
 	outline: none;
 }
+ @keyframes moveText {
+    0% {
+      offset-distance: 0%;
+    }
+    100% {
+      offset-distance: 100%;
+    }
+  }
+
+  textPath {
+    animation: moveText 10s linear infinite;
+  }
 
 .login-popup .box .form .close{
 	position: absolute;
@@ -591,9 +628,7 @@ container {
     padding:0;
 }
 
-#help-navigation ul li a:hover {
-    color: #426B1F;
-}
+
 
 
 .collection-controls {
@@ -626,9 +661,63 @@ svg {
     width: 80vw;
     height: auto;
     font-family: "Newsreader";
-    font-size: 40px;
+    font-size: 100px;
     font-weight: 700;
     z-index: 2;
     margin: 0px;
     padding: 0px;
 }
+
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 23%;
+}
+
+h6 {
+  text-align: center;
+  font-family: "Newsreader";
+  font-size:30px;
+}
+
+#help-navigation ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+#help-navigation li {
+    margin: 5px;
+}
+
+#help-navigation a {
+    text-decoration: none;
+    color: #426B1F;
+    padding: 8px 16px;
+    border: 1px solid #426B1F;
+    border-radius: 8px;
+    transition: background-color 0.3s, color 0.3s;
+    display: inline-flex;
+    align-items: center;
+    font-weight: 500;
+    gap: 8px;
+}
+
+#help-navigation a::after {
+    content: "↓";
+    font-size: 1rem;
+    transition: transform 0.3s;
+}
+
+#help-navigation a:hover {
+    background-color: #426B1F;
+    color: white;
+}
+
+#help-navigation a:hover::after {
+    transform: translateX(4px);
+}
+
