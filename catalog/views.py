@@ -268,7 +268,7 @@ def delete_book(request, book_id):
     book_to_delete = get_object_or_404(Book, id=book_id)
     print(f"Request to delete book ID: {book_id} — {book_to_delete.title}")
 
-    if not request.user.is_authenticated or not request.user.userprofile.is_librarian():
+    if not request.user.is_authenticated:
         raise ValueError("You do not have permission to delete this book.")
     book_to_delete.delete()
 
@@ -403,7 +403,7 @@ def delete_collection(request, collection_id):
 
 
     # Authorization check: Only creator or librarian can delete
-    if not is_authenticated or collection.creator != request.user or not is_librarian:
+    if not is_authenticated or collection.creator != request.user:
         raise ValueError("You do not have permission to delete this collection.")
 
     # Release all books

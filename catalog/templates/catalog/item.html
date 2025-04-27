@@ -80,6 +80,7 @@
                 <p>{{ book.description }}</p>
             </div>
 
+
             {% if book.lender == request.user or not request.user.is_authenticated %}
             {% elif active_request %}
                 <button class="btn btn-secondary disabled" type="button" disabled>
@@ -183,7 +184,7 @@
         {% endfor %}
             </section>
 
-        {% if book.cooms.all|length == 0 %}
+        {% if book.comms.all|length == 0 %}
         <div class = center>
         <div style="position: relative; width: 300px; height: 300px;">
           <img src="/media/misc/Sloth-Reading.png" alt="No Comments" style="width: 100%; height: auto; display: block; ">
