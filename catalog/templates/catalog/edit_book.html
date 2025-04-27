@@ -60,7 +60,7 @@
             <div class="image-group">
                 <label for="{{ form.cover_image.id_for_label }}">Cover Image Upload</label>
                 {{ form.cover_image }}
-                
+
                 {% if book.cover_image %}
                     <p>Current Cover Image:</p>
                     <img src="{{ book.cover_image.url }}" alt="Cover Image" class="img-thumbnail" style="max-width: 150px;">
