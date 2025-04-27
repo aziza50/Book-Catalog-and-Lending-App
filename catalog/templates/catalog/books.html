@@ -86,18 +86,11 @@
                     <i class="fas fa-trash" style="font-size: 24px;"></i>
                     </button>
                     </div>
-                    <form action="{% url 'catalog:edit_book' book.id %}" method="post" style="display:inline;">
                 </form>
-                </form>
-
-                    <form action="{% url 'catalog:edit_book' book.id %}" method="post" style="display:inline;">
-                 {% csrf_token %}
-                <div class = "hover-icon-edit">
-                <button type="submit" style="border: none; background: none; padding: 0; cursor: pointer; color:gray;">
-                    <i class="fas fa-edit" style="font-size: 24px;"></i>
-                    </button>
+                    <a href="{% url 'catalog:edit_book' book.id %}"  style="border: none; background: none; padding: 0; cursor: pointer; color:gray;" >
+                        <i class="fas fa-edit" style="font-size: 24px;"></i>
+                    </a>
                     </div>
-                </form>
                 {% endif %}
 
             </div>
