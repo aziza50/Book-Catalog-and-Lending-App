@@ -433,7 +433,7 @@ a {
 
 .card {
     max-width: 250px;
-    max-height: 350px;
+    height: 350px !important;
     border: none !important;
     border-radius: 20px;
     transition: transform 0.3s ease-in-out;
