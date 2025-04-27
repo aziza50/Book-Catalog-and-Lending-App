@@ -53,8 +53,17 @@
                         <div class="card-body text-center">
                             <img src="{{ collection.cover_image.url }}" alt="" class="img-fluid rounded">
                             <div class="align-items-center justify-content-between mt-2">
-                                {% if collection.is_private and not is_librarian %}
+                                {% if collection.is_private and not is_librarian and collection not in can_view %}
                                     <span class="text-muted">{{ collection.title }} (Private)</span>
+                                    {% if collection.can_request_view %}
+                                        <form action="{% url 'catalog:request_collection_access' collection.id %}"
+                                                method="post" class="mt-2">
+                                                {% csrf_token %}
+                                            <button class="btn btn-outline-primary w-100">
+                                                Request Access
+                                            </button>
+                                        </form>
+                                    {% endif %}
                                 {% else %}
                                     <a href="{% url 'catalog:collection_books_view' collection.id %}" class="card-title mt-3">{{ collection.title|truncatechars:20 }}</a>
                                     {% for book in collection.books.all %}

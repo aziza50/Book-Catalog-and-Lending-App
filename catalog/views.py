@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from users.forms import BookRequestForm
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
-from users.models import BookRequest
+from users.models import BookRequest, CollectionsRequest
 from users.forms import BookRequestForm
 from .forms import BooksForm, CommentsForm, AddBooksToCollectionForm, CreateCollectionForm
 from django.db.models import Avg
@@ -285,20 +285,25 @@ def collections(request):
 
     if is_authenticated:
         collections_qs = Collection.objects.all()
-
     else:
         collections_qs = Collection.objects.filter(is_private=False)
 
-
-   
-
+    
     collections = []
     for collection in collections_qs:
         collection.can_delete = (collection.creator == user) or is_librarian
+        collection.can_request_view = can_request_view(user, collection)
         collections.append(collection)
+
+    can_view = None
+    if is_authenticated and not is_librarian:
+        can_view = user.allowed_collections.all()
+    
     print(is_librarian)
+    
     context = {
         'collections': collections,
+        'can_view': can_view,
         'is_librarian': is_librarian,
         'can_create': is_authenticated,  # Show create button to logged-in users
     }
@@ -387,6 +392,7 @@ def search_collection(request):
                   , {
                       "collections": collections,
                   })
+
 def delete_collection(request, collection_id):
     # Fetch the collection by ID
     collection = get_object_or_404(Collection, id=collection_id)
@@ -438,3 +444,23 @@ def collection_books_view(request, collection_id):
         'collection': collection,
         'books': books,
     })
+
+def can_request_view(user, collection):
+    if collection.is_private and user.is_authenticated:
+        return (user != collection.creator      # not the creator
+                and not user.userprofile.is_librarian()     # librarians already see everything
+                and not CollectionsRequest.objects.filter(collection=collection,
+                                                          patron=user,
+                                                          status__in=['waiting','approved']).exists())
+    return False
+
+@login_required
+def request_collection_access(request, pk):
+    collection = get_object_or_404(Collection, pk=pk)
+    if request.method == "POST" and can_request_view(request.user, collection):
+        CollectionsRequest.objects.create(
+            collection = collection,
+            patron     = request.user,
+            librarian  = collection.creator
+        )
+    return redirect('catalog:collections')      # or wherever you came from

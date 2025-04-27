@@ -164,6 +164,82 @@
           </div>
         </div>
 
+        <!-- Collection View Requests -->
+        <div class="mb-4">
+          <h3>Collection View Requests</h3>
+          <div class="fixed-box">
+            <ul class="list-group">
+              <!-- Patron -->
+              {% if is_patron %}
+                {% for request in pending_col_requests %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {% if request.status == 'waiting'%}
+                      <div>
+                        Request to view "{{ request.collection.title }}"
+                      </div>
+                      <div class="request-buttons">
+                        <button type="button" class="btn btn-warning btn-sm" disabled>Pending</button>
+                      </div>
+                    {% elif request.status == 'approved'%}
+                      <div>
+                        Request to view "{{ request.collection.title }}"
+                      </div>
+                      <div class="request-buttons">
+                        <button type="button" class="btn btn-success btn-sm" disabled>Approved</button>
+                        <a href="{% url 'catalog:collection_books_view' request.collection.id %}" class="btn btn-outline-primary btn-sm">
+                          Go to Collection
+                        </a>
+                      </div>
+                    {% else %}
+                      <div>
+                        Request to view "{{ request.collection.title }}"
+                      </div>
+                      <div class="request-buttons">
+                        <button type="button" class="btn btn-danger btn-sm" disabled>{{ request.status|capfirst }}</button>
+                      </div>
+                    {% endif %}
+                    </li>
+                {% empty %}
+                  <li class="list-group-item">No pending requests.</li>
+                {% endfor %}
+
+              <!-- Librarian -->
+              {% elif is_librarian %}
+                {% for request in incoming_col_requests %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                      <div>
+                        Request from {{ request.patron.username }} to view "{{ request.collection.title }}"
+                      </div>
+                      <div class="request-buttons">
+                        {% if request.status == 'waiting' %}
+                          <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="approve_col_req_id" value="{{ request.id }}">
+                            <button class="btn btn-success btn-sm">Approve</button>
+                          </form>
+                          <form method="post" class="ms-1">
+                            {% csrf_token %}
+                            <input type="hidden" name="deny_col_req_id" value="{{ request.id }}">
+                            <button class="btn btn-danger btn-sm">Deny</button>
+                          </form>
+                        {% elif request.status == 'approved' %}
+                          <button type="button" class="btn btn-success btn-sm" disabled>Approved</button>
+                        {% else %}
+                          <button type="button" class="btn btn-danger btn-sm" disabled>{{ request.status|capfirst }}</button>
+                        {% endif %}
+                      </div>
+                    </li>
+                {% empty %}
+                  <li class="list-group-item">No incoming requests.</li>
+                {% endfor %}
+
+              {% endif %}
+
+            </ul>
+          </div>
+        </div>
+
+
         <!-- Collections Section -->
         <div class="mb-4">
           <h3>My Collections</h3>
@@ -225,6 +301,13 @@
                 <p>Your request for <strong>{{ notif.book.title }}</strong> has been <strong style="color: green;">{{ notif.status }}</strong>. Please pick it up at {{ notif.book.location }}, {{ notif.pickup_datetime }}, and return it by {{ notif.due_date }}.</p>
               {% else %}
                 <p>Your request for <strong>{{ notif.book.title }}</strong> has been <strong style="color: red;">{{ notif.status }}</strong>.</p>
+              {% endif %}
+            {% endfor %}
+            {% for notif in col_notifications %}
+              {% if notif.status == 'approved' %}
+                <p>Your request to view <strong>{{ notif.collection.title }}</strong> has been <strong style="color:green">approved</strong>.</p>
+              {% else %}
+                <p>Your request to view <strong>{{ notif.collection.title }}</strong> has been <strong style="color:red">{{ notif.status }}</strong>.</p>
               {% endif %}
             {% endfor %}
           </div>

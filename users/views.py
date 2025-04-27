@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from catalog.models import Book
-from .models import UserProfile, BookRequest
+from .models import UserProfile, BookRequest, CollectionsRequest
 from .forms import ProfilePictureForm
 
 def home(request):
@@ -99,6 +99,23 @@ def profile(request):
                 book_request.delete()
             except BookRequest.DoesNotExist:
                 pass
+        elif 'approve_col_req_id' in request.POST:
+            req_id = request.POST['approve_col_req_id']
+            try:
+                creq = CollectionsRequest.objects.get(id=req_id, librarian=user)
+                creq.status = 'approved'
+                creq.save()
+                creq.collection.allowed_users.add(creq.patron)
+            except CollectionsRequest.DoesNotExist:
+                pass
+        elif 'deny_col_req_id' in request.POST:
+            req_id = request.POST['deny_col_req_id']
+            try:
+                creq = CollectionsRequest.objects.get(id=req_id, librarian=user)
+                creq.status = 'denied'
+                creq.save()
+            except CollectionsRequest.DoesNotExist:
+                pass
         else:
             form = ProfilePictureForm(request.POST, request.FILES, instance=user_profile)
             if form.is_valid():
@@ -107,7 +124,9 @@ def profile(request):
     if request.method != 'POST' or ('approve_request_id' in request.POST 
                                 or 'deny_request_id' in request.POST 
                                 or 'mark_returned_id' in request.POST
-                                or 'delete_request_id' in request.POST):
+                                or 'delete_request_id' in request.POST
+                                or 'approve_col_req_id' in request.POST
+                                or 'deny_col_req_id' in request.POST):
         form = ProfilePictureForm(instance=user_profile)
 
 
@@ -116,7 +135,11 @@ def profile(request):
     pending_requests = None
     incoming_requests = None
     notifications = None
+    pending_col_requests = None
+    incoming_col_requests = None
+    col_notifications = None
     books = None
+    
     if is_patron:
         pending_requests = user.outgoing_requests.order_by('-created_at')
         notifications_qs = user.outgoing_requests.filter(
@@ -126,8 +149,18 @@ def profile(request):
         notifications = list(notifications_qs)
         if notifications:
             notifications_qs.update(notified=True)
+
+        pending_col_requests = user.collection_view_requests.order_by('-created_at')
+        col_notifications_qs = pending_col_requests.filter(
+                                status__in=['approved','denied'],
+                                notified=False)
+        col_notifications = list(col_notifications_qs)
+        if col_notifications:
+            col_notifications_qs.update(notified=True)
+
     elif is_librarian:
         incoming_requests = user.incoming_requests.order_by('-created_at')
+        incoming_col_requests = user.collection_permission_requests.order_by('-created_at')
         books = user.listed_books.all()
 
     # Retrieve collections for the user (assuming a Collection model exists)
@@ -141,8 +174,11 @@ def profile(request):
         "form": form,
         "pending_requests": pending_requests,
         "incoming_requests": incoming_requests,
+        "pending_col_requests": pending_col_requests,
+        "incoming_col_requests": incoming_col_requests,
         "collections": collections,
         "notifications": notifications,
+        "col_notifications": col_notifications,
         "books": books
     })
     

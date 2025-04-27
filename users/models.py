@@ -99,6 +99,10 @@ class CollectionsRequest(models.Model):
     collection = models.ForeignKey('catalog.Collection', on_delete=models.CASCADE, related_name='requests')
     patron = models.ForeignKey(User, on_delete=models.CASCADE, related_name='collection_view_requests')
     librarian = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='collection_permission_requests')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # notification tracking
+    notified = models.BooleanField(default=False)
 
     STATUS_CHOICES = [
         ('approved', 'Approved'),
