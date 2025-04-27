@@ -155,9 +155,14 @@
             <div class = "comment-box">
                 <div class = "box-top">
                     <div class = "profile">
-                    <div class = "profile-img">
-                        <img src = "{% static 'users/images/markerIcon.png' %}">
-                    </div>
+                        {% if user.userprofile.profile_pic %}
+                            <div class = "profile-img">
+                                <img src="{{ user.userprofile.profile_pic.url }}" alt=" ">
+                            </div>
+                        {% else %}
+                            <img src="{% static 'users/images/profile.png' %}" alt="" style="width:45px; margin-right: 10px; height:40px;">
+                        {% endif %}
+
                     <div class = "name-user">
                         <strong>{{ comment.user }}</strong>
                         <span>{{ comment.date  }}</span>
