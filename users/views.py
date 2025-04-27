@@ -9,7 +9,7 @@ def home(request):
 
 def browseGuest(request):
     user = request.user
-    is_authenticated = user.is_authenticated
+    is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
     is_librarian = False
     is_patron = False
     return render(request, "users/dashboard.html", {
@@ -22,7 +22,7 @@ def browseGuest(request):
 #than having to create several views
 def dashboard(request):
     user = request.user
-    is_authenticated = user.is_authenticated
+    is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
 
     if is_authenticated:
         try:
@@ -46,21 +46,20 @@ def resources(request):
 def helpPage(request):
     return render(request, "users/help_page.html")
 
-
 def resources(request):
     return render(request, "users/resources.html")
 
 def profile(request):
     user = request.user
-    if not user.is_authenticated:
-        return redirect('users:login_page.html')
+    if not user.is_authenticated or user.is_superuser or user.is_staff:
+        return redirect('users:dashboard')
 
     try:
         user_profile = user.userprofile
         is_librarian = user_profile.is_librarian()
         is_patron = user_profile.is_patron()
     except UserProfile.DoesNotExist:
-        return redirect('users:login_page.html')
+        return redirect('users:dashboard')
 
     if request.method == 'POST':
         if 'approve_request_id' in request.POST:

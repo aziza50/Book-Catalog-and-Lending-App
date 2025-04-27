@@ -17,6 +17,19 @@ from django.http import HttpResponseForbidden
 
 def lend_book(request):
     user = request.user
+    is_authenticated = False
+    if not user.is_superuser and not user.is_staff:
+        is_authenticated = user.is_authenticated
+        if is_authenticated:
+            user_profile = user.userprofile
+            is_patron = user_profile.is_patron()
+
+        if is_patron:
+            return redirect('users:dashboard')
+
+    if not is_authenticated:
+        return redirect('users:dashboard')
+
     if request.method == 'POST':
         form = BooksForm(request.POST, request.FILES)
         if not request.FILES.get('cover_image'):
@@ -66,7 +79,7 @@ def add_comment(request, book_id):
 def browse_all_books(request):
     # get all the books from the model
     user = request.user
-    is_authenticated = user.is_authenticated
+    is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
     if is_authenticated:
         user_profile = user.userprofile
         is_librarian = user.is_authenticated and user_profile.is_librarian()
@@ -90,38 +103,63 @@ def browse_all_books(request):
 
 def item(request, book_id):
     book = get_object_or_404(Book, id=book_id)
+    user = request.user
+    is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
     active_request_obj = None
-    if request.user.is_authenticated:
+    login_needed = False
+
+    if is_authenticated:
         active_request_obj = BookRequest.objects.filter(
             book=book,
             patron=request.user
         ).exclude(status__in=['denied', 'expired']).first()
 
-    if request.method == 'POST' and request.user.is_authenticated and not active_request_obj:
-        form = BookRequestForm(request.POST, patron=request.user)
-        if form.is_valid():
-            book_request = form.save(commit=False)
-            book_request.patron = request.user
-            book_request.librarian = book_request.book.lender
-            book_request.save()
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({'success': True, 'message': "Request sent successfully."})
+    if is_authenticated:
+        if request.method == 'POST' and not active_request_obj:
+            form = BookRequestForm(request.POST, patron=request.user)
+            if form.is_valid():
+                book_request = form.save(commit=False)
+                book_request.patron = request.user
+                book_request.librarian = book_request.book.lender
+                book_request.save()
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return JsonResponse({'success': True, 'message': "Request sent successfully."})
+                else:
+                    return redirect('catalog:item', book_id=book.id)
             else:
-                return redirect('catalog:item', book_id=book.id)
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return JsonResponse({'success': False, 'errors': form.errors}, status=400)
         else:
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+            form = BookRequestForm(initial={'book': book.id}, patron=request.user) if not active_request_obj else None
     else:
-        form = BookRequestForm(initial={'book': book.id}, patron=request.user) if not active_request_obj else None
+        form = None
+        login_needed = True
+
+
 
     return render(request, 'catalog/item.html', {
         'book': book,
         'form': form,
         'active_request': active_request_obj is not None,
         'active_request_obj': active_request_obj,
+        'login_needed': login_needed,
     })
 
 def edit(request, book_id):
+    user = request.user
+    is_authenticated = False
+    if not user.is_superuser and not user.is_staff:
+        is_authenticated = user.is_authenticated
+        if is_authenticated:
+            user_profile = user.userprofile
+            is_patron = user_profile.is_patron()
+
+        if is_patron:
+            return redirect('catalog:book_list')
+
+    if not is_authenticated:
+        return redirect('catalog:book_list')
+    
     book_to_edit = get_object_or_404(Book, id=book_id)
     old_cover_image = book_to_edit.cover_image if book_to_edit.cover_image else None
 
@@ -148,6 +186,7 @@ def edit(request, book_id):
             print(form.errors)
     else:
         form = BooksForm(instance=book_to_edit)
+    
 
     return render(request, 'catalog/edit_book.html', {
         'form': form,
@@ -166,7 +205,8 @@ def delete_book_image(request, image_id):
 
 def filter_book(request, filterCategory):
     user = request.user
-    is_authenticated = user.is_authenticated
+    is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
+
     if is_authenticated:
         user_profile = user.userprofile
         is_patron = user.is_authenticated and user_profile.is_patron()
@@ -208,12 +248,13 @@ def filter_book(request, filterCategory):
 
 def filter_book_collection(request, collection_id, filterCategory):
     user = request.user
-    is_authenticated = user.is_authenticated
+    is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
     if is_authenticated:
         user_profile = user.userprofile
         is_patron = user.is_authenticated and user_profile.is_patron()
     else:
         is_patron = False
+
     CATEGORY_MAP = {
         "genre":
             ["Fantasy",
@@ -276,7 +317,7 @@ def delete_book(request, book_id):
 
 def collections(request):
     user = request.user
-    is_authenticated = user.is_authenticated
+    is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
     is_librarian = False
 
     if is_authenticated:
@@ -350,7 +391,8 @@ def create_collection(request):
 
 def filter_collection(request, filterCategory):
     user = request.user
-    is_authenticated = user.is_authenticated
+    is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
+
     if is_authenticated:
         user_profile = user.userprofile
         is_librarian = user.is_authenticated and user_profile.is_librarian()
@@ -372,7 +414,7 @@ def filter_collection(request, filterCategory):
 
 def search_collection(request):
     user = request.user
-    is_authenticated = user.is_authenticated
+    is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
     if is_authenticated:
         user_profile = user.userprofile
         is_librarian = user.is_authenticated and user_profile.is_librarian()
@@ -399,7 +441,7 @@ def delete_collection(request, collection_id):
     # Fetch the collection by ID
     collection = get_object_or_404(Collection, id=collection_id)
     is_librarian = request.user.userprofile.is_librarian()
-    is_authenticated = request.user.is_authenticated
+    is_authenticated = request.user.is_authenticated and not request.user.is_superuser and not request.user.is_staff
 
 
     # Authorization check: Only creator or librarian can delete
@@ -417,11 +459,13 @@ def delete_collection(request, collection_id):
 @login_required
 def edit_collection(request, collection_id):
     collection = get_object_or_404(Collection, id=collection_id)
-    is_librarian = request.user.userprofile.is_librarian()
-
-    # Authorization check: only creator or librarian can edit
-    if not (collection.creator == request.user or is_librarian):
+    if request.user.is_superuser or request.user.is_staff:
         return redirect('catalog:collections')
+    else:
+        is_librarian = request.user.userprofile.is_librarian()
+        # Authorization check: only creator or librarian can edit
+        if not (collection.creator == request.user or is_librarian):
+            return redirect('catalog:collections')
 
     # Handle form submission
     if request.method == 'POST':
