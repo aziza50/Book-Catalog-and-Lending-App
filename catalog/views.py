@@ -469,14 +469,14 @@ def edit_collection(request, collection_id):
 
     # Handle form submission
     if request.method == 'POST':
-        form = AddBooksToCollectionForm(request.POST, instance=collection)
+        form = CreateCollectionForm(request.POST, instance=collection)
         if form.is_valid():
             form.save()
             return redirect('catalog:collections')
     else:
-        form = AddBooksToCollectionForm(instance=collection)
+        form = CreateCollectionForm(instance=collection)
 
-    return render(request, 'catalog/edit_collection.html', {
+    return render(request, 'catalog/create_collection.html', {
         'form': form,
         'collection': collection
     })
