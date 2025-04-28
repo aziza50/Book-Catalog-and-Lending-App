@@ -160,3 +160,5 @@ def delete_book_image_from_s3(sender, instance, **kwargs):
 def delete_collection_cover_from_s3(sender, instance, **kwargs):
     if instance.cover_image:
         instance.cover_image.delete(save=False)
+
+
