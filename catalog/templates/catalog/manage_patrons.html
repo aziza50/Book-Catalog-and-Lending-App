@@ -1,0 +1,35 @@
+{% extends "catalog/base.html" %}
+{% block content %}
+{% load static %}
+<h1>All Patrons</h1>
+<table>
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Email</th>
+      <th>Promote</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for patron in patrons %}
+      <tr>
+        <td>{{ patron.username }}</td>
+        <td>{{ patron.email }}</td>
+        <td>
+          <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="user_id" value="{{ patron.id }}">
+            <button type="submit">Promote to Librarian</button>
+          </form>
+        </td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="3">No patrons found.</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
+{% endblock content %}
