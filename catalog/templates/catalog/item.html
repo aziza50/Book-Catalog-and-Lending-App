@@ -47,7 +47,11 @@
                 <p>Lender username: {{ book.lender }}</p>
             </div>
 
-            {% if book.lender == request.user or not request.user.is_authenticated or login_needed%}
+            {% if book.lender == request.user or not request.user.is_authenticated or login_needed %}
+            {% elif book.status == 'Checked out' %}
+                <button class="btn btn-secondary disabled" type="button" disabled>
+                    Available by {{book.due_date}}.
+                </button>
             {% elif active_request %}
                 <button class="btn btn-secondary disabled" type="button" disabled>
                     {% if active_request_obj.status == 'waiting' %}

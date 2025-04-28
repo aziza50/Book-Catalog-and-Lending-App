@@ -58,6 +58,10 @@ class Book(models.Model):
     cover_image = models.ImageField(upload_to='book_covers/', null=True, blank=True)
     is_private = models.BooleanField(default=False)
 
+    def due_date(self):
+        req = self.requests.filter(status='approved').first()
+        return req.due_date if req else None
+
 
     def __str__(self):
         return self.title
