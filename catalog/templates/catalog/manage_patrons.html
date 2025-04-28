@@ -2,6 +2,10 @@
 {% block content %}
 {% load static %}
 <h1>All Patrons</h1>
+
+<input type="text" id="patron-search" placeholder="Search patrons by name..." autocomplete="off" style="margin-bottom:1em;">
+<ul id="patron-results"></ul>
+
 <table>
   <thead>
     <tr>
@@ -10,7 +14,7 @@
       <th>Promote</th>
     </tr>
   </thead>
-  <tbody>
+  <tbody id="patrons-table-body">
     {% for patron in patrons %}
       <tr>
         <td>{{ patron.username }}</td>
@@ -28,6 +32,33 @@
         <td colspan="3">No patrons found.</td>
       </tr>
     {% endfor %}
+    <script>
+      document.getElementById('patron-search').addEventListener('input', function() {
+          const query = this.value;
+          if (query.length < 2) {
+              document.getElementById('patron-results').innerHTML = '';
+              return;
+          }
+          fetch(`/catalog/patron_search/?q=${encodeURIComponent(query)}`)
+              .then(response => response.json())
+              .then(data => {
+                  const results = data.results;
+                  let html = '';
+                  results.forEach(function(user) {
+                      html += `
+                        <li>
+                          ${user.first_name} ${user.last_name} (${user.username}) - ${user.email}
+                          <form method="post" style="display:inline;" action="/catalog/manage_patrons/">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                            <input type="hidden" name="user_id" value="${user.id}">
+                            <button type="submit">Promote</button>
+                          </form>
+                        </li>`;
+                  });
+                  document.getElementById('patron-results').innerHTML = html;
+              });
+      });
+      </script>
   </tbody>
 </table>
 
