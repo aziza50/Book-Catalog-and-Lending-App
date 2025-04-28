@@ -103,7 +103,7 @@ def profile(request):
         elif 'approve_col_req_id' in request.POST:
             req_id = request.POST['approve_col_req_id']
             try:
-                creq = CollectionsRequest.objects.get(id=req_id, librarian=user)
+                creq = CollectionsRequest.objects.get(id=req_id)
                 creq.status = 'approved'
                 creq.save()
                 creq.collection.allowed_users.add(creq.patron)
@@ -112,7 +112,7 @@ def profile(request):
         elif 'deny_col_req_id' in request.POST:
             req_id = request.POST['deny_col_req_id']
             try:
-                creq = CollectionsRequest.objects.get(id=req_id, librarian=user)
+                creq = CollectionsRequest.objects.get(id=req_id)
                 creq.status = 'denied'
                 creq.save()
             except CollectionsRequest.DoesNotExist:
@@ -153,7 +153,7 @@ def profile(request):
 
     elif is_librarian:
         incoming_requests = BookRequest.objects.all().order_by('-created_at')
-        incoming_col_requests = user.collection_permission_requests.order_by('-created_at')
+        incoming_col_requests = CollectionsRequest.objects.all().order_by('-created_at')
         books = user.listed_books.all()
 
     pending_requests = user.outgoing_requests.order_by('-created_at')

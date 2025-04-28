@@ -15,6 +15,10 @@
     display: inline-block;
     margin-right: 5px;
   }
+  .rightSide .mb-4 {
+    border-bottom: 2px solid #ccc;
+    margin-bottom: 1rem;
+  }
   .section-header {
     font-size: 2rem;
     cursor: pointer;
@@ -27,6 +31,10 @@
   .section-icon {
     font-size: 1rem;
     margin-left: 0.25rem;
+  }
+  .no-transitions .collapse,
+  .no-transitions .collapsing {
+    transition: none !important;
   }
 </style>
 
@@ -301,10 +309,10 @@
         <!-- Books Section -->
         {% if is_librarian %}
         <div class="mb-4">
-          <h3 class="section-header" data-bs-toggle="collapse" data-bs-target="#collections" aria-expanded="false" aria-controls="collections">
+          <h3 class="section-header" data-bs-toggle="collapse" data-bs-target="#books" aria-expanded="false" aria-controls="books">
             My Books <i class="bi bi-chevron-down section-icon"></i>
           </h3>
-          <div class="collapse" id="collections">
+          <div class="collapse" id="books">
             <div class="fixed-box">
               <ul class="list-group">
                 {% for book in books %}
@@ -324,7 +332,6 @@
           </div>
         </div>
         {% endif %}
-
       </div>
     </div>
   </div>
@@ -364,5 +371,46 @@
       });
     </script>
   {% endif %}
+  <!-- Persist collapse state -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Turn off transitions
+      document.body.classList.add('no-transitions');
+  
+      const allCollapses = document.querySelectorAll('.collapse');
+      const openSections = JSON.parse(localStorage.getItem('openSections') || '[]');
+  
+      // Restore open sections without animation
+      allCollapses.forEach(el => {
+        if (openSections.includes(el.id)) {
+          new bootstrap.Collapse(el, { toggle: true });
+        }
+      });
+  
+      // Remove the "no-transitions" flag before the next paint
+      window.requestAnimationFrame(() => {
+        document.body.classList.remove('no-transitions');
+      });
+  
+      // Continue listening for show/hide to keep localStorage up to date
+      allCollapses.forEach(el => {
+        el.addEventListener('shown.bs.collapse', () => {
+          const arr = JSON.parse(localStorage.getItem('openSections') || '[]');
+          if (!arr.includes(el.id)) {
+            arr.push(el.id);
+            localStorage.setItem('openSections', JSON.stringify(arr));
+          }
+        });
+        el.addEventListener('hidden.bs.collapse', () => {
+          const arr = JSON.parse(localStorage.getItem('openSections') || '[]');
+          const idx = arr.indexOf(el.id);
+          if (idx > -1) {
+            arr.splice(idx, 1);
+            localStorage.setItem('openSections', JSON.stringify(arr));
+          }
+        });
+      });
+    });
+  </script>
 </div>
 {% endblock content %}
