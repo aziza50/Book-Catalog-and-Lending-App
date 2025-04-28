@@ -57,13 +57,13 @@
     <!-- Right Side: Requests and Collections -->
     <div class="col-md-9">
       <div class="rightSide">
+
+        
         <!-- Requests Section -->
         <div class="mb-4">
-          <h3>Requests</h3>
+          <h3>Pending Requests</h3>
           <div class="fixed-box">
             <ul class="list-group">
-              <!-- Patron -->
-              {% if is_patron %}
                 {% for request in pending_requests %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                     {% if request.status == 'waiting'%}
@@ -108,61 +108,70 @@
                   <li class="list-group-item">No pending requests.</li>
                 {% endfor %}
 
-              <!-- Librarian -->
-              {% elif is_librarian %}
-                {% for request in incoming_requests %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                      <div>
-                        Request from {{ request.patron.username }} for "{{ request.book.title }}"
-                      </div>
-                      <div class="request-buttons">
-                        {% if request.status == 'waiting' %}
-                          <form method="post" action="" style="display: inline;">
-                            {% csrf_token %}
-                            <input type="hidden" name="approve_request_id" value="{{ request.id }}">
-                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure you want to approve this request?');">
-                              Approve
-                            </button>
-                          </form>
-                          <form method="post" action="" style="display: inline;">
-                            {% csrf_token %}
-                            <input type="hidden" name="deny_request_id" value="{{ request.id }}">
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to deny this request?');">
-                              Deny
-                            </button>
-                          </form>
-                        {% elif request.status == 'approved' %}
-                          <button type="button" class="btn btn-success btn-sm" disabled>Pick-up: {{request.pickup_datetime}} at {{request.book.location}}</button>
-                          <button type="button" class="btn btn-secondary btn-sm" disabled>Due: {{ request.due_date|date:"F j, Y" }}</button>
-                          <form method="post" action="" style="display: inline;">
-                            {% csrf_token %}
-                            <input type="hidden" name="mark_returned_id" value="{{ request.id }}">
-                            <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Mark this book as returned and expire the request?');">
-                              Mark Returned
-                            </button>
-                          </form>
-                        {% else %}
-                          <button type="button" class="btn btn-danger btn-sm" disabled>{{ request.status|capfirst }}</button>
-                          <form method="post" action="" style="display: inline;">
-                            {% csrf_token %}
-                            <input type="hidden" name="delete_request_id" value="{{ request.id }}">
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to clear this request?');">
-                              Clear Request
-                            </button>
-                          </form>
-                        {% endif %}
-
-                      </div>
-                    </li>
-                {% empty %}
-                  <li class="list-group-item">No incoming requests.</li>
-                {% endfor %}
-
-              {% endif %}
-
             </ul>
           </div>
-        </div>
+        </div> 
+
+
+        {% if is_librarian %}
+          <!-- Requests Section -->
+          <div class="mb-4">
+            <h3>Incoming Requests</h3>
+            <div class="fixed-box">
+              <ul class="list-group">
+                  {% for request in incoming_requests %}
+                      <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                          Request from {{ request.patron.username }} for "{{ request.book.title }}"
+                        </div>
+                        <div class="request-buttons">
+                          {% if request.status == 'waiting' %}
+                            <form method="post" action="" style="display: inline;">
+                              {% csrf_token %}
+                              <input type="hidden" name="approve_request_id" value="{{ request.id }}">
+                              <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure you want to approve this request?');">
+                                Approve
+                              </button>
+                            </form>
+                            <form method="post" action="" style="display: inline;">
+                              {% csrf_token %}
+                              <input type="hidden" name="deny_request_id" value="{{ request.id }}">
+                              <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to deny this request?');">
+                                Deny
+                              </button>
+                            </form>
+                          {% elif request.status == 'approved' %}
+                            <button type="button" class="btn btn-success btn-sm" disabled>Pick-up: {{request.pickup_datetime}} at {{request.book.location}}</button>
+                            <button type="button" class="btn btn-secondary btn-sm" disabled>Due: {{ request.due_date|date:"F j, Y" }}</button>
+                            <form method="post" action="" style="display: inline;">
+                              {% csrf_token %}
+                              <input type="hidden" name="mark_returned_id" value="{{ request.id }}">
+                              <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Mark this book as returned and expire the request?');">
+                                Mark Returned
+                              </button>
+                            </form>
+                          {% else %}
+                            <button type="button" class="btn btn-danger btn-sm" disabled>{{ request.status|capfirst }}</button>
+                            <form method="post" action="" style="display: inline;">
+                              {% csrf_token %}
+                              <input type="hidden" name="delete_request_id" value="{{ request.id }}">
+                              <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to clear this request?');">
+                                Clear Request
+                              </button>
+                            </form>
+                          {% endif %}
+
+                        </div>
+                      </li>
+                  {% empty %}
+                    <li class="list-group-item">No incoming requests.</li>
+                  {% endfor %}
+              </ul>
+            </div>
+          </div>
+        {% endif %}
+
+
 
         <!-- Collection View Requests -->
         <div class="mb-4">
@@ -232,9 +241,7 @@
                 {% empty %}
                   <li class="list-group-item">No incoming requests.</li>
                 {% endfor %}
-
               {% endif %}
-
             </ul>
           </div>
         </div>
@@ -287,12 +294,11 @@
       </div>
     </div>
   </div>
-  {% if notifications %}
+  {% if notifications or col_notifications or due_notifications %}
     <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="notificationModalLabel">Request Update Notification</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -309,6 +315,9 @@
               {% else %}
                 <p>Your request to view <strong>{{ notif.collection.title }}</strong> has been <strong style="color:red">{{ notif.status }}</strong>.</p>
               {% endif %}
+            {% endfor %}
+            {% for notif in due_notifications %}
+                <p>{{ notif.book.title}} is <strong style="color: red">due</strong> within 3 days. Please return it by {{ notif.due_date }}.</p>
             {% endfor %}
           </div>
         </div>
