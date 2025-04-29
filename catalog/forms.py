@@ -1,4 +1,6 @@
 from django import forms
+from django.core.validators import FileExtensionValidator
+from django.forms import ClearableFileInput, FileInput
 from .models import Book, Collection, Comments, BookImage
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -10,24 +12,16 @@ class MultipleFileInput(forms.ClearableFileInput):
 # Custom field for handling multiple files
 class MultipleFileField(forms.FileField):
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault("widget", MultipleFileInput())
-        super().__init__(*args, **kwargs)
-
-    def clean(self, data, initial=None):
-        single_file_clean = super().clean
-        if isinstance(data, (list, tuple)):
-            result = [single_file_clean(d, initial) for d in data]
-        else:
-            result = [single_file_clean(data, initial)]
-        return result
-
-class MultipleFileInput(forms.ClearableFileInput):
-    allow_multiple_selected = True
-
-# Custom field for handling multiple files
-class MultipleFileField(forms.FileField):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("widget", MultipleFileInput())
+        widget = MultipleFileInput(attrs={
+            'multiple': True,
+            'class': 'form-control-file',
+            'accept': 'image/jpeg,image/png',
+        })
+        kwargs.setdefault("widget", widget)
+        kwargs.setdefault(
+            'validators',
+            [FileExtensionValidator(allowed_extensions=['jpg','jpeg','png'])]
+        )
         super().__init__(*args, **kwargs)
 
     def clean(self, data, initial=None):
@@ -40,11 +34,13 @@ class MultipleFileField(forms.FileField):
 
 
 class BooksForm(forms.ModelForm):
-
+    additional_images = MultipleFileField(
+        required=False,
+    )
 
     class Meta:
         model = Book
-        fields = ['title', 'isbn', 'author', 'status', 'condition', 'genre', 'location', 'description', 'cover_image']
+        fields = ['title', 'isbn', 'author', 'status', 'condition', 'genre', 'location', 'description', 'cover_image', 'additional_images']
 
     def __init__(self, *args, **kwargs):
         super(BooksForm, self).__init__(*args, **kwargs)
@@ -67,6 +63,16 @@ class BooksForm(forms.ModelForm):
             if field_name not in ['additional_images']:
                 field.required = True
 
+        # but if we're editing (instance exists in DB), make cover_image optional
+        if self.instance and self.instance.pk:
+            cover = self.fields['cover_image']
+            cover.required = False
+            # also remove the HTML "required" attribute so client-side won't complain
+            cover.widget.attrs.pop('required', None)
+            # replace the ClearableFileInput with a plain FileInput
+            cover.widget = FileInput(
+                attrs={'class': 'form-control-file'}
+            )
 
 class CommentsForm(forms.ModelForm):
     rating = forms.ChoiceField(choices=[('', 'Select a rating')]+ [(str(i), str(i)) for i in range(1, 6)], widget=forms.RadioSelect, required = True, error_messages={'required':'Please select a rating'})
