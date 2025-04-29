@@ -2,32 +2,33 @@
 {% block content %}
 {% load static %}
 <h1>All Patrons</h1>
+    <hr class="mt-0 line-strip" >
 
 <input type="text" id="patron-search" placeholder="Search patrons by name..." autocomplete="off" style="margin-bottom:1em;">
 <ul id="patron-results"></ul>
 
-<table>
-  <thead>
-    <tr>
-      <th>Username</th>
-      <th>Email</th>
-      <th>Promote</th>
-    </tr>
-  </thead>
-  <tbody id="patrons-table-body">
-    {% for patron in patrons %}
-      <tr>
-        <td>{{ patron.username }}</td>
-        <td>{{ patron.email }}</td>
-        <td>
-          <form method="post" style="display:inline;">
-            {% csrf_token %}
-            <input type="hidden" name="user_id" value="{{ patron.id }}">
-            <button type="submit">Promote to Librarian</button>
-          </form>
-        </td>
-      </tr>
-    {% empty %}
+    <table class="table table-hover align-middle">
+        <thead>
+        <tr>
+            <th class="pe-4">Username</th>
+            <th class="pe-4">Email</th>
+            <th class="pe-4">Promote</th>
+        </tr>
+        </thead>
+        <tbody id="patrons-table-body">
+        {% for patron in patrons %}
+            <tr>
+                <td>{{ patron.username }}</td>
+                <td>{{ patron.email }}</td>
+                <td>
+                    <form method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{ patron.id }}">
+                        <button class = "btn btn-custom text-white" type="submit">Promote to Librarian</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
       <tr>
         <td colspan="3">No patrons found.</td>
       </tr>
