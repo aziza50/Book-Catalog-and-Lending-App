@@ -69,8 +69,7 @@ class BooksForm(forms.ModelForm):
 
 
 class CommentsForm(forms.ModelForm):
-    rating = forms.ChoiceField(choices=[(str(i), str(i)) for i in range(1, 6)], widget=forms.RadioSelect)
-
+    rating = forms.ChoiceField(choices=[('', 'Select a rating')]+ [(str(i), str(i)) for i in range(1, 6)], widget=forms.RadioSelect, required = True, error_messages={'required':'Please select a rating'})
     class Meta:
         model = Comments
         fields = ['comment', 'rating']

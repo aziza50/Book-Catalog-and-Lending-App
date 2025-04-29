@@ -9,6 +9,7 @@
                 Filter
             </button>
             {% if is_authenticated %}
+
                 {% if is_librarian or is_patron %}
                     <a class="btn btn-custom active text-white" href="{% url 'catalog:create_collection' %}">Create a New Collection</a>
                 {% endif %}
@@ -70,11 +71,20 @@
                                     {% endif %}
                                 {% else %}
                                     <a href="{% url 'catalog:collection_books_view' collection.id %}" class="card-title mt-3">{{ collection.title|truncatechars:20 }}</a>
-                                    {% for book in collection.books.all %}
-                                        <div class="align-items-center gap-2">
-                                            <p class="card-text mb-0"><small class="text-muted">{{ book.title|truncatechars:20 }}</small></p>
-                                        </div>
-                                    {% endfor %}
+                                        {% with books=collection.books.all %}
+                                            {% if books|length > 2 %}
+                                                <div class="align-items-center gap-2">
+                                                    <p class="card-text mb-0"><small class="text-muted">+ {{ books|length|add:"-2" }} more</small></p>
+                                                </div>
+                                            {%  else %}
+                                            {%  for book in books %}
+                                            <div class="align-items-center gap-2">
+                                                <p class="card-text mb-0"><small class="text-muted">{{ book.title|truncatechars:20 }}</small></p>
+                                            </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                        {% endwith %}
+
                                 {% endif %}
 
 

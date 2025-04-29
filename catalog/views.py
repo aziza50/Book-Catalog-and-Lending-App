@@ -11,7 +11,7 @@ from django.http import JsonResponse
 from users.models import BookRequest, CollectionsRequest
 from users.forms import BookRequestForm
 from .forms import BooksForm, CommentsForm, AddBooksToCollectionForm, CreateCollectionForm
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from .forms import BooksForm, AddBooksToCollectionForm, CreateCollectionForm
 from users.decorators import librarian_required
 
@@ -375,10 +375,30 @@ def add_books_to_collection(request, collection_id):
     # Render the page with the form
     return render(request, 'catalog/add_books_to_collection.html', {'form': form, 'collection': collection})
 
+def get_books_for_collection(request, user, collection_id):
+    user = request.user
+    is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
+    if is_authenticated:
+        user_profile = user.userprofile
+        is_librarian = user.is_authenticated and user_profile.is_librarian()
+    else:
+        is_librarian = False
 
-@login_required  
+    if is_librarian:
+        collections_allow = Collection.objects.filter(Q(is_private=False) |Q(id=collection_id)).distinct().order_by('-title')
+        books = Book.objects.filter(collections__in=collections_allow)
+    elif is_authenticated:
+        #only have access to books that are part of not private collections or in allowable users list
+        books = Book.objects.filter(is_private=False)
+        collections_allow = Collection.objects.filter(allowed_users = user)
+        private_collection_books = Book.objects.filter(collections__in=collections_allow)
+        books = (books | private_collection_books).distinct().order_by('-title')
+
+    return books
+
+@login_required
 def create_collection(request):
-    books = get_books_per_user(request, request.user)
+    books = get_books_per_user(request, request.user).exclude(is_private = True)
     if request.method == 'POST':
         form = CreateCollectionForm(request.POST,request.FILES, request=request)
         form.fields['books'].queryset = books
@@ -387,7 +407,8 @@ def create_collection(request):
             collection = form.save(commit=False)
             collection.creator = request.user
             collection.save()
-            return redirect('catalog:collections')
+            form.save_m2m()
+        return redirect('catalog:collections')
     else:
         form = CreateCollectionForm(request=request)
         form.fields['books'].queryset = books
@@ -475,13 +496,13 @@ def edit_collection(request, collection_id):
             return redirect('catalog:collections')
 
     # Handle form submission
-    books = get_books_per_user(request, request.user)
+    books = get_books_for_collection(request, request.user, collection_id)
 
 
     if request.method == 'POST':
         form = CreateCollectionForm(request.POST, instance=collection)
         form.fields['books'].queryset = books
-        form.fields['allowed_users'].queryset = User.objetcs.exclude(id=request.user.id)
+        form.fields['allowed_users'].queryset = User.objects.exclude(id=request.user.id)
 
         if form.is_valid():
                 form.save()
