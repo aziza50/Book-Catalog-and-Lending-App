@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Book, Collection, Comments, BookImage
 from users.models import User
+import users.views
+from django.contrib.auth.models import User
 from .models import Book, Collection, Comments, BookImage
 from django.contrib.auth.decorators import login_required
 from users.forms import BookRequestForm
@@ -75,6 +77,29 @@ def add_comment(request, book_id):
 
     return render(request, 'catalog/item.html', {'form': form, 'book':book})
 
+def get_books_per_user(request, user):
+    user = request.user
+    is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
+    if is_authenticated:
+        user_profile = user.userprofile
+        is_librarian = user.is_authenticated and user_profile.is_librarian()
+    else:
+        is_librarian = False
+
+    if is_librarian:
+        books = Book.objects.all().order_by('-title')
+    elif is_authenticated:
+        #only have access to books that are part of not private collections or in allowable users list
+        books = Book.objects.filter(is_private=False)
+        collections_allow = Collection.objects.filter(allowed_users = user)
+        private_collection_books = Book.objects.filter(collections__in=collections_allow)
+        books = (books | private_collection_books).distinct().order_by('-title')
+    else:
+        #must be anonymous hence
+        private_collections = Collection.objects.filter(is_private=True)
+        books = Book.objects.filter(is_private=False).exclude(collections__in=private_collections).order_by('-title')
+    return books
+
 
 def browse_all_books(request):
     # get all the books from the model
@@ -88,13 +113,12 @@ def browse_all_books(request):
 
     if collection_title:
         collection = Collection.objects.get(title=collection_title)
-        books = collection.books.all().order_by("-title")
 
+        if collection.is_private:
+            if is_librarian or user in collection.allowed_users.all():
+                books = collection.books.all().order_by("-title")
     else:
-        if is_authenticated and is_librarian:
-            books = Book.objects.all().order_by('-title')
-        else:
-            books = Book.objects.filter(is_private=False).order_by('-title')
+        books = get_books_per_user(request, user)
     return render(request, "catalog/books.html"
                   , {
                       "books": books,
@@ -205,13 +229,6 @@ def delete_book_image(request, image_id):
 
 def filter_book(request, filterCategory):
     user = request.user
-    is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
-
-    if is_authenticated:
-        user_profile = user.userprofile
-        is_patron = user.is_authenticated and user_profile.is_patron()
-    else:
-        is_patron = False
     CATEGORY_MAP = {
         "genre":
             ["Fantasy",
@@ -231,30 +248,16 @@ def filter_book(request, filterCategory):
              "Poor"]
         ,
     }
+    books = get_books_per_user(request, user)
     for categories, items in CATEGORY_MAP.items():
         if filterCategory in items:
-            if is_patron:
-                filter_books = Book.objects.filter(**{categories : filterCategory}, is_private = False)
-                return render(request, "catalog/books.html"
-                  , {
-                      "books": filter_books,
-            }   )
-            else:
-                filter_books = Book.objects.filter(**{categories: filterCategory})
-                return render(request, "catalog/books.html"
+            filter_books = books.filter(**{categories: filterCategory})
+            return render(request, "catalog/books.html"
                               , {
                                   "books": filter_books,
                               })
 
 def filter_book_collection(request, collection_id, filterCategory):
-    user = request.user
-    is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
-    if is_authenticated:
-        user_profile = user.userprofile
-        is_patron = user.is_authenticated and user_profile.is_patron()
-    else:
-        is_patron = False
-
     CATEGORY_MAP = {
         "genre":
             ["Fantasy",
@@ -298,19 +301,19 @@ def search_books_collection(request, collection_id):
     })
 
 def search(request):
+    books = get_books_per_user(request, request.user)
     query = request.GET.get('query', '')
-    book_to_query = Book.objects.filter(title__icontains = query)
+    book_to_query = books.filter(title__icontains = query)
     return render(request, "catalog/books.html"
                   , {
                       "books": book_to_query,
                   })
 
-
 def delete_book(request, book_id):
     book_to_delete = get_object_or_404(Book, id=book_id)
     print(f"Request to delete book ID: {book_id} — {book_to_delete.title}")
 
-    if not request.user.is_authenticated or not request.user.userprofile.is_librarian():
+    if not request.user.is_authenticated:
         raise ValueError("You do not have permission to delete this book.")
     book_to_delete.delete()
 
@@ -340,9 +343,7 @@ def collections(request):
     can_view = None
     if is_authenticated and not is_librarian:
         can_view = user.allowed_collections.all()
-    
-    print(is_librarian)
-    
+
     context = {
         'collections': collections,
         'can_view': can_view,
@@ -377,16 +378,20 @@ def add_books_to_collection(request, collection_id):
 
 @login_required  
 def create_collection(request):
+    books = get_books_per_user(request, request.user)
     if request.method == 'POST':
         form = CreateCollectionForm(request.POST,request.FILES, request=request)
+        form.fields['books'].queryset = books
+        form.fields['allowed_users'].queryset = User.objects.exclude(id=request.user.id)
         if form.is_valid():
             collection = form.save(commit=False)
             collection.creator = request.user
-            collection = form.save()
+            collection.save()
             return redirect('catalog:collections')
-            # return redirect('catalog:collections', collection_id=collection.id)
     else:
         form = CreateCollectionForm(request=request)
+        form.fields['books'].queryset = books
+        form.fields['allowed_users'].queryset = User.objects.exclude(id=request.user.id)
 
     return render(request, 'catalog/create_collection.html', {'form': form})
 
@@ -397,6 +402,7 @@ def filter_collection(request, filterCategory):
     if is_authenticated:
         user_profile = user.userprofile
         is_librarian = user.is_authenticated and user_profile.is_librarian()
+
     if filterCategory == "private" and is_librarian:
         filter_collections = Collection.objects.filter(is_private = True)
     else:
@@ -446,12 +452,12 @@ def delete_collection(request, collection_id):
 
 
     # Authorization check: Only creator or librarian can delete
-    if not is_authenticated or collection.creator != request.user or not is_librarian:
+    if not is_authenticated or collection.creator != request.user:
         raise ValueError("You do not have permission to delete this collection.")
 
     # Release all books
     collection.books.all().update(is_private=False)
-    
+
 
     # Delete the collection
     collection.delete()
@@ -469,15 +475,24 @@ def edit_collection(request, collection_id):
             return redirect('catalog:collections')
 
     # Handle form submission
-    if request.method == 'POST':
-        form = AddBooksToCollectionForm(request.POST, instance=collection)
-        if form.is_valid():
-            form.save()
-            return redirect('catalog:collections')
-    else:
-        form = AddBooksToCollectionForm(instance=collection)
+    books = get_books_per_user(request, request.user)
 
-    return render(request, 'catalog/edit_collection.html', {
+
+    if request.method == 'POST':
+        form = CreateCollectionForm(request.POST, instance=collection)
+        form.fields['books'].queryset = books
+        form.fields['allowed_users'].queryset = User.objetcs.exclude(id=request.user.id)
+
+        if form.is_valid():
+                form.save()
+                return redirect('catalog:collections')
+    else:
+        form = CreateCollectionForm(instance=collection)
+        form.fields['books'].queryset = books
+        form.fields['allowed_users'].queryset = User.objects.exclude(id=request.user.id)
+
+
+    return render(request, 'catalog/create_collection.html', {
         'form': form,
         'collection': collection
     })
@@ -540,7 +555,7 @@ def patron_search(request):
         ).filter(
             last_name__icontains=query
         )
-        users = users.distinct()[:10] 
+        users = users.distinct()[:10]
         results = [
             {
                 'id': user.id,

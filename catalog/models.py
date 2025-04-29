@@ -51,12 +51,16 @@ class Book(models.Model):
     status = models.CharField(max_length = 13, choices= Status.choices, default = Status.AVAILABLE)
     condition = models.CharField(max_length = 13, choices = Condition.choices, default=Condition.ACCEPTABLE)
     genre = models.CharField(max_length=100, choices = Genre.choices)
-    rating = models.IntegerField(default = 0, validators = [MinValueValidator(1), MaxValueValidator(5)])
+    rating = models.FloatField(default = 0.0, validators = [MinValueValidator(1.0), MaxValueValidator(5.0)])
     location = models.CharField(max_length = 27, choices = Location.choices, default = Location.SHANNON)
     comments = models.CharField(max_length = 200, blank = True, null =True, default = "")
     description = models.TextField(max_length = 200, default = " ")
     cover_image = models.ImageField(upload_to='book_covers/', null=True, blank=True)
     is_private = models.BooleanField(default=False)
+
+    def due_date(self):
+        req = self.requests.filter(status='approved').first()
+        return req.due_date if req else None
 
 
     def __str__(self):
@@ -83,19 +87,6 @@ class Comments(models.Model):
     comment = models.TextField(max_length=200)
     date = models.DateTimeField(default = timezone.now)
     rating = models.IntegerField()
-
-
-class BookImage(models.Model):
-    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='book_images/')
-    caption = models.CharField(max_length=255, blank=True)
-    order = models.PositiveIntegerField(default=0)
-    
-    class Meta:
-        ordering = ['order']
-        
-    def __str__(self):
-        return f"Image for {self.book.title}"
 
 class Collection(models.Model):
     title = models.CharField(max_length=255)
@@ -160,5 +151,3 @@ def delete_book_image_from_s3(sender, instance, **kwargs):
 def delete_collection_cover_from_s3(sender, instance, **kwargs):
     if instance.cover_image:
         instance.cover_image.delete(save=False)
-
-

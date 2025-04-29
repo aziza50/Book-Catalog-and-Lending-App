@@ -6,6 +6,8 @@ from .forms import ProfilePictureForm
 from django.contrib.auth.decorators import login_required
 from users.decorators import librarian_required
 from django.http import JsonResponse
+from datetime import timedelta
+from django.utils import timezone
 
 def home(request):
     return redirect('users:dashboard')
@@ -68,7 +70,7 @@ def profile(request):
         if 'approve_request_id' in request.POST:
             req_id = request.POST.get('approve_request_id')
             try:
-                book_request = BookRequest.objects.get(id=req_id, book__lender=user)
+                book_request = BookRequest.objects.get(id=req_id)
                 book_request.status = 'approved'
                 book_request.book.status = "Checked out"
                 book_request.book.save() 
@@ -78,7 +80,7 @@ def profile(request):
         elif 'deny_request_id' in request.POST:
             req_id = request.POST.get('deny_request_id')
             try:
-                book_request = BookRequest.objects.get(id=req_id, book__lender=user)
+                book_request = BookRequest.objects.get(id=req_id)
                 book_request.status = 'denied'
                 book_request.save()
             except BookRequest.DoesNotExist:
@@ -86,7 +88,7 @@ def profile(request):
         elif 'mark_returned_id' in request.POST:
             req_id = request.POST.get('mark_returned_id')
             try:
-                book_request = BookRequest.objects.get(id=req_id, book__lender=user)
+                book_request = BookRequest.objects.get(id=req_id)
                 if book_request.status == 'approved':
                     book_request.status = 'expired'
                     book_request.book.status = "Available"
@@ -104,7 +106,7 @@ def profile(request):
         elif 'approve_col_req_id' in request.POST:
             req_id = request.POST['approve_col_req_id']
             try:
-                creq = CollectionsRequest.objects.get(id=req_id, librarian=user)
+                creq = CollectionsRequest.objects.get(id=req_id)
                 creq.status = 'approved'
                 creq.save()
                 creq.collection.allowed_users.add(creq.patron)
@@ -113,7 +115,7 @@ def profile(request):
         elif 'deny_col_req_id' in request.POST:
             req_id = request.POST['deny_col_req_id']
             try:
-                creq = CollectionsRequest.objects.get(id=req_id, librarian=user)
+                creq = CollectionsRequest.objects.get(id=req_id)
                 creq.status = 'denied'
                 creq.save()
             except CollectionsRequest.DoesNotExist:
@@ -141,17 +143,9 @@ def profile(request):
     incoming_col_requests = None
     col_notifications = None
     books = None
-    
-    if is_patron:
-        pending_requests = user.outgoing_requests.order_by('-created_at')
-        notifications_qs = user.outgoing_requests.filter(
-            status__in=['approved', 'denied'],
-            notified=False
-            ).order_by('-created_at')
-        notifications = list(notifications_qs)
-        if notifications:
-            notifications_qs.update(notified=True)
+    due_notifications = None
 
+    if is_patron:
         pending_col_requests = user.collection_view_requests.order_by('-created_at')
         col_notifications_qs = pending_col_requests.filter(
                                 status__in=['approved','denied'],
@@ -161,13 +155,31 @@ def profile(request):
             col_notifications_qs.update(notified=True)
 
     elif is_librarian:
-        incoming_requests = user.incoming_requests.order_by('-created_at')
-        incoming_col_requests = user.collection_permission_requests.order_by('-created_at')
+        incoming_requests = BookRequest.objects.all().order_by('-created_at')
+        incoming_col_requests = CollectionsRequest.objects.all().order_by('-created_at')
         books = user.listed_books.all()
+
+    pending_requests = user.outgoing_requests.order_by('-created_at')
+
+    notifications_qs = user.outgoing_requests.filter(
+        status__in=['approved', 'denied'],
+        notified=False
+        ).order_by('-created_at')
+    notifications = list(notifications_qs)
+    if notifications:
+        notifications_qs.update(notified=True)
+
+    now = timezone.now()
+    threshold = now + timedelta(days=3)
+    due_notifications_qs = user.outgoing_requests.filter(
+        status='approved',
+        due_date__gt=now,
+        due_date__lte=threshold,
+    ).order_by('due_date')
+    due_notifications = list(due_notifications_qs)
 
     # Retrieve collections for the user (assuming a Collection model exists)
     collections = user.created_collections.all()
-
 
 
     return render(request, "users/profile.html", {
@@ -181,6 +193,7 @@ def profile(request):
         "collections": collections,
         "notifications": notifications,
         "col_notifications": col_notifications,
+        "due_notifications": due_notifications,
         "books": books
     })
     
