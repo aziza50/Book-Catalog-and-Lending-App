@@ -12,7 +12,7 @@ from users.models import BookRequest, CollectionsRequest
 from users.forms import BookRequestForm
 from .forms import BooksForm, CommentsForm, AddBooksToCollectionForm, CreateCollectionForm
 from django.db.models import Avg
-from .forms import BooksForm, AddBooksToCollectionForm, CreateCollectionForm
+from .forms import BooksForm, AddBooksToCollectionForm, CreateCollectionForm, EditCollectionForm
 from users.decorators import librarian_required
 
 from django.http import HttpResponseForbidden
@@ -395,6 +395,7 @@ def create_collection(request):
 
     return render(request, 'catalog/create_collection.html', {'form': form})
 
+
 def filter_collection(request, filterCategory):
     user = request.user
     is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
@@ -479,20 +480,21 @@ def edit_collection(request, collection_id):
 
 
     if request.method == 'POST':
-        form = CreateCollectionForm(request.POST, instance=collection)
+        form = EditCollectionForm(request.POST, request.FILES, instance=collection, request=request)
         form.fields['books'].queryset = books
-        form.fields['allowed_users'].queryset = User.objetcs.exclude(id=request.user.id)
+        form.fields['allowed_users'].queryset = User.objects.exclude(id=request.user.id)
 
         if form.is_valid():
-                form.save()
-                return redirect('catalog:collections')
+            form.save()
+            return redirect('catalog:collections')
     else:
-        form = CreateCollectionForm(instance=collection)
+        form = EditCollectionForm(instance=collection, request=request)
         form.fields['books'].queryset = books
         form.fields['allowed_users'].queryset = User.objects.exclude(id=request.user.id)
 
 
-    return render(request, 'catalog/create_collection.html', {
+
+    return render(request, 'catalog/edit_collection.html', {
         'form': form,
         'collection': collection
     })
