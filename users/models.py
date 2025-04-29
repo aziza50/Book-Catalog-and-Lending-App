@@ -90,7 +90,7 @@ class BookRequest(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['book', 'patron'],
-                condition=~Q(status='denied')| Q(status='expired'),
+                condition=~Q(status__in=['denied', 'expired']),
                 name='unique_open_request'
             )
         ]
