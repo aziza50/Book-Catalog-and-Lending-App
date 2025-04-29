@@ -1,3 +1,6 @@
+//Referenced this video to embed google maps into our website:
+//Source: https://www.youtube.com/watch?v=4U_AAGHzTok&ab_channel=GreatStack
+
 function myMap() {
     const markers = [
     {
