@@ -128,17 +128,109 @@ class CreateCollectionForm(forms.ModelForm):
             'required': 'required',
         })
     )
-
     books = forms.ModelMultipleChoiceField(
         queryset=Book.objects.filter(is_private=False),
         widget=forms.SelectMultiple(attrs={'class': 'select2'}),
         required=False,
     )
-
     collection_type = forms.ChoiceField(
         choices=[('public', 'Public'), ('private', 'Private')],
         widget=forms.RadioSelect,
         required=True
+    )
+    allowed_users = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(),
+        widget=forms.SelectMultiple(attrs={'class': 'select2'}),
+        required=False,
+        label="Select users who can access this collection"
+    )
+    
+    class Meta:
+        model = Collection
+        fields = ['title', 'description', 'books', 'cover_image', 'collection_type', 'allowed_users']
+        
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
+        if self.request and self.request.user.is_authenticated:
+            user = self.request.user
+            if not user.userprofile.is_librarian():
+                self.fields['collection_type'].choices = [('public', 'Public')]
+            # Exclude current user from allowed_users list since they're already the creator, also other librarians
+            self.fields['allowed_users'].queryset = User.objects.exclude(
+                Q(id=user.id) | Q(userprofile__role='librarian')
+            )
+            self.fields['cover_image'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Upload a Cover Image'})
+            # Nicely render all form fields
+            for field_name, field in self.fields.items():
+                if not isinstance(field.widget, (forms.CheckboxSelectMultiple, forms.RadioSelect)):
+                    field.widget.attrs.update({'class': 'form-control'})
+                    
+    def clean_cover_image(self):
+        img = self.cleaned_data.get('cover_image')
+        if not img:
+            raise forms.ValidationError("Please upload a cover image.")
+        return img
+        
+    def save(self, commit=True):
+        if not self.request or not self.request.user.is_authenticated:
+            raise ValidationError("A logged-in user is required to create a collection.")
+            
+        user = self.request.user
+        collection_type = self.cleaned_data.get('collection_type')
+        is_private = (collection_type == 'private')
+        
+        instance = Collection(
+            title=self.cleaned_data['title'],
+            description=self.cleaned_data['description'],
+            creator=user,
+            is_private=is_private,
+            cover_image=self.cleaned_data['cover_image'],
+        )
+        
+        if commit:
+            instance.save()
+            
+            # Handle allowed users if the collection is private
+            if is_private:
+                allowed_users = self.cleaned_data.get('allowed_users')
+                if allowed_users:
+                    instance.allowed_users.set(allowed_users)
+            
+            # Handle books
+            selected_books = self.cleaned_data.get('books')
+            if selected_books:
+                # First save the collection to establish its ID
+                if is_private:
+                    # For private collections, handle the special logic
+                    for book in selected_books:
+                        # Remove the book from all collections
+                        book.collections.clear()
+                        # Add it to this private collection
+                        book.collections.add(instance)
+                        # Set the book as private
+                        book.is_private = True
+                        book.save()
+                else:
+                    # For public collections, simply add books to collection
+                    instance.books.set(selected_books)
+                    
+        return instance
+
+class EditCollectionForm(forms.ModelForm):
+    cover_image = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Upload a Cover Image',
+        })
+    )
+
+
+    books = forms.ModelMultipleChoiceField(
+        queryset=Book.objects.filter(is_private=False),
+        widget=forms.SelectMultiple(attrs={'class': 'select2'}),
+        required=False,
     )
     
     allowed_users = forms.ModelMultipleChoiceField(
@@ -150,7 +242,7 @@ class CreateCollectionForm(forms.ModelForm):
 
     class Meta:
         model = Collection
-        fields = ['title', 'description', 'books', 'cover_image', 'collection_type', 'allowed_users']
+        fields = ['title', 'description', 'books', 'cover_image', 'allowed_users']
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)  
@@ -158,31 +250,26 @@ class CreateCollectionForm(forms.ModelForm):
 
         if self.request and self.request.user.is_authenticated:
             user = self.request.user
-            if not user.userprofile.is_librarian():
-                self.fields['collection_type'].choices = [('public', 'Public')]
-            
-            # Exclude current user from allowed_users list since they're already the creator, also other librarians
+
+            # Exclude current user and librarians from allowed_users
             self.fields['allowed_users'].queryset = User.objects.exclude(
-                    Q(id=user.id) | Q(userprofile__role='librarian')
-    )            
-        self.fields['cover_image'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Upload a Cover Image'})
+                Q(id=user.id) | Q(userprofile__role='librarian')
+            )
         
-        
-        # Nicely render all form fields
+        # Set common widget styling
         for field_name, field in self.fields.items():
             if not isinstance(field.widget, (forms.CheckboxSelectMultiple, forms.RadioSelect)):
                 field.widget.attrs.update({'class': 'form-control'})
 
     def clean_cover_image(self):
-        img = self.cleaned_data.get('cover_image')
-        if not img:
-            raise forms.ValidationError("Please upload a cover image.")
-        return img
-    
+        # Simply return the image or None — no validation error if it's missing
+        return self.cleaned_data.get('cover_image')
+
     def save(self, commit=True):
         instance = super().save(commit=False)
 
-        instance.is_private = (self.cleaned_data['collection_type'] == 'private')
+        # Don't update collection_type; just retain existing value
+        instance.is_private = self.instance.is_private
 
         if commit:
             instance.save()
@@ -195,55 +282,4 @@ class CreateCollectionForm(forms.ModelForm):
 
         return instance
 
-class BookImageForm(forms.ModelForm):
-    class Meta:
-        model = BookImage
-        fields = ['image', 'caption']
-        widgets = {
-            'image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
-            'caption': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Image caption (optional)'})
-        }
 
-    def save(self, commit=True):
-        if not self.request or not self.request.user.is_authenticated:
-            raise ValidationError("A logged-in user is required to create a collection.")
-
-        user = self.request.user
-        collection_type = self.cleaned_data.get('collection_type')
-        is_private = (collection_type == 'private')
-
-        instance = Collection(
-            title=self.cleaned_data['title'],
-            description=self.cleaned_data['description'],
-            creator=user,
-            is_private=is_private,
-            cover_image=self.cleaned_data['cover_image'],
-        )
-
-        if commit:
-            instance.save()
-            
-            # Handle allowed users if the collection is private
-            if is_private:
-                allowed_users = self.cleaned_data.get('allowed_users')
-                if allowed_users:
-                    instance.allowed_users.set(allowed_users)
-                    
-            # Handle books
-            selected_books = self.cleaned_data.get('books')
-            if selected_books:
-                instance.books.set(selected_books)
-
-                if instance.is_private:
-                    for book in selected_books:
-                        # Remove the book from all collections
-                        book.collections.set([])
-
-                        # Add it only to this private collection
-                        book.collections.add(instance)
-
-                        # Set the book as private
-                        book.is_private = True
-                        book.save()
-
-        return instance
