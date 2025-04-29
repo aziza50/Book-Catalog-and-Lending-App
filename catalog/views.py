@@ -131,11 +131,10 @@ def item(request, book_id):
     is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
     active_request_obj = None
     login_needed = False
-
-    if not is_authenticated:
-        return redirect('catalog:book_list')
     
     if book.is_private:
+        if not is_authenticated:
+            return redirect('catalog:collections')
         private_collection = book.collections.first()
         if not private_collection.allowed_users.filter(pk=request.user.pk).exists() and not user.userprofile.is_librarian():
             return redirect('catalog:book_list')
@@ -510,15 +509,14 @@ def edit_collection(request, collection_id):
 def collection_books_view(request, collection_id):
     user = request.user
     is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
-
-    if not is_authenticated:
-        return redirect('catalog:collections')
     
     # Get the collection by ID
     collection = get_object_or_404(Collection, id=collection_id)
     
     if collection.is_private:
-        if not collection.allowed_users.filter(pk=request.user.pk).exists() and not user.userprofile.is_librarian():
+        if not is_authenticated:
+            return redirect('catalog:collections')
+        elif not collection.allowed_users.filter(pk=request.user.pk).exists() and not user.userprofile.is_librarian():
             return redirect('catalog:book_list')
 
     # Get all books in this collection
