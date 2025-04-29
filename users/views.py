@@ -207,7 +207,7 @@ def manage_patrons(request):
         patron = get_object_or_404(User, pk=user_id)
         patron.userprofile.role = 'librarian'
         patron.userprofile.save()
-        return redirect('user:manage_patrons')
+        return redirect('users:manage_patrons')
 
     return render(request, 'catalog/manage_patrons.html', {'patrons': patrons})
 
