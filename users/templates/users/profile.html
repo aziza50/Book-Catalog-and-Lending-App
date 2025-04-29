@@ -1,7 +1,6 @@
 {%extends "catalog/base.html" %}
 {% block content %}
 {% load static %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
 <style>
   .leftSide {
@@ -27,10 +26,6 @@
   }
   .section-header:hover {
     color: #000;
-  }
-  .section-icon {
-    font-size: 1rem;
-    margin-left: 0.25rem;
   }
   .no-transitions .collapse,
   .no-transitions .collapsing {
@@ -84,7 +79,10 @@
         <!-- Requests Section -->
         <div class="mb-4">
           <h3 class="section-header" data-bs-toggle="collapse" data-bs-target="#pendingRequests" aria-expanded="false" aria-controls="pendingRequests">
-            Pending Requests <i class="bi bi-chevron-down section-icon"></i>
+            Borrow Requests
+            <span class="badge bg-secondary align-middle ms-2">
+              {{ pending_requests|length}}
+            </span>
           </h3>
           <div class="collapse" id="pendingRequests">
             <div class="fixed-box">
@@ -143,7 +141,10 @@
           <!-- Requests Section -->
           <div class="mb-4">
             <h3 class="section-header" data-bs-toggle="collapse" data-bs-target="#incomingRequests" aria-expanded="false" aria-controls="incomingRequests">
-              Incoming Requests <i class="bi bi-chevron-down section-icon"></i>
+              Incoming Requests
+              <span class="badge bg-secondary align-middle ms-2">
+                {{ incoming_requests|length}}
+              </span>
             </h3>
             <div class="collapse" id="incomingRequests">
               <div class="fixed-box">
@@ -206,7 +207,15 @@
         <!-- Collection View Requests -->
         <div class="mb-4">
           <h3 class="section-header" data-bs-toggle="collapse" data-bs-target="#colViewRequests" aria-expanded="false" aria-controls="colViewRequests">
-            Collection View Requests <i class="bi bi-chevron-down section-icon"></i>
+            Collection View Requests
+            <span class="badge bg-secondary align-middle ms-2">
+              {% if is_patron %}
+                {{ pending_col_requests|length}}
+              {% elif is_librarian %}
+                {{ incoming_col_requests|length}}
+              {% else %}
+              {% endif %}
+            </span>
           </h3>
           <div class="collapse" id="colViewRequests">
             <div class="fixed-box">
@@ -284,7 +293,10 @@
         <!-- Collections Section -->
         <div class="mb-4">
           <h3 class="section-header" data-bs-toggle="collapse" data-bs-target="#collections" aria-expanded="false" aria-controls="collections">
-            My Collections <i class="bi bi-chevron-down section-icon"></i>
+            My Collections
+            <span class="badge bg-secondary align-middle ms-2">
+              {{ collections|length}}
+            </span>
           </h3>
           <div class="collapse" id="collections">
             <div class="fixed-box">
@@ -310,7 +322,10 @@
         {% if is_librarian %}
         <div class="mb-4">
           <h3 class="section-header" data-bs-toggle="collapse" data-bs-target="#books" aria-expanded="false" aria-controls="books">
-            My Books <i class="bi bi-chevron-down section-icon"></i>
+            My Books
+            <span class="badge bg-secondary align-middle ms-2">
+              {{ books|length}}
+            </span>
           </h3>
           <div class="collapse" id="books">
             <div class="fixed-box">
