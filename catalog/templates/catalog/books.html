@@ -61,7 +61,8 @@
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
     {% for book in books %}
       <div class="col">
-        <div class="card h-100 shadow-sm">
+          <a href="{% url 'catalog:item' book.id %}">
+          <div class="card h-100 shadow-sm" >
             <div class="d-flex justify-content-center">
             <img src= "{{ book.cover_image.url }}" alt="Fairy Tale" class="img-fluid rounded">
                 </div>
@@ -96,6 +97,7 @@
             </div>
           </div>
         </div>
+          </a>
       </div>
     {% endfor %}
   </div>
