@@ -23,16 +23,15 @@
             {{ form.books|add_class:"select2" }}
         </div>
 
-        <!-- <div class="form-group">
-            <label for="{{ form.collection_type.id_for_label }}">Type</label>
-            {{ form.collection_type }}
-        </div> -->
-
-
+        {% if collection.is_private %}
+        <div class="form-group allowed-users-container" style="display: block;">
+    {% else %}
         <div class="form-group allowed-users-container" style="display: none;">
+    {% endif %}
             <label for="{{ form.allowed_users.id_for_label }}">Select Users</label>
             {{ form.allowed_users|add_class:"select2" }}
         </div>
+
 
 
         {% if collection.cover_image %}
@@ -86,30 +85,6 @@
                 previewImage.src = '';
                 previewImage.style.display = 'none';
             }
-        });
-    });
-
-    // JavaScript to show/hide allowed users field based on collection type selection
-    document.addEventListener('DOMContentLoaded', function() {
-        const collectionTypeInputs = document.querySelectorAll('input[name="collection_type"]');
-        const allowedUsersContainer = document.querySelector('.allowed-users-container');
-        
-        // Check initial state
-        for (const input of collectionTypeInputs) {
-            if (input.checked && input.value === 'private') {
-                allowedUsersContainer.style.display = 'block';
-            }
-        }
-        
-        // Add event listeners
-        collectionTypeInputs.forEach(function(input) {
-            input.addEventListener('change', function() {
-                if (this.value === 'private' && this.checked) {
-                    allowedUsersContainer.style.display = 'block';
-                } else {
-                    allowedUsersContainer.style.display = 'none';
-                }
-            });
         });
     });
 
