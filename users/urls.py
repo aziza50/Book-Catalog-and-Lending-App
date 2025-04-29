@@ -13,4 +13,6 @@ urlpatterns = [
     path("resources/", views.resources, name="resources"),
     path("browseGuest/", views.browseGuest, name="browseGuest"),
     path("help_page/", views.helpPage, name="help_page"),
+    path("manage_patrons/", views.manage_patrons, name="manage_patrons"),
+    path("patron_search/", views.patron_search, name="patron_search"),
 ]
