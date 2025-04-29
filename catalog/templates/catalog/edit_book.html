@@ -9,7 +9,6 @@
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <!-- Title Field -->
             <div class="form-group">
                 <label for="{{ form.title.id_for_label }}">Title</label>
                 {{ form.title }}
@@ -81,14 +80,14 @@
                                 {% if image.caption %}
                                     <p>{{ image.caption }}</p>
                                 {% endif %}
-                                <a href="{% url 'catalog:delete_book_image' image.id %}" class="btn btn-danger btn-sm mt 2">Delete</a>
+                                <a href="{% url 'catalog:delete_book_image' image.id %}" class="btn btn-danger btn-sm mt 4">Delete</a>
                             </div>
                         {% endfor %}
                     </div>
                 {% endif %}
-                <button type="submit" class="btn btn-custom active text-white">Save Changes</button>
-
             </div>
+            <button type="submit" style = "margin-top:20px;" class="btn btn-custom active text-white mt 2">Save Changes</button>
+
 
         </form>
     </div>

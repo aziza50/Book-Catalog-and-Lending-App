@@ -574,4 +574,32 @@ h6 {
     transform: translateX(4px);
 }
 
+.btn-custom2 {
+    text-decoration: none;
+    color: #426B1F;
+    padding: 8px 16px;
+    border: 1px solid #426B1F;
+    border-radius: 8px;
+    transition: background-color 0.3s, color 0.3s;
+    display: inline-flex;
+    align-items: center;
+    font-weight: 500;
+    gap: 8px;
+}
+
+
+.btn-custom2:hover {
+    background-color: #426B1F;
+    color: white;
+}
+
+.btn-custom2::after {
+    font-size: 1rem;
+    transition: transform 0.3s;
+}
+
+
+.btn-custom2 hover::after {
+    transform: translateX(4px);
+}
 
