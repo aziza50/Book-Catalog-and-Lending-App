@@ -483,10 +483,9 @@ def edit_collection(request, collection_id):
         form.fields['books'].queryset = books
         form.fields['allowed_users'].queryset = User.objetcs.exclude(id=request.user.id)
 
-
-    if form.is_valid():
-            form.save()
-            return redirect('catalog:collections')
+        if form.is_valid():
+                form.save()
+                return redirect('catalog:collections')
     else:
         form = CreateCollectionForm(instance=collection)
         form.fields['books'].queryset = books
