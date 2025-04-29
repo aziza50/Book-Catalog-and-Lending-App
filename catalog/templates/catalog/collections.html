@@ -74,7 +74,7 @@
                                         {% with books=collection.books.all %}
                                             {% if books|length > 2 %}
                                                 <div class="align-items-center gap-2">
-                                                    <p class="card-text mb-0"><small class="text-muted">+ {{ books|length|add:"-2" }} more</small></p>
+                                                    <p class="card-text mb-0"><small class="text-muted">+ {{ books|length|add:"0" }} more</small></p>
                                                 </div>
                                             {%  else %}
                                             {%  for book in books %}

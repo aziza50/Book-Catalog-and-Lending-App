@@ -411,10 +411,7 @@ def create_collection(request):
             collection = form.save(commit=False)
             collection.creator = request.user
             collection.save()
-            if hasattr(form, 'save_m2m'):  # ✅ Protect against missing method
-                form.save_m2m()
-            else:
-                print("⚠️ save_m2m not available. Make sure it's a proper ModelForm.")
+            form.save_m2m()
 
             return redirect('catalog:collections')
     else:
