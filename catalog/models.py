@@ -84,7 +84,6 @@ class Comments(models.Model):
     date = models.DateTimeField(default = timezone.now)
     rating = models.IntegerField()
 
-
 class Collection(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)

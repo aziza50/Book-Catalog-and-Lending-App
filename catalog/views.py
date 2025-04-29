@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Book, Collection, Comments, BookImage
+from users.models import User
 import users.views
 from django.contrib.auth.models import User
 from .models import Book, Collection, Comments, BookImage
@@ -525,4 +526,44 @@ def request_collection_access(request, pk):
             patron     = request.user,
             librarian  = collection.creator
         )
-    return redirect('catalog:collections')      # or wherever you came from
+    return redirect('catalog:collections')
+
+def manage_patrons(request):
+    patrons = User.objects.filter(userprofile__role='patron')
+
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        patron = get_object_or_404(User, pk=user_id)
+        patron.userprofile.role = 'librarian'
+        patron.userprofile.save()
+        return redirect('catalog:manage_patrons')
+
+    return render(request, 'catalog/manage_patrons.html', {'patrons': patrons})
+
+@login_required
+@librarian_required
+def patron_search(request):
+    query = request.GET.get('q', '')
+    results = []
+    if query:
+        users = User.objects.filter(
+            userprofile__role='patron'
+        ).filter(
+            first_name__icontains=query
+        ) | User.objects.filter(
+            userprofile__role='patron'
+        ).filter(
+            last_name__icontains=query
+        )
+        users = users.distinct()[:10]
+        results = [
+            {
+                'id': user.id,
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+            }
+            for user in users
+        ]
+    return JsonResponse({'results': results})
