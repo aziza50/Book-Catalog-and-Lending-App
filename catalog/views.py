@@ -526,7 +526,8 @@ def request_collection_access(request, pk):
             librarian  = collection.creator
         )
     return redirect('catalog:collections')
-
+@login_required
+@librarian_required
 def manage_patrons(request):
     patrons = User.objects.filter(userprofile__role='patron')
 
