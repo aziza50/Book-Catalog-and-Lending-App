@@ -384,35 +384,35 @@ def get_books_for_collection(request, user, collection_id):
     else:
         is_librarian = False
 
-    if is_librarian:
-        collections_allow = Collection.objects.filter(Q(is_private=False) |Q(id=collection_id)).distinct().order_by('-title')
-        books = Book.objects.filter(collections__in=collections_allow)
-    elif is_authenticated:
-        #only have access to books that are part of not private collections or in allowable users list
-        books = Book.objects.filter(is_private=False)
-        collections_allow = Collection.objects.filter(allowed_users = user)
-        private_collection_books = Book.objects.filter(collections__in=collections_allow)
-        books = (books | private_collection_books).distinct().order_by('-title')
+
+    if is_librarian or is_authenticated:
+        #get all books
+        book = Book.objects.filter(is_private = False)
+        #now add all the books in current collection
+        collection = get_object_or_404(Collection, id=collection_id)
+        books_in_collection = collection.books.all()
+        #and now add them together
+        books = (book | books_in_collection).distinct().order_by('-title')
 
     return books
 
 @login_required
 def create_collection(request):
-    books = get_books_per_user(request, request.user).exclude(is_private = True)
     if request.method == 'POST':
         form = CreateCollectionForm(request.POST,request.FILES, request=request)
-        form.fields['books'].queryset = books
-        form.fields['allowed_users'].queryset = User.objects.exclude(id=request.user.id)
         if form.is_valid():
             collection = form.save(commit=False)
             collection.creator = request.user
             collection.save()
-            form.save_m2m()
-        return redirect('catalog:collections')
+            if hasattr(form, 'save_m2m'):  # ✅ Protect against missing method
+                form.save_m2m()
+            else:
+                print("⚠️ save_m2m not available. Make sure it's a proper ModelForm.")
+
+            return redirect('catalog:collections')
     else:
         form = CreateCollectionForm(request=request)
-        form.fields['books'].queryset = books
-        form.fields['allowed_users'].queryset = User.objects.exclude(id=request.user.id)
+
 
     return render(request, 'catalog/create_collection.html', {'form': form})
 

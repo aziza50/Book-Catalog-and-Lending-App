@@ -133,6 +133,7 @@ class CreateCollectionForm(forms.ModelForm):
         widget=forms.SelectMultiple(attrs={'class': 'select2'}),
         required=False,
     )
+
     collection_type = forms.ChoiceField(
         choices=[('public', 'Public'), ('private', 'Private')],
         widget=forms.RadioSelect,
@@ -179,19 +180,17 @@ class CreateCollectionForm(forms.ModelForm):
         user = self.request.user
         collection_type = self.cleaned_data.get('collection_type')
         is_private = (collection_type == 'private')
-        
-        instance = Collection(
-            title=self.cleaned_data['title'],
-            description=self.cleaned_data['description'],
-            creator=user,
-            is_private=is_private,
-            cover_image=self.cleaned_data['cover_image'],
-        )
+
+        instance = super().save(commit=False)
+        instance.creator = user
+        instance.is_private = is_private
         
         if commit:
             instance.save()
-            
-            # Handle allowed users if the collection is private
+            self.save_m2m()
+
+
+        # Handle allowed users if the collection is private
             if is_private:
                 allowed_users = self.cleaned_data.get('allowed_users')
                 if allowed_users:
