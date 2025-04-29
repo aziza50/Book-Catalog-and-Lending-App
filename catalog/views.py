@@ -11,7 +11,7 @@ from django.http import JsonResponse
 from users.models import BookRequest, CollectionsRequest
 from users.forms import BookRequestForm
 from .forms import BooksForm, CommentsForm, AddBooksToCollectionForm, CreateCollectionForm
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from .forms import BooksForm, AddBooksToCollectionForm, CreateCollectionForm, EditCollectionForm
 from users.decorators import librarian_required
 
