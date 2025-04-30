@@ -40,7 +40,7 @@
               document.getElementById('patron-results').innerHTML = '';
               return;
           }
-          fetch(`users/patron_search/?q=${encodeURIComponent(query)}`)
+          fetch('/patron_search/?q=' + encodeURIComponent(query))
               .then(response => response.json())
               .then(data => {
                   const results = data.results;
