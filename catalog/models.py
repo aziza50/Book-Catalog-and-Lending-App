@@ -51,7 +51,7 @@ class Book(models.Model):
     status = models.CharField(max_length = 13, choices= Status.choices, default = Status.AVAILABLE)
     condition = models.CharField(max_length = 13, choices = Condition.choices, default=Condition.ACCEPTABLE)
     genre = models.CharField(max_length=100, choices = Genre.choices)
-    rating = models.FloatField(default = 0.0, validators = [MinValueValidator(1.0), MaxValueValidator(5.0)])
+    rating = models.DecimalField(max_digits = 3, default = 0.00, decimal_places = 2, validators = [MinValueValidator(1.00), MaxValueValidator(5.00)])
     location = models.CharField(max_length = 27, choices = Location.choices, default = Location.SHANNON)
     comments = models.CharField(max_length = 200, blank = True, null =True, default = "")
     description = models.TextField(max_length = 200, default = " ")
