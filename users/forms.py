@@ -41,7 +41,7 @@ class BookRequestForm(forms.ModelForm):
 
     class Meta:
         model = BookRequest
-        fields = ['book', 'pickup_datetime']
+        fields = ['book']
         widgets = {
             'book': forms.HiddenInput(),
         }
