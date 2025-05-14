@@ -8,6 +8,8 @@ from users.decorators import librarian_required
 from django.http import JsonResponse
 from datetime import timedelta
 from django.utils import timezone
+from django.conf import settings
+
 
 def home(request):
     return redirect('users:dashboard')
@@ -17,10 +19,14 @@ def browseGuest(request):
     is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
     is_librarian = False
     is_patron = False
+    maps_key = getattr(settings, "GOOGLE_MAPS_KEY", None)
+
     return render(request, "users/dashboard.html", {
         "is_authenticated": is_authenticated,
         "is_librarian": is_librarian,
         "is_patron": is_patron,
+        "GOOGLE_MAPS_KEY": maps_key,
+
     })
 
 #to navigate to the dashboard - views renders based on group rather
@@ -28,6 +34,7 @@ def browseGuest(request):
 def dashboard(request):
     user = request.user
     is_authenticated = user.is_authenticated and not user.is_superuser and not user.is_staff
+    maps_key = getattr(settings, "GOOGLE_MAPS_KEY", None)
 
     if is_authenticated:
         try:
@@ -39,6 +46,7 @@ def dashboard(request):
                     "is_authenticated" : is_authenticated,
                     "is_librarian": is_librarian,
                     "is_patron" : is_patron,
+                    "GOOGLE_MAPS_KEY": maps_key,
                 })
         except UserProfile.DoesNotExist:
             return browseGuest(request)
